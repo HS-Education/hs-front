@@ -1,0 +1,32 @@
+<div class="min-h-screen bg-slate-100 px-4 py-10">
+  <div class="mx-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
+    <h1 class="text-2xl font-semibold text-slate-800">Home</h1>
+
+    @if (userProfile(); as user) {
+      <div class="mt-6 space-y-3 text-sm text-slate-700">
+        <p><span class="font-semibold">ID:</span> {{ user.id }}</p>
+        <p><span class="font-semibold">Usuario:</span> {{ user.username }}</p>
+
+        <div>
+          <span class="font-semibold">Roles:</span>
+          <ul class="mt-1 list-disc pl-5">
+            @for (role of user.roles; track role) {
+              <li>{{ role }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+    } @else {
+      <p class="mt-6 text-sm text-slate-500">No hay información de usuario disponible.</p>
+    }
+
+    @if (errorMessage()) {
+      <p
+        role="alert"
+        class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+      >
+        {{ errorMessage() }}
+      </p>
+    }
+  </div>
+</div>

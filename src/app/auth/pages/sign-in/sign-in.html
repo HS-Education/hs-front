@@ -1,0 +1,55 @@
+<div class="min-h-screen flex items-center justify-center bg-slate-100 px-4">
+  <form
+    [formGroup]="form"
+    (ngSubmit)="onSubmit()"
+    aria-describedby="login-error"
+    class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg ring-1 ring-slate-200"
+  >
+    <div class="mb-6 text-center">
+      <h1 class="text-2xl font-semibold text-slate-800">Iniciar sesión</h1>
+      <p class="mt-1 text-sm text-slate-500">Accede con tus credenciales</p>
+    </div>
+
+    <div class="mb-4">
+      <label for="username" class="mb-2 block text-sm font-medium text-slate-700">
+        Usuario
+      </label>
+      <input
+        id="username"
+        type="text"
+        formControlName="username"
+        class="w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+      />
+    </div>
+
+    <div class="mb-5">
+      <label for="password" class="mb-2 block text-sm font-medium text-slate-700">
+        Contraseña
+      </label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        class="w-full rounded-lg border border-slate-300 px-4 py-2 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+      />
+    </div>
+
+    <button
+      type="submit"
+      [disabled]="loading() || form.invalid"
+      class="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+    >
+      {{ loading() ? 'Iniciando...' : 'Iniciar sesión' }}
+    </button>
+
+    @if (errorMessage()) {
+      <p
+        id="login-error"
+        role="alert"
+        class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+      >
+        {{ errorMessage() }}
+      </p>
+    }
+  </form>
+</div>
