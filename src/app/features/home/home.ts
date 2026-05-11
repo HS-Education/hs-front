@@ -20,7 +20,7 @@ export class Home {
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
-  onLogOut(): void {
+  onLogOut() {
     this.loading.set(true);
     this.errorMessage.set(null);
 

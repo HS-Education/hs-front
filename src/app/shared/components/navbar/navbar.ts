@@ -13,7 +13,7 @@ import {Router, RouterLink} from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Navbar {
-  private readonly userDataService = inject(UserDataService);
+  protected readonly userDataService = inject(UserDataService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 

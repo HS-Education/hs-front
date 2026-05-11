@@ -19,6 +19,20 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'classrooms',
+    loadComponent: () =>
+      import('./features/classrooms/classroom-list/classroom-list').then((m) => m.ClassroomList),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'classrooms/:id',
+    loadComponent: () =>
+      import('./features/classrooms/classroom-detail/classroom-detail').then(
+        (m) => m.ClassroomDetail
+      ),
+    canActivate: [authGuard],
+  },
+  {
     path: 'not-found',
     loadComponent: () =>
       import('./shared/pages/not-found/not-found').then((m) => m.NotFound),
