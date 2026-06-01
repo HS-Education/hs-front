@@ -1,6 +1,6 @@
 import {EducationLevel, GradeLevel} from '../../../../../shared/models/academic-levels.model';
 
-export interface AddDocumentRequest {
+export interface UploadDocumentRequest {
   title: string;
   topicId: number;
   educationLevel: EducationLevel;

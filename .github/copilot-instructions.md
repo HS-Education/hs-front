@@ -7,6 +7,22 @@ You are working with Angular v21.0.0
 - Prefer type inference when the type is obvious
 - Avoid the `any` type; use `unknown` when type is uncertain
 
+## Project Structure
+
+- Organize code by feature areas, business domains, or user workflows
+- Group related components, services, models, and utilities together within the same feature directory
+- Do NOT organize the project by technical artifact type (e.g. components, services, directives, pipes)
+- Avoid large directories with too many files; split features into smaller sub-features when necessary
+- Prefer a folder structure that reflects how users interact with the application
+
+## File Organization
+
+- Prefer one concept per file
+- Prefer one component, directive, service, or pipe per file
+- Small, closely related classes may share a file when they represent a single concept
+- When in doubt, choose smaller and more focused files
+- Keep files easy to understand and navigate
+
 ## Angular Best Practices
 
 - Always use standalone components over NgModules
@@ -46,3 +62,7 @@ You are working with Angular v21.0.0
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+## CSS
+
+- Use Tailwind v4 for styling

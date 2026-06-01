@@ -7,16 +7,16 @@ import {
   input,
   signal,
 } from '@angular/core';
-import { Modal } from '../../../../../../shared/components/modal/modal';
-import { ClassroomService } from '../../../../data-access/classroom.service';
-import { Topic } from '../../../../data-access/models/responses/topic.model';
+import { Modal } from '../../../../../shared/components/modal/modal';
+import { ClassroomService } from '../../../data-access/classroom.service';
+import { Topic } from '../../../data-access/models/responses/topic.model';
 import {
   EDUCATION_LEVEL_OPTIONS,
   GRADE_LEVEL_OPTIONS,
   type EducationLevel,
   type GradeLevel,
-} from '../../../../../../shared/models/academic-levels.model';
-import {UploadDocumentRequest} from '../../../../data-access/models/requests/upload-document.request';
+} from '../../../../../shared/models/academic-levels.model';
+import {UploadDocumentRequest} from '../../../data-access/models/requests/upload-document.request';
 
 @Component({
   selector: 'app-upload-document-modal',
@@ -39,11 +39,7 @@ import {UploadDocumentRequest} from '../../../../data-access/models/requests/upl
           <div>
             <label class="text-sm font-medium" for="document-topic">Topic</label>
 
-            @if (topicsLoading()) {
-              <p class="mt-1 text-sm text-slate-500">Cargando topics...</p>
-            } @else if (topicsError()) {
-              <p class="mt-1 text-sm text-red-600">{{ topicsError() }}</p>
-            } @else if (sortedTopics().length === 0) {
+            @if (sortedTopics().length === 0) {
               <p class="mt-1 text-sm text-slate-500">No hay topics disponibles</p>
             } @else {
               <select
@@ -117,21 +113,11 @@ import {UploadDocumentRequest} from '../../../../data-access/models/requests/upl
           <button
             type="submit"
             class="rounded bg-sky-600 px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
-            [disabled]="isUploading() || topicsLoading() || !canSubmit()"
+            [disabled]="!canSubmit()"
           >
-            @if (isUploading()) {
-              Subiendo...
-            } @else {
-              Subir documento
-            }
+            Subir documento
           </button>
         </div>
-
-        @if (error()) {
-          <div class="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-800" role="alert">
-            {{ error() }}
-          </div>
-        }
       </form>
     </app-modal>
   `,
@@ -155,11 +141,6 @@ export class UploadDocumentModal {
   readonly file = signal<File | null>(null);
 
   readonly topics = signal<Topic[]>([]);
-  readonly topicsLoading = signal(true);
-  readonly topicsError = signal<string | null>(null);
-
-  readonly isUploading = signal(false);
-  readonly error = signal<string | null>(null);
 
   readonly sortedTopics = computed(() => {
     return [...this.topics()].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -171,9 +152,6 @@ export class UploadDocumentModal {
     effect((onCleanup) => {
       const courseId = this.courseId();
 
-      this.topicsLoading.set(true);
-      this.topicsError.set(null);
-
       const subscription = this.classroomService.getClassroomTopics(courseId).subscribe({
         next: (topics) => {
           this.topics.set(topics);
@@ -184,14 +162,11 @@ export class UploadDocumentModal {
           if (currentTopicId === null || !topics.some((topic) => topic.id === currentTopicId)) {
             this.topicIdField.set(firstTopic?.id ?? null);
           }
-
-          this.topicsLoading.set(false);
         },
         error: (err: unknown) => {
           console.error(err);
           this.topics.set([]);
-          this.topicsError.set('No se pudieron cargar las topics');
-          this.topicsLoading.set(false);
+          this.topicIdField.set(null);
         },
       });
 
@@ -210,8 +185,6 @@ export class UploadDocumentModal {
     this.educationLevelField.set(this.educationLevelOptions[0]);
     this.gradeLevels.set([this.gradeLevelOptions[0]]);
     this.file.set(null);
-    this.error.set(null);
-    this.isUploading.set(false);
   }
 
   setTitle(event: Event) {
@@ -234,7 +207,6 @@ export class UploadDocumentModal {
   toggleGrade(grade: GradeLevel) {
     this.gradeLevels.update((current) => {
       if (current.includes(grade)) {
-        // Evita dejarlo vacío si por ahora solo hay un valor
         return current.length > 1 ? current.filter((item) => item !== grade) : current;
       }
 
@@ -247,12 +219,10 @@ export class UploadDocumentModal {
     const file = input.files?.[0] ?? null;
 
     if (file && file.type !== 'application/pdf') {
-      this.error.set('Solo se permiten archivos PDF');
       this.file.set(null);
       return;
     }
 
-    this.error.set(null);
     this.file.set(file);
   }
 
@@ -272,7 +242,6 @@ export class UploadDocumentModal {
     const file = this.file();
 
     if (!this.canSubmit() || topicId === null || file === null) {
-      this.error.set('Rellena todos los campos y selecciona un archivo PDF');
       return;
     }
 
@@ -283,19 +252,13 @@ export class UploadDocumentModal {
       gradeLevels: this.gradeLevels(),
     };
 
-    this.isUploading.set(true);
-    this.error.set(null);
-
     this.classroomService.uploadDocument(this.courseId(), request, file).subscribe({
       next: () => {
-        this.isUploading.set(false);
         this.onAdded()?.();
         this.closeModal();
       },
       error: (err: unknown) => {
         console.error(err);
-        this.error.set('Error al subir el documento');
-        this.isUploading.set(false);
       },
     });
   }

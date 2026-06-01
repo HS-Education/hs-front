@@ -1,4 +1,16 @@
 <div class="space-y-4">
+
+  <div class="flex items-center justify-end">
+    <button
+      type="button"
+      (click)="openAddModal()"
+      class="rounded bg-sky-600 px-4 py-2 text-white hover:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed"
+      [disabled]="loading()"
+    >
+      Agregar documento
+    </button>
+  </div>
+
   @if (loading()) {
     <div class="flex items-center justify-center py-12">
       <div class="space-y-2 text-center">
@@ -68,4 +80,11 @@
       </table>
     </div>
   }
+
+  <app-upload-document-modal
+    [isOpen]="isAddModalOpen()"
+    [courseId]="courseId()"
+    [onClose]="closeAddModal"
+    [onAdded]="onAdded"
+  ></app-upload-document-modal>
 </div>

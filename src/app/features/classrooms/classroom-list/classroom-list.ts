@@ -1,15 +1,17 @@
 import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
 import {ClassroomService} from '../data-access/classroom.service';
-import {Classroom} from '../data-access/classroom.model';
+import {Classroom} from '../data-access/models/responses/classroom.model';
 import {toObservable, toSignal} from '@angular/core/rxjs-interop';
 import {UserDataService} from '../../../shared/services/user-data.service';
 import {filter, switchMap} from 'rxjs';
 import {RouterLink} from '@angular/router';
+import {ClassroomCard} from './ui/classroom-card';
 
 @Component({
   selector: 'app-classroom-list',
   imports: [
-    RouterLink
+    RouterLink,
+    ClassroomCard
   ],
   template: `
     @let classroomList = classrooms();
@@ -22,23 +24,7 @@ import {RouterLink} from '@angular/router';
             [queryParams]="{ courseId: classroom.courseId }"
             class="block"
           >
-            <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md hover:border-sky-300 cursor-pointer">
-              <div class="mb-3 flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-slate-900">
-                  {{ classroom.courseName }}
-                </h3>
-                <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-              {{ classroom.status }}
-            </span>
-              </div>
-
-              <div class="space-y-1 text-sm text-slate-600">
-                <p><span class="font-medium text-slate-800">ID:</span> {{ classroom.id }}</p>
-                <p><span class="font-medium text-slate-800">Course ID:</span> {{ classroom.courseId }}</p>
-                <p><span class="font-medium text-slate-800">Section name:</span> {{ classroom.section.name }}</p>
-                <p><span class="font-medium text-slate-800">Academic year:</span> {{ classroom.academicYearName }}</p>
-              </div>
-            </article>
+            <app-classroom-card [classroom]="classroom"></app-classroom-card>
           </a>
         }
       </div>

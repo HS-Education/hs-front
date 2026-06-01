@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, effect, inject, input, signal} from '@angular/core';
 import { ClassroomService } from "../../data-access/classroom.service";
-import {Member} from '../../data-access/member.model';
+import {Member} from '../../data-access/models/responses/member.model';
 
 @Component({
   selector: 'app-members',

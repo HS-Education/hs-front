@@ -1,9 +1,11 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {environment} from '../../../../environment/environment';
-import {Classroom} from './classroom.model';
-import {Document} from './document.model';
-import {Member} from './member.model';
+import {Classroom} from './models/responses/classroom.model';
+import {Document} from './models/responses/document.model';
+import {Member} from './models/responses/member.model';
+import {Topic} from './models/responses/topic.model';
+import {UploadDocumentRequest} from './models/requests/upload-document.request';
 
 @Injectable({
   providedIn: 'root',
@@ -39,5 +41,28 @@ export class ClassroomService {
       `${this.baseUrl}/classrooms/${classroomId}/members`,
       { withCredentials: true }
     );
+  }
+
+  getClassroomTopics(courseId: number) {
+    return this.http.get<Topic[]>(
+      `${this.baseUrl}/courses/${courseId}/topics`,
+      { withCredentials: true }
+    );
+  }
+
+  uploadDocument(courseId: number, request: UploadDocumentRequest, file: File) {
+    const formData = new FormData();
+
+    formData.append(
+      'data',
+      new Blob([JSON.stringify(request)], {type: 'application/json'})
+    );
+    formData.append('file', file);
+
+    return this.http.post(
+      `${this.baseUrl}/courses/${courseId}/documents`,
+      formData,
+      {withCredentials: true}
+    )
   }
 }

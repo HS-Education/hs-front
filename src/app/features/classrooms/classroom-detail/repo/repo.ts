@@ -1,10 +1,11 @@
 import {ChangeDetectionStrategy, Component, effect, inject, input, signal} from '@angular/core';
 import {ClassroomService} from '../../data-access/classroom.service';
-import {Document} from '../../data-access/document.model';
+import {Document} from '../../data-access/models/responses/document.model';
+import {UploadDocumentModal} from './ui/upload-document-modal';
 
 @Component({
   selector: 'app-repo',
-  imports: [],
+  imports: [UploadDocumentModal],
   templateUrl: './repo.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,23 +19,29 @@ export class Repo {
   readonly error = signal<string | null>(null);
   readonly downloadingId = signal<number | null>(null);
 
+  readonly isAddModalOpen = signal(false);
+
   constructor() {
     effect(() => {
-      const id = this.courseId();
-      this.loading.set(true);
-      this.error.set(null);
+      this.fetchDocuments();
+    });
+  }
 
-      this.classroomService.getClassroomDocuments(id).subscribe({
-        next: (docs) => {
-          this.documents.set(docs);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.error.set('Error al cargar documentos');
-          this.loading.set(false);
-          console.error(err);
-        },
-      });
+  private fetchDocuments() {
+    const id = this.courseId();
+    this.loading.set(true);
+    this.error.set(null);
+
+    this.classroomService.getClassroomDocuments(id).subscribe({
+      next: (docs) => {
+        this.documents.set(docs);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Error al cargar documentos');
+        this.loading.set(false);
+        console.error(err);
+      },
     });
   }
 
@@ -52,5 +59,16 @@ export class Repo {
       },
     });
   }
-}
 
+  openAddModal = () => {
+    this.isAddModalOpen.set(true);
+  };
+
+  closeAddModal = () => {
+    this.isAddModalOpen.set(false);
+  };
+
+  onAdded = () => {
+    this.fetchDocuments();
+  };
+}

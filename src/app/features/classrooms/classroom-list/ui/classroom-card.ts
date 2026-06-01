@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, input} from '@angular/core';
-import {Card} from '../../../../../shared/components/card/card';
-import {Classroom} from '../../../data-access/models/responses/classroom.model';
+import {Card} from '../../../../shared/components/card/card';
+import {Classroom} from '../../data-access/models/responses/classroom.model';
 
 @Component({
   selector: 'app-classroom-card',
@@ -46,10 +46,9 @@ import {Classroom} from '../../../data-access/models/responses/classroom.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClassroomCard {
-  // input() crea una signal que el padre puede establecer con [classroom]
+
   readonly classroom = input<Classroom | undefined>();
 
-  // derived values con computed()
   readonly sectionName = computed(() => {
     const c = this.classroom();
     return c?.section?.name ?? '—';
@@ -57,11 +56,9 @@ export class ClassroomCard {
 
   readonly academicYear = computed(() => {
     const c = this.classroom();
-    // academicYearName en el modelo es number según el repo; formateo seguro a string
     return c?.academicYearName != null ? String(c.academicYearName) : '—';
   });
 
-  // ejemplo simple para decidir estilos según estado
   readonly statusColor = computed(() => {
     const s = this.classroom()?.status?.toLowerCase() ?? '';
     if (s.includes('active') || s.includes('activo')) return 'blue';
