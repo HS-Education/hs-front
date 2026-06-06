@@ -5,23 +5,23 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   imports: [],
   template: `
     <article
-      class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md"
+      class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm transition-all duration-300 ease-out hover:shadow-md hover:border-[var(--brand-primary)]/30 hover:-translate-y-1 block"
       role="none"
     >
-      <header class="mb-3 flex items-center justify-between">
+      <header class="mb-4 flex items-start justify-between">
         <div class="flex-1">
           <ng-content select="[card-header]"></ng-content>
         </div>
-        <div class="ml-3">
+        <div class="ml-3 shrink-0">
           <ng-content select="[card-meta]"></ng-content>
         </div>
       </header>
 
-      <section class="mb-3 text-sm text-slate-600">
+      <section class="mb-4 text-sm text-[var(--text-secondary)] leading-relaxed">
         <ng-content></ng-content>
       </section>
 
-      <footer class="mt-3">
+      <footer class="mt-4">
         <ng-content select="[card-actions]"></ng-content>
       </footer>
     </article>

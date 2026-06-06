@@ -1,1 +1,152 @@
-<p>progress works!</p>
+@if (userDataService.isStudentView()) {
+  <!-- Student View of Progress -->
+  <div class="space-y-6 select-none animate-fadeIn">
+    <div>
+      <h2 class="text-lg font-bold text-[var(--text-primary)]">Progreso Académico</h2>
+      <p class="text-xs text-[var(--text-secondary)] mt-0.5">Estado del desarrollo y revisiones de tus temas de estudio</p>
+    </div>
+
+    <!-- Progress Bar Card -->
+    <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]/50 p-5">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-bold text-[var(--text-secondary)]">Porcentaje de Avance General</span>
+        <span class="text-xs font-extrabold text-[var(--brand-primary)]">75% Completado</span>
+      </div>
+      <div class="w-full bg-[var(--bg-secondary)] rounded-full h-3">
+        <div class="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-primary-hover)] h-3 rounded-full shadow-inner" style="width: 75%"></div>
+      </div>
+    </div>
+
+    <!-- Milestones Tracker List -->
+    <div class="space-y-4">
+      <h3 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-3">Hitos del Bimestre</h3>
+      
+      <!-- Milestone 1 -->
+      <div class="flex gap-4 items-start relative pb-6 border-l-2 border-[var(--brand-primary)]/30 pl-5 ml-2.5">
+        <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[var(--brand-forest)] text-white text-[10px] font-bold border border-[var(--surface)]">✓</span>
+        <div>
+          <h4 class="text-xs font-bold text-[var(--text-primary)]">1. Comprensión de Conceptos Clave</h4>
+          <p class="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">Conceptos principales evaluados y comprendidos.</p>
+          <span class="inline-block mt-2 rounded bg-[var(--brand-forest)]/10 border border-[var(--brand-forest)]/20 px-2 py-0.5 text-[9px] font-bold text-[var(--brand-forest)]">Completado</span>
+        </div>
+      </div>
+
+      <!-- Milestone 2 -->
+      <div class="flex gap-4 items-start relative pb-6 border-l-2 border-[var(--brand-primary)]/30 pl-5 ml-2.5">
+        <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[var(--brand-forest)] text-white text-[10px] font-bold border border-[var(--surface)]">✓</span>
+        <div>
+          <h4 class="text-xs font-bold text-[var(--text-primary)]">2. Carga y Lectura de Materiales</h4>
+          <p class="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">Subida y revisión de los materiales de estudio en el repositorio.</p>
+          <span class="inline-block mt-2 rounded bg-[var(--brand-forest)]/10 border border-[var(--brand-forest)]/20 px-2 py-0.5 text-[9px] font-bold text-[var(--brand-forest)]">Completado</span>
+        </div>
+      </div>
+
+      <!-- Milestone 3 -->
+      <div class="flex gap-4 items-start relative pb-6 border-l-2 border-[var(--brand-primary)]/30 pl-5 ml-2.5">
+        <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-[10px] font-bold border border-[var(--surface)]">3</span>
+        <div>
+          <h4 class="text-xs font-bold text-[var(--text-primary)]">3. Resolución de Cuestionarios y Ejercicios</h4>
+          <p class="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">Resolución de cuestionarios interactivos de repaso.</p>
+          <span class="inline-block mt-2 rounded bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 px-2 py-0.5 text-[9px] font-bold text-[var(--brand-primary)]">En Desarrollo</span>
+        </div>
+      </div>
+
+      <!-- Milestone 4 -->
+      <div class="flex gap-4 items-start relative pl-5 ml-2.5">
+        <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-[10px] font-bold border border-[var(--surface)]">4</span>
+        <div>
+          <h4 class="text-xs font-bold text-[var(--text-secondary)]/80">4. Evaluación Bimestral Final</h4>
+          <p class="text-[10px] text-[var(--text-secondary)]/80 mt-0.5 leading-relaxed">Evaluación global de los temas aprendidos durante el bimestre.</p>
+          <span class="inline-block mt-2 rounded bg-[var(--bg-secondary)] border border-[var(--border)] px-2 py-0.5 text-[9px] font-bold text-[var(--text-secondary)]/80">Pendiente</span>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else {
+  <!-- Teacher View of Progress -->
+  <div class="space-y-6 select-none">
+    <div>
+      <h2 class="text-lg font-bold text-[var(--text-primary)]">Seguimiento de Avance</h2>
+      <p class="text-xs text-[var(--text-secondary)] mt-0.5">Control de avance y estado de entregas de los estudiantes</p>
+    </div>
+
+    <!-- Progress Table -->
+    <div class="overflow-hidden rounded-lg border border-[var(--border)]/70 bg-[var(--surface)]">
+      <table class="w-full text-left text-sm text-[var(--text-secondary)]">
+        <thead class="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
+          <tr>
+            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Estudiante</th>
+            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Proyecto del Curso</th>
+            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Último Hito Completado</th>
+            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] w-44">Progreso</th>
+            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--border)]/50 font-medium text-xs">
+          <tr class="hover:bg-[var(--bg-secondary)]/50">
+            <td class="px-6 py-4 font-bold text-[var(--text-primary)]">Henry (Estudiante)</td>
+            <td class="px-6 py-4 text-[var(--text-secondary)] font-medium italic">"Plataforma Educativa"</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center rounded bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 px-2 py-0.5 text-[10px] font-bold text-[var(--brand-primary)]">
+                Hito 2: Lectura de Materiales
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
+                  <div class="bg-[var(--brand-primary)] h-1.5 rounded-full" style="width: 75%"></div>
+                </div>
+                <span class="text-[10px] text-[var(--text-secondary)] font-bold">75%</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button class="text-[var(--brand-primary)] hover:underline font-bold text-[11px]">Revisar Avance</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-[var(--bg-secondary)]/50">
+            <td class="px-6 py-4 font-bold text-[var(--text-primary)]">Maria Belen</td>
+            <td class="px-6 py-4 text-[var(--text-secondary)] font-medium italic">"Diseño Interactivo"</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center rounded bg-[var(--brand-forest)]/10 border border-[var(--brand-forest)]/20 px-2 py-0.5 text-[10px] font-bold text-[var(--brand-forest)]">
+                Hito 3: Cuestionarios
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
+                  <div class="bg-[var(--brand-forest)] h-1.5 rounded-full" style="width: 100%"></div>
+                </div>
+                <span class="text-[10px] text-[var(--text-secondary)] font-bold">100%</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button class="text-[var(--brand-primary)] hover:underline font-bold text-[11px]">Revisar Avance</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-[var(--bg-secondary)]/50">
+            <td class="px-6 py-4 font-bold text-[var(--text-primary)]">Carlos Perez</td>
+            <td class="px-6 py-4 text-[var(--text-secondary)] font-medium italic">"Uso de Grafos"</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center rounded bg-[var(--brand-mustard)]/10 border border-[var(--brand-mustard)]/20 px-2 py-0.5 text-[10px] font-bold text-[var(--brand-mustard)]">
+                Hito 1: Conceptos Clave
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
+                  <div class="bg-[var(--brand-mustard)] h-1.5 rounded-full" style="width: 50%"></div>
+                </div>
+                <span class="text-[10px] text-[var(--text-secondary)] font-bold">50%</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button class="text-[var(--brand-primary)] hover:underline font-bold text-[11px]">Revisar Avance</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

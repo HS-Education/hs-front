@@ -1,0 +1,24 @@
+.login-container {
+  background-color: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+/* Theme inputs */
+.theme-input {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-input:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 16px -2px color-mix(in srgb, var(--brand-primary) 25%, transparent);
+  background-color: var(--surface);
+}
+
+.theme-input::placeholder {
+  color: color-mix(in srgb, var(--text-secondary) 50%, transparent);
+}

@@ -15,6 +15,33 @@ export class UserDataService {
   readonly userProfile = computed(() => this.user());
   readonly isAuthenticated = computed(() => !!this.user());
   readonly isSessionLoaded = computed(() => this.sessionLoaded());
+  readonly loggingOut = signal(false);
+
+  readonly isCoordinator = computed(() => {
+    const roles = this.user()?.roles ?? [];
+    return roles.some(role => ['COORDINATOR', 'ROLE_COORDINATOR', 'ADMIN', 'ROLE_ADMIN'].includes(role));
+  });
+
+  readonly isTeacher = computed(() => {
+    const roles = this.user()?.roles ?? [];
+    return roles.some(role => ['TEACHER', 'ROLE_TEACHER'].includes(role));
+  });
+
+  readonly teacherViewMode = signal<'TEACHER' | 'STUDENT'>('TEACHER');
+
+  readonly isStudentView = computed(() => {
+    const user = this.user();
+    if (!user) return false;
+    const hasTeacherRole = user.roles.some(role => ['TEACHER', 'ROLE_TEACHER'].includes(role));
+    if (hasTeacherRole) {
+      return this.teacherViewMode() === 'STUDENT';
+    }
+    return user.roles.some(role => ['STUDENT', 'ROLE_STUDENT'].includes(role));
+  });
+
+  toggleTeacherViewMode(): void {
+    this.teacherViewMode.update((mode) => (mode === 'TEACHER' ? 'STUDENT' : 'TEACHER'));
+  }
 
   setUser(profile: UserProfile): void {
     this.user.set(profile);

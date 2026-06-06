@@ -1,11 +1,11 @@
 import {ChangeDetectionStrategy, Component, effect, inject, input, signal} from '@angular/core';
 import {ClassroomService} from '../../data-access/classroom.service';
 import {Document} from '../../data-access/models/responses/document.model';
-import {UploadDocumentModal} from './ui/upload-document-modal';
+import {forkJoin} from 'rxjs';
 
 @Component({
   selector: 'app-repo',
-  imports: [UploadDocumentModal],
+  imports: [],
   templateUrl: './repo.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,8 +19,6 @@ export class Repo {
   readonly error = signal<string | null>(null);
   readonly downloadingId = signal<number | null>(null);
 
-  readonly isAddModalOpen = signal(false);
-
   constructor() {
     effect(() => {
       this.fetchDocuments();
@@ -32,9 +30,25 @@ export class Repo {
     this.loading.set(true);
     this.error.set(null);
 
-    this.classroomService.getClassroomDocuments(id).subscribe({
-      next: (docs) => {
-        this.documents.set(docs);
+    forkJoin({
+      topics: this.classroomService.getClassroomTopics(id),
+      documents: this.classroomService.getClassroomDocuments(id)
+    }).subscribe({
+      next: ({ topics, documents }) => {
+        // Map topicId to orderIndex for quick sorting lookup
+        const topicOrderMap = new Map<number, number>();
+        topics.forEach((t) => {
+          topicOrderMap.set(t.id, t.orderIndex);
+        });
+
+        // Sort documents by topic orderIndex, putting unknown topics at the end
+        const sortedDocs = documents.sort((a, b) => {
+          const orderA = topicOrderMap.get(a.topicId) ?? 9999;
+          const orderB = topicOrderMap.get(b.topicId) ?? 9999;
+          return orderA - orderB;
+        });
+
+        this.documents.set(sortedDocs);
         this.loading.set(false);
       },
       error: (err) => {
@@ -59,16 +73,4 @@ export class Repo {
       },
     });
   }
-
-  openAddModal = () => {
-    this.isAddModalOpen.set(true);
-  };
-
-  closeAddModal = () => {
-    this.isAddModalOpen.set(false);
-  };
-
-  onAdded = () => {
-    this.fetchDocuments();
-  };
 }

@@ -3,7 +3,9 @@ export interface Classroom {
   courseId: number;
   courseName: string;
   section: Section;
+  academicYearId: number;
   academicYearName: number;
+  academicYearStatus: string;
   status: string;
 }
 

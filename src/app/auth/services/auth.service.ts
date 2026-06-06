@@ -22,7 +22,7 @@ export class AuthService {
 
   refreshToken(){
     return this.http.post<MessageResource>(
-      `${this.baseUrl}/refresh-token`,
+      `${this.baseUrl}/auth/refresh-token`,
       {},
       { withCredentials: true }
     );

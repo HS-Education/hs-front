@@ -1,11 +1,12 @@
-import {ChangeDetectionStrategy, Component, inject, input, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
 import {Quizzes} from './quizzes/quizzes';
 import {Repo} from './repo/repo';
 import {Progress} from './progress/progress';
 import {Members} from './members/members';
 import {toSignal} from '@angular/core/rxjs-interop';
-import {map} from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
+import {filter, map, switchMap} from 'rxjs';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
+import {ClassroomService} from '../data-access/classroom.service';
 
 type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
 
@@ -15,47 +16,66 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
     Quizzes,
     Repo,
     Progress,
-    Members
+    Members,
+    RouterLink
   ],
   template: `
-    <div class="space-y-6">
-      <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
-        @for (tab of tabs; track tab.id) {
-          <button
-            type="button"
-            (click)="setTab(tab.id)"
-            class="rounded-t-lg px-4 py-2 text-sm font-medium transition"
-            [class.bg-sky-600]="activeTab() === tab.id"
-            [class.text-white]="activeTab() === tab.id"
-            [class.bg-slate-100]="activeTab() !== tab.id"
-            [class.text-slate-700]="activeTab() !== tab.id"
-            [class.hover:bg-slate-200]="activeTab() !== tab.id"
-          >
-            {{ tab.label }}
-          </button>
-        }
+    <div class="p-6 md:p-10 space-y-8 select-none">
+      <!-- Breadcrumb / Header -->
+      <div class="flex flex-col gap-1.5">
+        <div class="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
+          <a routerLink="/classrooms" class="hover:text-[var(--text-primary)] transition">Aulas</a>
+          <span>/</span>
+          <span class="text-[var(--text-primary)]">Detalle de Aula</span>
+        </div>
+        <h1 class="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Detalle de Aula</h1>
       </div>
 
-      <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        @switch (activeTab()) {
-          @case ('quizzes') {
-            <app-quizzes />
-          }
-          @case ('repo') {
-            @if (courseId(); as id) {
-              <app-repo [courseId]="id" />
+      <div class="space-y-6">
+        <!-- Tabs Segment Control -->
+        <div class="flex border-b border-[var(--border)]">
+          <div class="flex gap-2">
+            @for (tab of tabs; track tab.id) {
+              <button
+                type="button"
+                (click)="setTab(tab.id)"
+                class="relative px-5 py-3 text-sm font-semibold tracking-tight transition duration-250 focus:outline-none -mb-px"
+                [class.text-[var(--brand-primary)]]="activeTab() === tab.id"
+                [class.border-b-2]="activeTab() === tab.id"
+                [class.border-[var(--brand-primary)]]="activeTab() === tab.id"
+                [class.text-[var(--text-secondary)]]="activeTab() !== tab.id"
+                [class.hover:text-[var(--text-primary)]]="activeTab() !== tab.id"
+              >
+                {{ tab.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Tab Content Card -->
+        <section class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+          @switch (activeTab()) {
+            @case ('quizzes') {
+              @if (courseId(); as id) {
+                <app-quizzes [courseId]="id" />
+              }
+            }
+            @case ('repo') {
+              @if (courseId(); as id) {
+                <app-repo [courseId]="id" />
+              }
+            }
+            @case ('progress') {
+              <app-progress />
+            }
+            @case ('members') {
+              @if (courseId(); as id) {
+                <app-members [courseId]="id" />
+              }
             }
           }
-          @case ('progress') {
-            <app-progress />
-          }
-          @case ('members') {
-            @if (courseId(); as id) {
-              <app-members [courseId]="id" />
-            }
-          }
-        }
-      </section>
+        </section>
+      </div>
     </div>
   `,
   styles: ``,
@@ -63,13 +83,25 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
 })
 export class ClassroomDetail {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly classroomService = inject(ClassroomService);
 
-  readonly courseId = toSignal(
-    this.route.queryParams.pipe(
-      map((params) => params['courseId'] ? +params['courseId'] : null)
+  readonly classroom = toSignal(
+    this.route.paramMap.pipe(
+      map((params) => params.get('id') ? +params.get('id')! : null),
+      filter((id): id is number => id !== null),
+      switchMap((id) => this.classroomService.getClassroomById(id))
     )
   );
-  readonly activeTab = signal<ClassroomTab>('quizzes');
+
+  readonly courseId = computed(() => this.classroom()?.courseId ?? null);
+  
+  readonly activeTab = toSignal(
+    this.route.queryParamMap.pipe(
+      map((params) => (params.get('tab') as ClassroomTab) || 'quizzes')
+    ),
+    { initialValue: 'quizzes' as ClassroomTab }
+  );
 
   readonly tabs: Array<{ id: ClassroomTab; label: string }> = [
     { id: 'quizzes', label: 'Cuestionarios' },
@@ -79,6 +111,10 @@ export class ClassroomDetail {
   ];
 
   setTab(tab: ClassroomTab) {
-    this.activeTab.set(tab);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge'
+    });
   }
 }

@@ -23,6 +23,7 @@ export class Home {
   onLogOut() {
     this.loading.set(true);
     this.errorMessage.set(null);
+    this.userDataService.loggingOut.set(true);
 
     this.authService
       .logOut()
@@ -30,9 +31,12 @@ export class Home {
       .subscribe({
         next: () => {
           this.userDataService.clearUser?.();
-          void this.router.navigate(['/log-in']);
+          void this.router.navigate(['/sign-in']).then(() => {
+            this.userDataService.loggingOut.set(false);
+          });
         },
         error: () => {
+          this.userDataService.loggingOut.set(false);
           this.errorMessage.set('No se pudo cerrar sesión. Intenta nuevamente.');
         },
       });

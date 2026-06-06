@@ -7,10 +7,10 @@ import { Modal } from './modal';
   template: `
     <app-modal [isOpen]="isOpen()" [title]="title()" [onClose]="onCancel">
       <div class="space-y-4">
-        <p class="text-sm text-slate-700">{{ message() }}</p>
-        <div class="flex justify-end gap-2">
-          <button type="button" class="rounded px-3 py-2" (click)="onCancel()">Cancelar</button>
-          <button type="button" class="rounded bg-sky-600 px-4 py-2 text-white" (click)="onConfirm()">Aceptar</button>
+        <p class="text-sm text-[var(--text-secondary)] leading-relaxed">{{ message() }}</p>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" class="rounded-xl border border-[var(--border)] px-4 py-2.5 text-xs font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition" (click)="onCancel()">Cancelar</button>
+          <button type="button" class="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]" (click)="onConfirm()">Aceptar</button>
         </div>
       </div>
     </app-modal>

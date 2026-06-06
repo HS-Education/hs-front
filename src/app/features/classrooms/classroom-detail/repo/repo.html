@@ -1,65 +1,53 @@
 <div class="space-y-4">
-
-  <div class="flex items-center justify-end">
-    <button
-      type="button"
-      (click)="openAddModal()"
-      class="rounded bg-sky-600 px-4 py-2 text-white hover:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed"
-      [disabled]="loading()"
-    >
-      Agregar documento
-    </button>
-  </div>
-
   @if (loading()) {
     <div class="flex items-center justify-center py-12">
       <div class="space-y-2 text-center">
-        <div class="inline-flex h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-sky-600"></div>
-        <p class="text-sm text-slate-500">Cargando documentos...</p>
+        <div class="inline-flex h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]"></div>
+        <p class="text-sm text-[var(--text-secondary)]">Cargando documentos...</p>
       </div>
     </div>
   } @else if (error()) {
-    <div class="rounded-lg border border-red-200 bg-red-50 p-4">
-      <p class="text-sm font-medium text-red-900">{{ error() }}</p>
+    <div class="rounded-lg border border-[var(--brand-error)]/20 bg-[var(--brand-error)]/10 p-4">
+      <p class="text-sm font-medium text-[var(--brand-error)]">{{ error() }}</p>
     </div>
   } @else if (documents().length === 0) {
-    <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 py-12 text-center">
-      <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-secondary)]/40 py-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-[var(--text-secondary)]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
-      <p class="mt-2 text-sm text-slate-500">No hay documentos disponibles</p>
+      <p class="mt-2 text-sm text-[var(--text-secondary)]">No hay documentos disponibles</p>
     </div>
   } @else {
-    <div class="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
+    <div class="overflow-hidden rounded-md border border-[var(--border)]/70 bg-[var(--surface)]">
       <table class="w-full">
-        <thead class="border-b border-slate-200 bg-slate-50">
+        <thead class="border-b border-[var(--border)] bg-[var(--bg-secondary)]/75">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700">Título</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700">Formato</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700">Archivo</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-700">Acciones</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Título</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Formato</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Archivo</th>
+          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Acciones</th>
         </tr>
         </thead>
-        <tbody class="divide-y divide-slate-200">
+        <tbody class="divide-y divide-[var(--border)]/50">
           @for (doc of documents(); track doc.id) {
-            <tr class="transition hover:bg-slate-50">
+            <tr class="transition hover:bg-[var(--bg-secondary)]/30">
               <td class="px-6 py-4">
-                <p class="text-sm font-medium text-slate-900">{{ doc.title }}</p>
+                <p class="text-sm font-medium text-[var(--text-primary)]">{{ doc.title }}</p>
               </td>
               <td class="px-6 py-4">
-                <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                <span class="inline-flex items-center rounded-full bg-[var(--brand-primary)]/10 px-3 py-1 text-xs font-medium text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
                   {{ doc.format }}
                 </span>
               </td>
               <td class="px-6 py-4">
-                <p class="text-sm text-slate-500">{{ doc.originalFileName }}</p>
+                <p class="text-sm text-[var(--text-secondary)]">{{ doc.originalFileName }}</p>
               </td>
               <td class="px-6 py-4">
                 <button
                   type="button"
                   (click)="downloadDocument(doc.id)"
                   [disabled]="downloadingId() === doc.id"
-                  class="text-sm font-medium text-sky-600 transition hover:text-sky-700 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="text-sm font-medium text-[var(--brand-primary)] transition hover:text-[var(--brand-primary-hover)] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   @if (downloadingId() === doc.id) {
                     <span class="inline-flex items-center gap-1">
@@ -80,11 +68,4 @@
       </table>
     </div>
   }
-
-  <app-upload-document-modal
-    [isOpen]="isAddModalOpen()"
-    [courseId]="courseId()"
-    [onClose]="closeAddModal"
-    [onAdded]="onAdded"
-  ></app-upload-document-modal>
 </div>

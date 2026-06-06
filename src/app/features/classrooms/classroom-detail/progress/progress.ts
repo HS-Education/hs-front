@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { UserDataService } from '../../../../shared/services/user-data.service';
 
 @Component({
   selector: 'app-progress',
@@ -8,5 +9,5 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Progress {
-
+  protected readonly userDataService = inject(UserDataService);
 }

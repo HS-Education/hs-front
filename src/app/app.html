@@ -1,6 +1,32 @@
-<div class="flex h-screen bg-slate-100">
-  <app-navbar></app-navbar>
-  <main class="flex-1 overflow-auto">
+<div class="flex h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] relative">
+  <!-- Global Initial Session Loading Splash Screen -->
+  @if (shouldShowSplash()) {
+    <div class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[var(--bg-primary)] text-[var(--text-primary)] animate-fade-in">
+      <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-[var(--brand-primary)] to-[var(--brand-primary-hover)] shadow-xl shadow-[var(--brand-primary)]/20 text-white font-black text-2xl mb-4 animate-pulse">
+        HS
+      </div>
+      <h2 class="text-sm font-bold tracking-wider uppercase text-[var(--text-secondary)]">Cargando HS Education</h2>
+      <div class="flex gap-1.5 mt-3">
+        <span class="h-2 w-2 rounded-full bg-[var(--brand-primary)] animate-bounce" style="animation-delay: 0s"></span>
+        <span class="h-2 w-2 rounded-full bg-[var(--brand-primary)] animate-bounce" style="animation-delay: 0.15s"></span>
+        <span class="h-2 w-2 rounded-full bg-[var(--brand-primary)] animate-bounce" style="animation-delay: 0.3s"></span>
+      </div>
+    </div>
+  }
+
+  @if (showNavbar()) {
+    <app-navbar></app-navbar>
+  }
+  <main class="flex-1 overflow-auto relative">
+    <!-- Centered Loading Overlay for Route Transitions -->
+    @if (isRouting()) {
+      <div class="absolute inset-0 z-40 flex flex-col items-center justify-center bg-[var(--bg-primary)]/70 backdrop-blur-[2px] animate-fade-in">
+        <div class="space-y-3 text-center">
+          <div class="inline-flex h-9 w-9 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]"></div>
+          <p class="text-xs font-bold text-[var(--text-secondary)] tracking-tight">Cargando...</p>
+        </div>
+      </div>
+    }
     <router-outlet></router-outlet>
   </main>
 </div>

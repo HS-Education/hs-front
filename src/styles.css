@@ -1,3 +1,76 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import "tailwindcss";
+
+:root {
+  /* Light Theme */
+  --bg-primary: #fdfbf7;
+  --bg-secondary: #f5efe6;
+  --surface: #ffffff;
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --border: #e7e5e4;
+
+  /* Brand and Semantic Colors */
+  --brand-primary: #c2410c;
+  --brand-primary-hover: #ea580c;
+  --brand-forest: #2e7d32;
+  --brand-mustard: #ca8a04;
+  --brand-error: #b91c1c;
+  --brand-inactive: #78716c;
+}
+
+:root.dark {
+  /* Dark Theme */
+  --bg-primary: #1c1917;
+  --bg-secondary: #292524;
+  --surface: #3a3533;
+  --text-primary: #fdfbf7;
+  --text-secondary: #d6d3d1;
+  --border: #44403c;
+  
+  /* Brand override for dark contrast */
+  --brand-forest: #81c784;
+}
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  
+  /* Map CSS variables to Tailwind theme utilities */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-surface: var(--surface);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border: var(--border);
+
+  /* Brand Accent & Semantic Colors */
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-forest: var(--brand-forest);
+  --color-brand-mustard: var(--brand-mustard);
+  --color-brand-error: var(--brand-error);
+  --color-brand-inactive: var(--brand-inactive);
+}
+
+html, body {
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  @apply antialiased;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}

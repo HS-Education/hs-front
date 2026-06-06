@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
-import {authGuard} from './auth/guards/auth-guard';
+import { authGuard } from './auth/guards/auth-guard';
+import { guestGuard } from './auth/guards/guest-guard';
+import { SignIn } from './auth/pages/sign-in/sign-in';
 
 export const routes: Routes = [
   {
@@ -9,8 +11,8 @@ export const routes: Routes = [
   },
   {
     path: 'sign-in',
-    loadComponent: () =>
-      import('./auth/pages/sign-in/sign-in').then((m) => m.SignIn),
+    component: SignIn,
+    canActivate: [guestGuard],
   },
   {
     path: 'home',
@@ -22,6 +24,19 @@ export const routes: Routes = [
     path: 'classrooms',
     loadComponent: () =>
       import('./features/classrooms/classroom-list/classroom-list').then((m) => m.ClassroomList),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'repository',
+    loadComponent: () =>
+      import('./features/repository/repository').then((m) => m.Repository),
+    canActivate: [authGuard],
+    data: { expectedRoles: ['COORDINATOR', 'ADMIN'] }
+  },
+  {
+    path: 'chat',
+    loadComponent: () =>
+      import('./features/chat/chat').then((m) => m.Chat),
     canActivate: [authGuard],
   },
   {

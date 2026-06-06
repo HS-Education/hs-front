@@ -1,0 +1,33 @@
+.select-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select-card:hover {
+  background-color: var(--bg-secondary);
+  transform: translateY(-1px);
+}
+
+.active-session-card {
+  border-color: var(--brand-primary) !important;
+  background-color: color-mix(in srgb, var(--brand-primary) 8%, transparent) !important;
+  box-shadow: 0 4px 15px -4px color-mix(in srgb, var(--brand-primary) 15%, transparent);
+}
+
+.active-session-card span {
+  background-color: var(--brand-primary) !important;
+  color: white !important;
+}
+
+/* Chat bubble styling */
+.user-bubble {
+  background: linear-gradient(135deg, var(--brand-primary-hover) 0%, var(--brand-primary) 100%);
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+.assistant-bubble {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-top-left-radius: 4px;
+}
