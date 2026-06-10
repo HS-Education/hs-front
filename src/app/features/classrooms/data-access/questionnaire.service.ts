@@ -2,6 +2,12 @@ import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../../environment/environment';
 
+export interface QuestionnaireAttempt {
+  instanceId: number;
+  score: number;
+  submittedAt: string;
+}
+
 export interface AvailableQuestionnaire {
   id: number;
   courseId: number;
@@ -11,6 +17,9 @@ export interface AvailableQuestionnaire {
   activeInstanceId: number | null;
   attemptsLeft: number;
   maxAttempts: number;
+  questionsPerAttempt: number;
+  pastAttempts: QuestionnaireAttempt[];
+  createdAt?: string;
 }
 
 export interface Question {

@@ -14,16 +14,33 @@ import { ClassroomCard } from './ui/classroom-card';
     ClassroomCard
   ],
   template: `
-    <div class="p-6 md:p-10 space-y-8 select-none">
-      <div>
-        <h1 class="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Mis Cursos</h1>
-        <p class="text-sm text-[var(--text-secondary)] mt-1">Accede a las aulas virtuales asignadas a tu cuenta</p>
+    <div class="p-4 sm:p-6 md:p-10 space-y-8 select-none">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Mis Cursos</h1>
+          <p class="text-sm text-[var(--text-secondary)] mt-1">Accede a las aulas virtuales asignadas a tu cuenta</p>
+        </div>
+        <!-- Status Legend -->
+        <div class="flex items-center gap-4 text-xs font-semibold text-[var(--text-secondary)] bg-[var(--bg-secondary)]/40 border border-[var(--border)]/30 rounded-xl px-3 py-2 self-start sm:self-center">
+          <div class="flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-[var(--brand-forest)]"></span>
+            <span>Activo</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-[var(--brand-mustard)]"></span>
+            <span>Inactivo</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-[var(--brand-inactive)]"></span>
+            <span>Archivado</span>
+          </div>
+        </div>
       </div>
 
       @let classroomList = classrooms();
 
       @if (classroomList.length > 0) {
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           @for (classroom of classroomList; track classroom.id) {
             <a
               [routerLink]="['/classrooms', classroom.id]"

@@ -6,7 +6,10 @@ import {Topic} from '../classrooms/data-access/models/responses/topic.model';
 import {Document} from '../classrooms/data-access/models/responses/document.model';
 import {forkJoin, map, switchMap} from 'rxjs';
 import {FormsModule} from '@angular/forms';
+import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {Modal} from '../../shared/components/modal/modal';
+import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
+import {TranslateEnumPipe} from '../../shared/pipes/translate-enum.pipe';
 import {BIMESTER_OPTIONS, EDUCATION_LEVEL_OPTIONS, GRADE_LEVEL_OPTIONS} from '../../shared/models/academic-levels.model';
 
 interface GradingPeriodResource {
@@ -24,7 +27,7 @@ interface UploadFileMetadata {
 
 @Component({
   selector: 'app-repository',
-  imports: [Modal, FormsModule],
+  imports: [Modal, ConfirmModal, FormsModule, TranslateEnumPipe],
   templateUrl: './repository.html',
   styleUrl: './repository.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,6 +35,7 @@ interface UploadFileMetadata {
 export class Repository implements OnInit {
   private readonly classroomService = inject(ClassroomService);
   protected readonly userDataService = inject(UserDataService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly bimesterOptions = BIMESTER_OPTIONS;
   readonly educationLevelOptions = EDUCATION_LEVEL_OPTIONS;
@@ -48,6 +52,12 @@ export class Repository implements OnInit {
   readonly downloadingId = signal<number | null>(null);
 
   readonly coordinatorArea = signal<string | null>(null);
+  readonly coordinatorAreaId = signal<number | null>(null);
+
+  // Preview Signals
+  readonly previewDocumentTitle = signal<string>('');
+  readonly previewSecureUrl = signal<SafeResourceUrl | null>(null);
+  readonly previewLoading = signal<boolean>(false);
 
   // Computes reactively if the selected classroom academic year status is PLANNED
   readonly isAcademicYearPlanned = computed(() => {
@@ -76,6 +86,14 @@ export class Repository implements OnInit {
   readonly editGradeLevels = signal<string[]>(['SECOND']);
   readonly editFile = signal<File | null>(null);
   readonly isSavingEdit = signal(false);
+
+  // Confirm Modal signals
+  readonly confirmModalOpen = signal(false);
+  readonly confirmModalTitle = signal('');
+  readonly confirmModalMessage = signal('');
+  readonly confirmAction = signal<() => void>(() => {});
+
+  closeConfirmModal = (): void => this.confirmModalOpen.set(false);
 
   // Computes unique courses from user's classrooms
   readonly courses = computed(() => {
@@ -121,6 +139,7 @@ export class Repository implements OnInit {
           const matchingArea = areas.find(a => a.coordinatorId === user.id);
           if (matchingArea) {
             this.coordinatorArea.set(matchingArea.name);
+            this.coordinatorAreaId.set(matchingArea.id);
           }
         },
         error: (err: unknown) => {
@@ -183,50 +202,83 @@ export class Repository implements OnInit {
     ]);
   }
 
-  getBimesterLabel(bimester: string): string {
-    const option = this.bimesterOptions.find(opt => opt.value === bimester);
-    return option ? option.label : bimester;
-  }
-
-  getTopicBimesterLabel(gradingPeriodId: number): string {
+  getTopicBimester(gradingPeriodId: number): string {
     const period = this.gradingPeriods().find(gp => gp.id === gradingPeriodId);
-    if (!period) return '';
-    return this.getBimesterLabel(period.bimester);
+    return period ? period.bimester : '';
   }
 
   getDocsForTopic(topicId: number): Document[] {
     return this.documents().filter((doc) => doc.topicId === topicId);
   }
 
-  downloadDocument(documentId: number): void {
+  downloadDocument(documentId: number, documentTitle: string): void {
     const courseId = this.selectedCourseId();
     if (!courseId) return;
 
     this.downloadingId.set(documentId);
     this.classroomService.getDocumentDownloadUrl(courseId, documentId).subscribe({
       next: (response) => {
-        window.open(response.url, '_blank');
+        const link = document.createElement('a');
+        link.href = response.url;
+        link.download = documentTitle;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         this.downloadingId.set(null);
       },
-      error: (err: unknown) => {
-        console.error('Error al descargar:', err);
+      error: (err) => {
+        console.error('Error getting document download URL:', err);
         this.downloadingId.set(null);
-      },
+      }
     });
+  }
+
+  previewDocument(documentId: number, name: string): void {
+    const courseId = this.selectedCourseId();
+    if (!courseId) return;
+
+    this.previewDocumentTitle.set(name);
+    this.previewSecureUrl.set(null);
+    this.previewLoading.set(true);
+
+    this.classroomService.getDocumentDownloadUrl(courseId, documentId).subscribe({
+      next: (response) => {
+        const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(response.url);
+        this.previewSecureUrl.set(safeUrl);
+        this.previewLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al obtener URL de previsualización:', err);
+        this.previewLoading.set(false);
+        alert('No se pudo cargar la previsualización del documento.');
+      }
+    });
+  }
+
+  closePreview(): void {
+    this.previewSecureUrl.set(null);
+    this.previewDocumentTitle.set('');
   }
 
   deleteDoc(documentId: number): void {
     const courseId = this.selectedCourseId();
     if (!courseId) return;
 
-    if (confirm('¿Estás seguro de eliminar este documento?')) {
+    this.confirmModalTitle.set('Eliminar Documento');
+    this.confirmModalMessage.set('¿Estás seguro de eliminar este documento?');
+    this.confirmAction.set(() => {
       this.classroomService.deleteDocument(courseId, documentId).subscribe({
         next: () => {
+          this.confirmModalOpen.set(false);
           this.fetchCourseContent(courseId);
         },
-        error: (err: unknown) => console.error('Error al borrar documento:', err)
+        error: (err: unknown) => {
+          console.error('Error al borrar documento:', err);
+          this.confirmModalOpen.set(false);
+        }
       });
-    }
+    });
+    this.confirmModalOpen.set(true);
   }
 
   reorderTopic(index: number, direction: 'up' | 'down'): void {
@@ -301,16 +353,21 @@ export class Repository implements OnInit {
     const courseId = this.selectedCourseId();
     if (!courseId) return;
 
-    if (confirm('¿Estás seguro de eliminar este tema? También se desvincularán los documentos.')) {
+    this.confirmModalTitle.set('Eliminar Tema');
+    this.confirmModalMessage.set('¿Estás seguro de eliminar este tema? También se desvincularán los documentos.');
+    this.confirmAction.set(() => {
       this.classroomService.deleteTopic(courseId, topicId).subscribe({
         next: () => {
+          this.confirmModalOpen.set(false);
           this.fetchCourseContent(courseId);
         },
         error: (err: unknown) => {
           console.error('Error al eliminar tema:', err);
+          this.confirmModalOpen.set(false);
         }
       });
-    }
+    });
+    this.confirmModalOpen.set(true);
   }
 
   // Bulk Upload (Multiple Files)

@@ -1,9 +1,36 @@
-<nav
-  class="flex h-screen w-68 flex-col justify-between border-r border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm select-none">
+<!-- Mobile Top Header -->
+<div
+  class="flex md:hidden items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] shrink-0 w-full z-30">
+  <div class="flex items-center gap-2">
+    <div
+      class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-[var(--brand-primary)] to-[var(--brand-primary-hover)] shadow-md text-white font-bold text-sm">
+      HS
+    </div>
+    <span class="text-sm font-bold tracking-tight text-[var(--brand-primary)]">HS Education</span>
+  </div>
+  <button type="button" (click)="toggleMobileMenu()"
+    class="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
+    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+</div>
+
+<!-- Mobile Backdrop Overlay -->
+@if (isMobileMenuOpen()) {
+<div (click)="closeMobileMenu()"
+  class="fixed inset-0 z-40 bg-black/30 backdrop-blur-xs transition-opacity duration-300 md:hidden">
+</div>
+}
+
+<!-- Sidebar Navigation (Desktop Static & Mobile Drawer) -->
+<nav [class.translate-x-0]="isMobileMenuOpen()" [class.-translate-x-full]="!isMobileMenuOpen()"
+  class="fixed md:static inset-y-0 left-0 z-50 flex h-screen w-68 flex-col justify-between border-r border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm select-none transition-transform duration-300 md:translate-x-0">
+
   <!-- Top Section: Header & Navigation Links -->
   <div class="flex-1 flex flex-col min-h-0">
-    <!-- Header / Brand -->
-    <div class="flex items-center gap-3 px-6 py-6 border-b border-[var(--border)] shrink-0">
+    <!-- Header / Brand (Desktop Only) -->
+    <div class="hidden md:flex items-center gap-3 px-6 py-6 border-b border-[var(--border)] shrink-0">
       <div
         class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[var(--brand-primary)] to-[var(--brand-primary-hover)] shadow-lg shadow-[var(--brand-primary)]/10 text-white font-bold text-lg">
         HS
@@ -15,9 +42,28 @@
       </div>
     </div>
 
+    <!-- Mobile Drawer Header with Close Button -->
+    <div
+      class="flex md:hidden items-center justify-between px-6 py-4 border-b border-[var(--border)] shrink-0 bg-[var(--bg-secondary)]">
+      <div class="flex items-center gap-2">
+        <div
+          class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-[var(--brand-primary)] to-[var(--brand-primary-hover)] shadow-md text-white font-bold text-sm">
+          HS
+        </div>
+        <span class="text-sm font-bold tracking-tight text-[var(--brand-primary)]">HS Education</span>
+      </div>
+      <button type="button" (click)="closeMobileMenu()"
+        class="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
     <!-- Navigation Links -->
     <div class="flex-1 overflow-y-auto py-6 space-y-1.5 px-3">
-      <a routerLink="/home"
+      @if (!userDataService.isAdmin()) {
+      <a routerLink="/home" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
         [routerLinkActiveOptions]="{exact: true}"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
@@ -28,7 +74,7 @@
         <span>Inicio</span>
       </a>
 
-      <a routerLink="/classrooms"
+      <a routerLink="/classrooms" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
         <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -39,7 +85,7 @@
       </a>
 
       @if (userDataService.isCoordinator()) {
-      <a routerLink="/repository"
+      <a routerLink="/repository" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
         <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -50,7 +96,7 @@
       </a>
       }
 
-      <a routerLink="/chat"
+      <a routerLink="/chat" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
         <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -59,6 +105,53 @@
         </svg>
         <span>Consultas Sery</span>
       </a>
+      }
+
+      @if (userDataService.isAdmin()) {
+      <div class="px-3 py-1 mt-2">
+        <p class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Administración</p>
+      </div>
+
+      <a routerLink="/admin/academic-years" (click)="closeMobileMenu()"
+        routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
+        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span>Gestión de año académico</span>
+      </a>
+
+      <a routerLink="/admin/users" (click)="closeMobileMenu()"
+        routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
+        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <span>Gestión de usuarios</span>
+      </a>
+
+      <a routerLink="/admin/courses" (click)="closeMobileMenu()"
+        routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
+        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <span>Gestión de cursos</span>
+      </a>
+
+      <a routerLink="/admin/classrooms" (click)="closeMobileMenu()"
+        routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
+        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
+        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+        <span>Gestión de aulas</span>
+      </a>
+      }
     </div>
   </div>
 
@@ -157,7 +250,7 @@
           {{ user.username.slice(0, 2).toUpperCase() }}
         </div>
         <div class="overflow-hidden">
-          <p class="text-xs font-bold text-[var(--text-primary)] truncate leading-tight">{{ user.username }}</p>
+          <p class="text-xs font-bold text-[var(--text-primary)] truncate leading-tight">{{ user.name }}</p>
           <p class="text-[10px] text-[var(--text-secondary)]/80 truncate mt-0.5">
             {{ userDataService.isTeacher() ? 'Docente' : userDataService.isCoordinator() ? 'Coordinador' : 'Estudiante'
             }}

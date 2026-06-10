@@ -6,147 +6,286 @@
       <p class="text-xs text-[var(--text-secondary)] mt-0.5">Estado del desarrollo y revisiones de tus temas de estudio</p>
     </div>
 
-    <!-- Progress Bar Card -->
-    <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]/50 p-5">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-bold text-[var(--text-secondary)]">Porcentaje de Avance General</span>
-        <span class="text-xs font-extrabold text-[var(--brand-primary)]">75% Completado</span>
+    @if (isLoading()) {
+      <div class="flex justify-center p-8">
+        <div class="w-8 h-8 border-4 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
       </div>
-      <div class="w-full bg-[var(--bg-secondary)] rounded-full h-3">
-        <div class="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-primary-hover)] h-3 rounded-full shadow-inner" style="width: 75%"></div>
-      </div>
-    </div>
-
-    <!-- Milestones Tracker List -->
-    <div class="space-y-4">
-      <h3 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-3">Hitos del Bimestre</h3>
+    } @else if (studentData(); as data) {
       
-      <!-- Milestone 1 -->
-      <div class="flex gap-4 items-start relative pb-6 border-l-2 border-[var(--brand-primary)]/30 pl-5 ml-2.5">
-        <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[var(--brand-forest)] text-white text-[10px] font-bold border border-[var(--surface)]">✓</span>
-        <div>
-          <h4 class="text-xs font-bold text-[var(--text-primary)]">1. Comprensión de Conceptos Clave</h4>
-          <p class="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">Conceptos principales evaluados y comprendidos.</p>
-          <span class="inline-block mt-2 rounded bg-[var(--brand-forest)]/10 border border-[var(--brand-forest)]/20 px-2 py-0.5 text-[9px] font-bold text-[var(--brand-forest)]">Completado</span>
+      <!-- AI Insight Card -->
+      <div class="rounded-xl border border-[var(--brand-primary)]/20 bg-gradient-to-br from-[var(--surface)] to-[var(--bg-secondary)] p-5 shadow-sm relative overflow-hidden">
+        <!-- Decoration -->
+        <div class="absolute -right-4 -top-4 text-[var(--brand-primary)]/10">
+          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2 text-[var(--brand-primary)] font-bold text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Resumen de Inteligencia Artificial
+            </div>
+            <button (click)="generateStudentInsight()" [disabled]="isGeneratingInsight()" class="text-[10px] font-extrabold uppercase tracking-wider bg-[var(--brand-primary)] text-white px-3 py-1.5 rounded hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50">
+              {{ isGeneratingInsight() ? 'Generando...' : 'Generar Insight' }}
+            </button>
+          </div>
+          
+          @if (data.latestInsight) {
+            <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] p-3 rounded border border-[var(--border)]" [innerHTML]="data.latestInsight | markdownMath"></div>
+          } @else {
+            <p class="text-xs text-[var(--text-secondary)] italic">Aún no se ha generado un resumen de IA para tu progreso. Haz clic en "Generar Insight" para obtener uno.</p>
+          }
         </div>
       </div>
 
-      <!-- Milestone 2 -->
-      <div class="flex gap-4 items-start relative pb-6 border-l-2 border-[var(--brand-primary)]/30 pl-5 ml-2.5">
-        <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[var(--brand-forest)] text-white text-[10px] font-bold border border-[var(--surface)]">✓</span>
-        <div>
-          <h4 class="text-xs font-bold text-[var(--text-primary)]">2. Carga y Lectura de Materiales</h4>
-          <p class="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">Subida y revisión de los materiales de estudio en el repositorio.</p>
-          <span class="inline-block mt-2 rounded bg-[var(--brand-forest)]/10 border border-[var(--brand-forest)]/20 px-2 py-0.5 text-[9px] font-bold text-[var(--brand-forest)]">Completado</span>
+      <!-- Progress Bar Card -->
+      <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold text-[var(--text-secondary)]">Porcentaje de Avance General</span>
+          <span class="text-xs font-extrabold text-[var(--brand-primary)]">{{ data.performance.averageScore | number:'1.0-0' }}% Completado</span>
+        </div>
+        <div class="w-full bg-[var(--bg-secondary)] rounded-full h-3">
+          <div class="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-primary-hover)] h-3 rounded-full shadow-inner transition-all duration-1000" [style.width.%]="data.performance.averageScore > 100 ? 100 : data.performance.averageScore"></div>
         </div>
       </div>
 
-      <!-- Milestone 3 -->
-      <div class="flex gap-4 items-start relative pb-6 border-l-2 border-[var(--brand-primary)]/30 pl-5 ml-2.5">
-        <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white text-[10px] font-bold border border-[var(--surface)]">3</span>
-        <div>
-          <h4 class="text-xs font-bold text-[var(--text-primary)]">3. Resolución de Cuestionarios y Ejercicios</h4>
-          <p class="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">Resolución de cuestionarios interactivos de repaso.</p>
-          <span class="inline-block mt-2 rounded bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 px-2 py-0.5 text-[9px] font-bold text-[var(--brand-primary)]">En Desarrollo</span>
-        </div>
+      <!-- Milestones Tracker List -->
+      <div class="space-y-4">
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-3">Hitos del Bimestre (Temas Evaluados)</h3>
+        
+        @for (topic of data.performance.topics; track topic.topicId; let isLast = $last) {
+          <div class="flex gap-4 items-start relative pl-5 ml-2.5" [class.pb-6]="!isLast" [class.border-l-2]="!isLast" [class.border-[var(--brand-primary)]] ="!isLast" [style.border-opacity]="topic.percentage > 0 ? '0.3' : '0.1'">
+            <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full text-[10px] font-bold border border-[var(--surface)]"
+                  [class.bg-[var(--brand-forest)]]="topic.percentage >= 80"
+                  [class.text-white]="topic.percentage >= 50"
+                  [class.bg-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
+                  [class.bg-[var(--bg-secondary)]]="topic.percentage < 50"
+                  [class.text-[var(--text-secondary)]]="topic.percentage < 50">
+              @if (topic.percentage >= 80) { ✓ } @else { {{ topic.weekNumber }} }
+            </span>
+            <div class="w-full pr-4">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-[var(--text-primary)]">{{ topic.topicName }}</h4>
+                <span class="text-[10px] font-bold text-[var(--text-secondary)]">{{ topic.percentage | number:'1.0-0' }}%</span>
+              </div>
+              <p class="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-relaxed">Semana {{ topic.weekNumber }} - Puntaje: {{ topic.score | number:'1.0-1' }}</p>
+              
+              <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1 mt-2">
+                <div class="h-1 rounded-full" 
+                     [class.bg-[var(--brand-forest)]]="topic.percentage >= 80"
+                     [class.bg-[var(--brand-primary)]]="topic.percentage < 80"
+                     [style.width.%]="topic.percentage > 100 ? 100 : topic.percentage"></div>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center py-6 bg-[var(--surface)] rounded-lg border border-[var(--border)]">
+            <p class="text-xs text-[var(--text-secondary)]">No hay temas evaluados en este bimestre.</p>
+          </div>
+        }
       </div>
-
-      <!-- Milestone 4 -->
-      <div class="flex gap-4 items-start relative pl-5 ml-2.5">
-        <span class="absolute -left-2.5 top-0 flex h-5.5 w-5.5 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-[10px] font-bold border border-[var(--surface)]">4</span>
-        <div>
-          <h4 class="text-xs font-bold text-[var(--text-secondary)]/80">4. Evaluación Bimestral Final</h4>
-          <p class="text-[10px] text-[var(--text-secondary)]/80 mt-0.5 leading-relaxed">Evaluación global de los temas aprendidos durante el bimestre.</p>
-          <span class="inline-block mt-2 rounded bg-[var(--bg-secondary)] border border-[var(--border)] px-2 py-0.5 text-[9px] font-bold text-[var(--text-secondary)]/80">Pendiente</span>
-        </div>
-      </div>
-    </div>
+    }
   </div>
+
 } @else {
   <!-- Teacher View of Progress -->
-  <div class="space-y-6 select-none">
-    <div>
-      <h2 class="text-lg font-bold text-[var(--text-primary)]">Seguimiento de Avance</h2>
-      <p class="text-xs text-[var(--text-secondary)] mt-0.5">Control de avance y estado de entregas de los estudiantes</p>
+  <div class="space-y-6 select-none animate-fadeIn">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-[var(--text-primary)]">Seguimiento de Avance</h2>
+        <p class="text-xs text-[var(--text-secondary)] mt-0.5">Control de avance y rendimiento del aula</p>
+      </div>
+      <button (click)="openRecModal()" class="flex items-center gap-2 px-4 py-2 bg-[var(--brand-primary)] text-white text-xs font-bold rounded-lg hover:bg-[var(--brand-primary-hover)] transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+        Generar Recomendación
+      </button>
     </div>
 
-    <!-- Progress Table -->
-    <div class="overflow-hidden rounded-lg border border-[var(--border)]/70 bg-[var(--surface)]">
-      <table class="w-full text-left text-sm text-[var(--text-secondary)]">
-        <thead class="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-          <tr>
-            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Estudiante</th>
-            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Proyecto del Curso</th>
-            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Último Hito Completado</th>
-            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] w-44">Progreso</th>
-            <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] text-right">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-[var(--border)]/50 font-medium text-xs">
-          <tr class="hover:bg-[var(--bg-secondary)]/50">
-            <td class="px-6 py-4 font-bold text-[var(--text-primary)]">Henry (Estudiante)</td>
-            <td class="px-6 py-4 text-[var(--text-secondary)] font-medium italic">"Plataforma Educativa"</td>
-            <td class="px-6 py-4">
-              <span class="inline-flex items-center rounded bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 px-2 py-0.5 text-[10px] font-bold text-[var(--brand-primary)]">
-                Hito 2: Lectura de Materiales
-              </span>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-2">
-                <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
-                  <div class="bg-[var(--brand-primary)] h-1.5 rounded-full" style="width: 75%"></div>
-                </div>
-                <span class="text-[10px] text-[var(--text-secondary)] font-bold">75%</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-right">
-              <button class="text-[var(--brand-primary)] hover:underline font-bold text-[11px]">Revisar Avance</button>
-            </td>
-          </tr>
+    @if (isLoading()) {
+      <div class="flex justify-center p-8">
+        <div class="w-8 h-8 border-4 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    } @else if (classroomData(); as data) {
+      
+      <!-- AI Insight Card -->
+      <div class="rounded-xl border border-[var(--brand-primary)]/20 bg-gradient-to-br from-[var(--surface)] to-[var(--bg-secondary)] p-5 shadow-sm relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 text-[var(--brand-primary)]/10">
+          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
 
-          <tr class="hover:bg-[var(--bg-secondary)]/50">
-            <td class="px-6 py-4 font-bold text-[var(--text-primary)]">Maria Belen</td>
-            <td class="px-6 py-4 text-[var(--text-secondary)] font-medium italic">"Diseño Interactivo"</td>
-            <td class="px-6 py-4">
-              <span class="inline-flex items-center rounded bg-[var(--brand-forest)]/10 border border-[var(--brand-forest)]/20 px-2 py-0.5 text-[10px] font-bold text-[var(--brand-forest)]">
-                Hito 3: Cuestionarios
-              </span>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-2">
-                <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
-                  <div class="bg-[var(--brand-forest)] h-1.5 rounded-full" style="width: 100%"></div>
-                </div>
-                <span class="text-[10px] text-[var(--text-secondary)] font-bold">100%</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-right">
-              <button class="text-[var(--brand-primary)] hover:underline font-bold text-[11px]">Revisar Avance</button>
-            </td>
-          </tr>
+        <div class="relative z-10">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2 text-[var(--brand-primary)] font-bold text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Resumen del Rendimiento del Aula (IA)
+            </div>
+            <button (click)="generateClassroomInsight()" [disabled]="isGeneratingInsight()" class="text-[10px] font-extrabold uppercase tracking-wider bg-[var(--brand-primary)] text-white px-3 py-1.5 rounded hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50">
+              {{ isGeneratingInsight() ? 'Generando...' : 'Generar Insight' }}
+            </button>
+          </div>
+          
+          @if (data.latestInsight) {
+            <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] p-3 rounded border border-[var(--border)]" [innerHTML]="data.latestInsight | markdownMath"></div>
+          } @else {
+            <p class="text-xs text-[var(--text-secondary)] italic">Aún no se ha generado un resumen de IA para esta aula. Haz clic en "Generar Insight" para obtener uno.</p>
+          }
+        </div>
+      </div>
 
-          <tr class="hover:bg-[var(--bg-secondary)]/50">
-            <td class="px-6 py-4 font-bold text-[var(--text-primary)]">Carlos Perez</td>
-            <td class="px-6 py-4 text-[var(--text-secondary)] font-medium italic">"Uso de Grafos"</td>
-            <td class="px-6 py-4">
-              <span class="inline-flex items-center rounded bg-[var(--brand-mustard)]/10 border border-[var(--brand-mustard)]/20 px-2 py-0.5 text-[10px] font-bold text-[var(--brand-mustard)]">
-                Hito 1: Conceptos Clave
-              </span>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-2">
-                <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
-                  <div class="bg-[var(--brand-mustard)] h-1.5 rounded-full" style="width: 50%"></div>
-                </div>
-                <span class="text-[10px] text-[var(--text-secondary)] font-bold">50%</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-right">
-              <button class="text-[var(--brand-primary)] hover:underline font-bold text-[11px]">Revisar Avance</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <!-- Overview Header -->
+      <div class="flex items-center gap-4 bg-[var(--surface)] p-4 rounded-lg border border-[var(--border)]">
+        <div class="flex-1">
+          <span class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Promedio del Aula</span>
+          <div class="text-2xl font-black text-[var(--text-primary)]">{{ data.performance.averageScore | number:'1.0-1' }}%</div>
+        </div>
+      </div>
+
+      <!-- Progress Table -->
+      <div class="overflow-x-auto rounded-lg border border-[var(--border)]/70 bg-[var(--surface)]">
+        <table class="w-full text-left text-sm text-[var(--text-secondary)] min-w-[500px]">
+          <thead class="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
+            <tr>
+              <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Estudiante</th>
+              <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] w-64">Progreso / Rendimiento</th>
+              <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] text-right w-16"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--border)]/50 font-medium text-xs">
+            @for (student of data.performance.students; track student.studentId) {
+              <tr class="hover:bg-[var(--bg-secondary)]/50 transition cursor-pointer" (click)="toggleStudentDetails(student.studentId)">
+                <td class="px-6 py-4 font-bold text-[var(--text-primary)]">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center font-bold">
+                      {{ student.studentName.charAt(0) | uppercase }}
+                    </div>
+                    {{ student.studentName }}
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex flex-col gap-1.5">
+                    <div class="flex items-center justify-between text-[10px] font-bold">
+                      <span class="text-[var(--text-secondary)]">Promedio General</span>
+                      <span [class.text-[var(--brand-forest)]]="student.averageScore >= 80"
+                            [class.text-[var(--brand-primary)]]="student.averageScore >= 50 && student.averageScore < 80"
+                            [class.text-[var(--text-secondary)]]="student.averageScore < 50">
+                        {{ student.averageScore | number:'1.0-0' }}%
+                      </span>
+                    </div>
+                    <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
+                      <div class="h-1.5 rounded-full transition-all duration-1000" 
+                           [class.bg-[var(--brand-forest)]]="student.averageScore >= 80"
+                           [class.bg-[var(--brand-primary)]]="student.averageScore < 80"
+                           [style.width.%]="student.averageScore > 100 ? 100 : student.averageScore"></div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform" [class.rotate-180]="expandedStudentId() === student.studentId" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+              
+              <!-- Detalles Expandibles (Mini-gráficos de Temas) -->
+              @if (expandedStudentId() === student.studentId) {
+                <tr class="bg-[var(--bg-secondary)]/30 border-b border-[var(--border)]">
+                  <td colspan="3" class="px-6 py-4">
+                    <div class="p-4 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-sm">
+                      <h4 class="text-xs font-bold text-[var(--text-primary)] mb-3">Rendimiento Detallado por Temas</h4>
+                      
+                      @if (student.topics.length === 0) {
+                        <p class="text-[10px] text-[var(--text-secondary)] italic">El estudiante no ha rendido cuestionarios todavía.</p>
+                      } @else {
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          @for (topic of student.topics; track topic.topicId) {
+                            <div class="flex items-center gap-3">
+                              <!-- SVG Chart / Circular Progress -->
+                              <div class="relative w-10 h-10 flex items-center justify-center">
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                  <circle cx="18" cy="18" r="16" fill="none" class="stroke-[var(--bg-secondary)]" stroke-width="3"></circle>
+                                  <circle cx="18" cy="18" r="16" fill="none" 
+                                          [attr.stroke-dasharray]="topic.percentage + ', 100'"
+                                          [class.stroke-[var(--brand-forest)]]="topic.percentage >= 80"
+                                          [class.stroke-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
+                                          [class.stroke-[var(--text-secondary)]]="topic.percentage < 50"
+                                          stroke-width="3" stroke-linecap="round"></circle>
+                                </svg>
+                                <div class="absolute flex flex-col items-center justify-center text-[8px] font-black"
+                                     [class.text-[var(--brand-forest)]]="topic.percentage >= 80"
+                                     [class.text-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
+                                     [class.text-[var(--text-secondary)]]="topic.percentage < 50">
+                                  {{ topic.percentage | number:'1.0-0' }}%
+                                </div>
+                              </div>
+                              <div class="flex-1">
+                                <p class="text-[10px] font-bold text-[var(--text-primary)] leading-tight">{{ topic.topicName }}</p>
+                                <p class="text-[9px] text-[var(--text-secondary)] mt-0.5">Semana {{ topic.weekNumber }} • {{ topic.score | number:'1.0-1' }} pts</p>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            } @empty {
+              <tr>
+                <td colspan="2" class="px-6 py-8 text-center text-[var(--text-secondary)]">
+                  No hay estudiantes enrolados en esta aula.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
+
+  <!-- Generar Recomendación Modal -->
+  <app-modal
+    [isOpen]="isRecModalOpen()"
+    [onClose]="closeRecModal"
+    title="Generar Recomendación de IA">
+    <div body class="space-y-4">
+      <p class="text-xs text-[var(--text-secondary)]">Usa IA para generar un cuestionario recomendado basado en los temas del curso y un contexto particular. Esto ayudará a reforzar los temas donde el aula necesita más atención.</p>
+      
+      <form [formGroup]="recForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-[var(--text-secondary)] mb-1">Nombre del Tema Sugerido</label>
+          <input type="text" formControlName="topicName" placeholder="Ej. Reforzamiento de Algoritmos" class="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-[var(--text-secondary)] mb-1">Contexto o Material Adicional</label>
+          <textarea formControlName="contextText" rows="3" placeholder="Ingresa texto, un resumen, o un caso de estudio..." class="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[var(--text-secondary)] mb-1">Cantidad de Preguntas</label>
+          <input type="number" formControlName="numQuestions" min="1" max="20" class="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition">
+        </div>
+      </form>
+    </div>
+    <div footer class="flex justify-end gap-2">
+      <button type="button" (click)="closeRecModal()" class="px-4 py-2 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
+        Cancelar
+      </button>
+      <button type="button" (click)="submitRecommendation()" [disabled]="recForm.invalid || isGeneratingRec()" class="px-4 py-2 text-xs font-bold bg-[var(--brand-primary)] text-white rounded hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50">
+        {{ isGeneratingRec() ? 'Generando...' : 'Generar Cuestionario' }}
+      </button>
+    </div>
+  </app-modal>
 }

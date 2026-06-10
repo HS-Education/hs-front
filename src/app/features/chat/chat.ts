@@ -9,10 +9,19 @@ import {FormsModule} from '@angular/forms';
 import {DatePipe} from '@angular/common';
 import {MarkdownMathPipe} from '../../shared/pipes/markdown-math.pipe';
 import {ActivatedRoute, Router} from '@angular/router';
+import {DomSanitizer, SafeResourceUrl, SafeHtml} from '@angular/platform-browser';
+import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
+
+export interface ChatSource {
+  name: string;
+  courseId: number;
+  documentId: number;
+  downloadUrl: string;
+}
 
 @Component({
   selector: 'app-chat',
-  imports: [FormsModule, DatePipe, MarkdownMathPipe],
+  imports: [FormsModule, DatePipe, ConfirmModal],
   templateUrl: './chat.html',
   styleUrl: './chat.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +32,7 @@ export class Chat implements OnInit {
   protected readonly userDataService = inject(UserDataService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  protected readonly sanitizer = inject(DomSanitizer);
 
   private readonly scrollContainer = viewChild<ElementRef<HTMLDivElement>>('scrollContainer');
 
@@ -39,6 +49,14 @@ export class Chat implements OnInit {
   readonly sendingMessage = signal(false);
   readonly loadingSessions = signal(false);
   readonly loadingMessages = signal(false);
+
+  // Confirm Modal signals
+  readonly confirmModalOpen = signal(false);
+  readonly confirmModalTitle = signal('');
+  readonly confirmModalMessage = signal('');
+  readonly confirmAction = signal<() => void>(() => {});
+
+  closeConfirmModal = (): void => this.confirmModalOpen.set(false);
 
   // Computed list of unique courses for dropdown filter
   readonly courses = computed(() => {
@@ -163,6 +181,35 @@ export class Chat implements OnInit {
     });
   }
 
+  deleteSession(sessionId: number, event: Event): void {
+    event.stopPropagation();
+    this.confirmModalTitle.set('Eliminar Sesión');
+    this.confirmModalMessage.set('¿Estás seguro de que deseas eliminar esta sesión de chat?');
+    this.confirmAction.set(() => {
+      this.chatService.deleteChatSession(sessionId).subscribe({
+        next: () => {
+          this.confirmModalOpen.set(false);
+          this.sessions.update(list => list.filter(s => s.id !== sessionId));
+          if (this.currentSessionId() === sessionId) {
+            this.currentSessionId.set(null);
+            this.messages.set([]);
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: { sessionId: null },
+              queryParamsHandling: 'merge'
+            });
+          }
+        },
+        error: (err: unknown) => {
+          console.error('Error al eliminar sesión de chat:', err);
+          this.confirmModalOpen.set(false);
+          alert('No se pudo eliminar la sesión.');
+        }
+      });
+    });
+    this.confirmModalOpen.set(true);
+  }
+
   getCourseName(courseId: number | null): string {
     if (!courseId) return 'Tutoría Global (General)';
     const classroom = this.classrooms().find(c => c.courseId === courseId);
@@ -214,6 +261,127 @@ export class Chat implements OnInit {
         };
         this.messages.update(prev => [...prev, errorMsg]);
         this.scrollToBottom();
+      }
+    });
+  }
+
+  // Preview Signals
+  readonly previewDocumentTitle = signal<string>('');
+  readonly previewSecureUrl = signal<SafeResourceUrl | null>(null);
+  readonly previewLoading = signal<boolean>(false);
+
+  getSources(content: string | null | undefined): ChatSource[] {
+    if (!content) return [];
+    const sources: ChatSource[] = [];
+    const regex = /(?:\*\*)?Fuente:(?:\*\*)?\s*(.*?)\s*(?:\*\*)?Enlace de descarga:(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      sources.push({
+        name: match[1].replace(/\*\*/g, '').trim(),
+        courseId: Number(match[2]),
+        documentId: Number(match[3]),
+        downloadUrl: `/api/v1/courses/${match[2]}/documents/${match[3]}/download`
+      });
+    }
+    return sources;
+  }
+
+  renderMessageContent(msg: ChatMessage): SafeHtml {
+    let rawText = msg.content || '';
+    const sources = this.getSources(rawText);
+
+    if (sources.length > 0) {
+      const regex = /(?:\*\*)?Fuente:(?:\*\*)?\s*(.*?)\s*(?:\*\*)?Enlace de descarga:(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+      rawText = rawText.replace(regex, (match) => {
+        const idx = sources.findIndex(s => match.includes(`/documents/${s.documentId}/download`));
+        if (idx >= 0) {
+          const citation = `[${idx + 1}]`;
+          if (!rawText.includes(citation)) {
+            return ` ${citation}\n\n@@@SOURCEBLOCK:${idx}@@@`;
+          }
+          return `\n\n@@@SOURCEBLOCK:${idx}@@@`;
+        }
+        return match;
+      });
+    }
+
+    let htmlString = MarkdownMathPipe.process(rawText);
+
+    if (sources.length > 0) {
+      // Replace inline [1]
+      htmlString = htmlString.replace(/\[(\d+)\]/g, (match, p1) => {
+        const idx = Number(p1) - 1;
+        if (idx >= 0 && idx < sources.length) {
+          return `<a href="javascript:void(0)" data-source-index="${idx}" class="text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] hover:underline font-bold font-mono">[${p1}]</a>`;
+        }
+        return match;
+      });
+
+      // Replace block placeholders
+      htmlString = htmlString.replace(/@@@SOURCEBLOCK:(\d+)@@@/g, (match, p1) => {
+        const idx = Number(p1);
+        if (idx >= 0 && idx < sources.length) {
+          const src = sources[idx];
+          return `<br/><a href="javascript:void(0)" data-source-index="${idx}" class="inline-flex items-center gap-1.5 mt-2 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/20 hover:underline px-3 py-1.5 rounded-lg font-semibold text-xs transition border border-[var(--brand-primary)]/20 w-auto">
+            <span class="text-[var(--brand-primary)] font-bold px-0.5 py-0.5 text-[10px] tracking-wide">[${idx + 1}]</span> 
+            <span>Fuente: ${src.name}</span>
+          </a>`;
+        }
+        return match;
+      });
+    }
+
+    return this.sanitizer.bypassSecurityTrustHtml(htmlString);
+  }
+
+  handleMessageClick(event: MouseEvent, msg: ChatMessage): void {
+    const target = event.target as HTMLElement;
+    const anchor = target.closest('a[data-source-index]');
+    if (anchor) {
+      event.preventDefault();
+      const indexAttr = anchor.getAttribute('data-source-index');
+      if (indexAttr !== null) {
+        const idx = Number(indexAttr);
+        const sources = this.getSources(msg.content);
+        if (idx >= 0 && idx < sources.length) {
+          const src = sources[idx];
+          this.previewDocument(src.courseId, src.documentId, src.name);
+        }
+      }
+    }
+  }
+
+  previewDocument(courseId: number, documentId: number, name: string): void {
+    this.previewDocumentTitle.set(name);
+    this.previewSecureUrl.set(null);
+    this.previewLoading.set(true);
+
+    this.classroomService.getDocumentDownloadUrl(courseId, documentId).subscribe({
+      next: (response) => {
+        const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(response.url);
+        this.previewSecureUrl.set(safeUrl);
+        this.previewLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al obtener URL de previsualización:', err);
+        this.previewLoading.set(false);
+        alert('No se pudo cargar la previsualización del documento.');
+      }
+    });
+  }
+
+  closePreview(): void {
+    this.previewSecureUrl.set(null);
+    this.previewDocumentTitle.set('');
+  }
+
+  downloadSource(courseId: number, documentId: number): void {
+    this.classroomService.getDocumentDownloadUrl(courseId, documentId).subscribe({
+      next: (response) => {
+        window.open(response.url, '_blank');
+      },
+      error: (err) => {
+        console.error('Error al descargar:', err);
       }
     });
   }

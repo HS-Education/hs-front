@@ -1,22 +1,26 @@
-import {ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal, effect} from '@angular/core';
 import {UserDataService} from '../../../../shared/services/user-data.service';
+import {ActivatedRoute, Router} from '@angular/router';
 import {QuestionnaireService, AvailableQuestionnaire, Question, QuestionnaireSubmission} from '../../data-access/questionnaire.service';
 import {ClassroomService} from '../../data-access/classroom.service';
+import {Topic} from '../../data-access/models/responses/topic.model';
 import {BIMESTER_OPTIONS} from '../../../../shared/models/academic-levels.model';
 import {FormsModule} from '@angular/forms';
-import {NgClass} from '@angular/common';
+import {NgClass, DatePipe} from '@angular/common';
+import {MarkdownMathPipe} from '../../../../shared/pipes/markdown-math.pipe';
+import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
+import {ToastService} from '../../../../shared/services/toast.service';
+import {ConfirmModal} from '../../../../shared/components/modal/confirm-modal';
 
 interface MockStudentGrade {
   name: string;
-  q1: string;
-  q2: string;
-  q3: string;
-  final: string;
+  grades: number[];
+  final: number;
 }
 
 @Component({
   selector: 'app-quizzes',
-  imports: [FormsModule, NgClass],
+  imports: [FormsModule, NgClass, DatePipe, MarkdownMathPipe, ConfirmModal],
   templateUrl: './quizzes.html',
   styleUrl: './quizzes.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,8 +29,13 @@ export class Quizzes implements OnInit {
   protected readonly userDataService = inject(UserDataService);
   private readonly questionnaireService = inject(QuestionnaireService);
   private readonly classroomService = inject(ClassroomService);
+  protected readonly sanitizer = inject(DomSanitizer);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
   readonly courseId = input.required<number>();
+  readonly classroomId = input.required<number>();
 
   // State Signals
   readonly allQuizzes = signal<AvailableQuestionnaire[]>([]);
@@ -45,13 +54,60 @@ export class Quizzes implements OnInit {
   readonly results = signal<QuestionnaireSubmission | null>(null);
   readonly loadingResults = signal(false);
 
+  // Expand State Signal
+  readonly expandedQuizId = signal<number | null>(null);
+
+  // Confirm Modal signals
+  readonly confirmModalOpen = signal(false);
+  readonly confirmModalTitle = signal('');
+  readonly confirmModalMessage = signal('');
+  readonly confirmAction = signal<() => void>(() => {});
+
+  closeConfirmModal = (): void => this.confirmModalOpen.set(false);
+
+  toggleQuizExpand(quizId: number): void {
+    this.expandedQuizId.update(id => id === quizId ? null : quizId);
+  }
+
+  getBimesterNameForPeriod(periodId: number): string {
+    const period = this.gradingPeriods().find(p => p.id === periodId);
+    if (!period) return `Periodo ${periodId}`;
+    return this.getBimesterLabel(period.bimester);
+  }
+
   // Teacher / Generation Signals
   readonly generating = signal(false);
   readonly genGradingPeriodId = signal<number | null>(null);
-  readonly genWeek = signal<number>(1);
+  readonly genWeek = signal<number | null>(null);
   readonly genAllowedAttempts = signal<number>(3);
   readonly genQuestionsPerAttempt = signal<number>(5);
   readonly gradingPeriods = signal<Array<{ id: number; bimester: string }>>([]);
+  readonly topics = signal<Topic[]>([]);
+
+  increaseAttempts() {
+    this.genAllowedAttempts.update(v => Math.min(3, v + 1));
+  }
+  decreaseAttempts() {
+    this.genAllowedAttempts.update(v => Math.max(1, v - 1));
+  }
+  increaseQuestions() {
+    this.genQuestionsPerAttempt.update(v => Math.min(10, v + 1));
+  }
+  decreaseQuestions() {
+    this.genQuestionsPerAttempt.update(v => Math.max(5, v - 1));
+  }
+
+  readonly availableGradingPeriods = computed(() => {
+    const allTopics = this.topics();
+    const periodsWithTopics = new Set(allTopics.map(t => t.gradingPeriodId));
+    return this.gradingPeriods().filter(p => periodsWithTopics.has(p.id));
+  });
+
+  readonly availableWeeks = computed(() => {
+    const periodId = this.genGradingPeriodId();
+    if (!periodId) return [];
+    return this.topics().filter(t => t.gradingPeriodId === periodId).sort((a, b) => a.orderIndex - b.orderIndex);
+  });
 
   // Filtered quizzes for active course
   readonly courseQuizzes = computed(() => {
@@ -61,6 +117,7 @@ export class Quizzes implements OnInit {
   // Calculate statistics for student view
   readonly totalQuizzesCount = computed(() => this.courseQuizzes().length);
   readonly completedQuizzesCount = computed(() => this.courseQuizzes().filter(q => q.status === 'COMPLETED').length);
+  readonly pendingQuizzesCount = computed(() => this.courseQuizzes().filter(q => q.status === 'PENDING' || q.status === 'STARTED').length);
   readonly averageScore = computed(() => {
     // Note: Since submissions list is filtered on backend by session-level queries,
     // we compute student statistics based on mock scores or completed scores.
@@ -68,16 +125,74 @@ export class Quizzes implements OnInit {
     return this.completedQuizzesCount() > 0 ? '16.5' : '0.0';
   });
 
-  // Mock student grades for teacher view (as requested by user to simulate)
-  readonly mockStudentGrades = signal<MockStudentGrade[]>([
-    { name: 'Henry (Estudiante)', q1: '18', q2: '15', q3: '16', final: '17' },
-    { name: 'Maria Belen', q1: '16', q2: '14', q3: '15', final: '15' },
-    { name: 'Carlos Perez', q1: '17', q2: '16', q3: '17', final: '16' },
-  ]);
+  // Teacher view computed stats and mock data based on actual quizzes
+  readonly teacherTableQuizzes = computed(() => {
+    const sorted = [...this.courseQuizzes()].sort((a, b) => b.id - a.id);
+    return sorted.slice(0, 3).reverse();
+  });
+
+  private readonly baseStudents = [
+    { name: 'Henry (Estudiante)', baseScore: 17 },
+    { name: 'Maria Belen', baseScore: 15 },
+    { name: 'Carlos Perez', baseScore: 16 }
+  ];
+
+  readonly teacherMockStudents = computed<MockStudentGrade[]>(() => {
+    const quizzes = this.teacherTableQuizzes();
+    return this.baseStudents.map(student => {
+      let total = 0;
+      const grades = quizzes.map(q => {
+        const pseudoRandom = ((q.id * 13) % 5) - 2;
+        const score = Math.max(0, Math.min(20, student.baseScore + pseudoRandom));
+        total += score;
+        return score;
+      });
+      const final = quizzes.length > 0 ? Math.round(total / quizzes.length) : 0;
+      return {
+        name: student.name,
+        grades,
+        final
+      };
+    });
+  });
+
+  readonly mockAverageScore = computed(() => {
+    const students = this.teacherMockStudents();
+    if (students.length === 0) return '0.0';
+    const sum = students.reduce((acc, curr) => acc + curr.final, 0);
+    return (sum / students.length).toFixed(1);
+  });
 
   ngOnInit(): void {
     this.loadAvailableQuizzes();
     this.loadClassroomInfo();
+
+    // Check if there is an instanceId in the route
+    this.route.paramMap.subscribe(params => {
+      const instanceIdStr = params.get('instanceId');
+      if (instanceIdStr) {
+        const instanceId = Number(instanceIdStr);
+        if (!isNaN(instanceId)) {
+          this.viewResults(instanceId);
+        }
+      } else {
+        if (this.viewState() === 'VIEW_RESULTS') {
+          this.viewState.set('LIST');
+          this.results.set(null);
+        }
+      }
+    });
+  }
+
+  constructor() {
+    effect(() => {
+      const weeks = this.availableWeeks();
+      if (weeks.length > 0) {
+        this.genWeek.set(weeks[0].orderIndex);
+      } else {
+        this.genWeek.set(null);
+      }
+    });
   }
 
   loadAvailableQuizzes(): void {
@@ -108,6 +223,15 @@ export class Quizzes implements OnInit {
           console.error('Error al cargar info de aula para quizzes:', err);
         }
       });
+
+      this.classroomService.getClassroomTopics(this.courseId()).subscribe({
+        next: (topicsList) => {
+          this.topics.set(topicsList);
+        },
+        error: (err: unknown) => {
+          console.error('Error al cargar temas del curso:', err);
+        }
+      });
     }
   }
 
@@ -134,11 +258,21 @@ export class Quizzes implements OnInit {
   }
 
   getBimesterLabel(bimester: string): string {
-    const option = BIMESTER_OPTIONS.find(opt => opt.value === bimester);
-    return option ? option.label : bimester;
+    const bimesterMap: Record<string, string> = {
+      'FIRST': '1er Bimestre',
+      'SECOND': '2do Bimestre',
+      'THIRD': '3er Bimestre',
+      'FOURTH': '4to Bimestre',
+      'BIMESTER_1': '1er Bimestre',
+      'BIMESTER_2': '2do Bimestre',
+      'BIMESTER_3': '3er Bimestre',
+      'BIMESTER_4': '4to Bimestre',
+    };
+    return bimesterMap[bimester.toUpperCase()] || bimester;
   }
 
   startQuiz(questionnaireId: number, weekNumber: number): void {
+    if (!questionnaireId || (questionnaireId as any) === 'null' || (questionnaireId as any) === 'undefined') return;
     this.questionnaireService.startQuestionnaire(questionnaireId).subscribe({
       next: (instanceId) => {
         this.currentQuizInstanceId.set(instanceId);
@@ -152,12 +286,14 @@ export class Quizzes implements OnInit {
   }
 
   resumeQuiz(instanceId: number, weekNumber: number): void {
+    if (!instanceId || (instanceId as any) === 'null' || (instanceId as any) === 'undefined') return;
     this.currentQuizInstanceId.set(instanceId);
     this.quizName.set(`Cuestionario - Semana ${weekNumber}`);
     this.loadQuestions(instanceId);
   }
 
   loadQuestions(instanceId: number): void {
+    if (!instanceId || (instanceId as any) === 'null' || (instanceId as any) === 'undefined') return;
     this.loadingResults.set(true);
     this.quizQuestions.set([]);
     this.questionnaireService.getQuestions(instanceId).subscribe({
@@ -211,24 +347,37 @@ export class Quizzes implements OnInit {
 
   submitQuiz(): void {
     const instanceId = this.currentQuizInstanceId();
-    if (!instanceId || !this.isAllQuestionsAnswered() || this.submitting()) return;
+    if (!instanceId || (instanceId as any) === 'null' || (instanceId as any) === 'undefined' || !this.isAllQuestionsAnswered() || this.submitting()) return;
 
-    if (confirm('¿Estás seguro de enviar tus respuestas?')) {
+    this.confirmModalTitle.set('Enviar Respuestas');
+    this.confirmModalMessage.set('¿Estás seguro de enviar tus respuestas?');
+    this.confirmAction.set(() => {
       this.submitting.set(true);
       this.questionnaireService.submitQuestionnaire(instanceId, this.selectedAnswers()).subscribe({
         next: () => {
+          this.confirmModalOpen.set(false);
           this.submitting.set(false);
           this.viewResults(instanceId);
         },
         error: (err: unknown) => {
           console.error('Error al enviar cuestionario:', err);
+          this.confirmModalOpen.set(false);
           this.submitting.set(false);
         }
       });
-    }
+    });
+    this.confirmModalOpen.set(true);
   }
 
   viewResults(instanceId: number): void {
+    if (!instanceId || (instanceId as any) === 'null' || (instanceId as any) === 'undefined') return;
+    
+    const currentUrl = this.router.url;
+    if (!currentUrl.includes(`/quizzes/${instanceId}`)) {
+      this.router.navigate(['classrooms', this.classroomId(), 'quizzes', instanceId]);
+      return;
+    }
+
     this.loadingResults.set(true);
     this.viewState.set('VIEW_RESULTS');
     
@@ -249,7 +398,7 @@ export class Quizzes implements OnInit {
     this.currentQuizInstanceId.set(null);
     this.quizQuestions.set([]);
     this.results.set(null);
-    this.loadAvailableQuizzes();
+    this.router.navigate(['classrooms', this.classroomId()], { queryParams: { tab: 'quizzes' } });
   }
 
   generateQuiz(): void {
@@ -257,18 +406,80 @@ export class Quizzes implements OnInit {
     const week = this.genWeek();
     const allowedAttempts = this.genAllowedAttempts();
     const questionsPerAttempt = this.genQuestionsPerAttempt();
-    if (!periodId || this.generating()) return;
+    if (!periodId || !week || this.generating()) return;
 
     this.generating.set(true);
     this.questionnaireService.generateQuestionnaire(this.courseId(), periodId, week, allowedAttempts, questionsPerAttempt).subscribe({
       next: () => {
         this.generating.set(false);
-        alert('Cuestionario generado exitosamente con Inteligencia Artificial.');
+        this.toastService.success('Cuestionario generado exitosamente con Inteligencia Artificial.');
         this.loadAvailableQuizzes();
       },
-      error: (err: unknown) => {
+      error: (err: any) => {
         console.error('Error al generar cuestionario:', err);
         this.generating.set(false);
+      }
+    });
+  }
+
+  // Preview Signals
+  readonly previewDocumentTitle = signal<string>('');
+  readonly previewSecureUrl = signal<SafeResourceUrl | null>(null);
+  readonly previewLoading = signal<boolean>(false);
+
+  getSources(content: string | null | undefined): any[] {
+    if (!content) return [];
+    const sources: any[] = [];
+    const regex = /Fuente:\s*([^\r\n]+)\s*[\r\n]+\s*Enlace de descarga:\s*.*?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      sources.push({
+        name: match[1].trim(),
+        courseId: Number(match[2]),
+        documentId: Number(match[3]),
+        downloadUrl: `/api/v1/courses/${match[2]}/documents/${match[3]}/download`
+      });
+    }
+    return sources;
+  }
+
+  cleanMessageContent(content: string | null | undefined): string {
+    if (!content) return '';
+    const cleaned = content.replace(/Fuente:\s*[^\r\n]+\s*[\r\n]+\s*Enlace de descarga:\s*[^\r\n\s]+/gi, '');
+    return cleaned.trim();
+  }
+
+  previewDocument(courseId: number, documentId: number, name: string): void {
+    this.previewDocumentTitle.set(name);
+    this.previewSecureUrl.set(null);
+    this.previewLoading.set(true);
+
+    this.classroomService.getDocumentDownloadUrl(courseId, documentId).subscribe({
+      next: (response) => {
+        const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(response.url);
+        this.previewSecureUrl.set(safeUrl);
+        this.previewLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al obtener URL de previsualización:', err);
+        this.previewLoading.set(false);
+        alert('No se pudo cargar la previsualización del documento.');
+      }
+    });
+  }
+
+  closePreview(): void {
+    this.previewSecureUrl.set(null);
+    this.previewDocumentTitle.set('');
+  }
+
+  downloadSource(courseId: number, documentId: number): void {
+    this.classroomService.getDocumentDownloadUrl(courseId, documentId).subscribe({
+      next: (response) => {
+        window.open(response.url, '_blank');
+      },
+      error: (err) => {
+        console.error('Error al descargar:', err);
       }
     });
   }

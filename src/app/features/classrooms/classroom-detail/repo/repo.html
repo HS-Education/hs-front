@@ -18,54 +18,183 @@
       <p class="mt-2 text-sm text-[var(--text-secondary)]">No hay documentos disponibles</p>
     </div>
   } @else {
-    <div class="overflow-hidden rounded-md border border-[var(--border)]/70 bg-[var(--surface)]">
-      <table class="w-full">
-        <thead class="border-b border-[var(--border)] bg-[var(--bg-secondary)]/75">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Título</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Formato</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Archivo</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">Acciones</th>
-        </tr>
-        </thead>
-        <tbody class="divide-y divide-[var(--border)]/50">
-          @for (doc of documents(); track doc.id) {
-            <tr class="transition hover:bg-[var(--bg-secondary)]/30">
-              <td class="px-6 py-4">
-                <p class="text-sm font-medium text-[var(--text-primary)]">{{ doc.title }}</p>
-              </td>
-              <td class="px-6 py-4">
-                <span class="inline-flex items-center rounded-full bg-[var(--brand-primary)]/10 px-3 py-1 text-xs font-medium text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
-                  {{ doc.format }}
-                </span>
-              </td>
-              <td class="px-6 py-4">
-                <p class="text-sm text-[var(--text-secondary)]">{{ doc.originalFileName }}</p>
-              </td>
-              <td class="px-6 py-4">
-                <button
-                  type="button"
-                  (click)="downloadDocument(doc.id)"
-                  [disabled]="downloadingId() === doc.id"
-                  class="text-sm font-medium text-[var(--brand-primary)] transition hover:text-[var(--brand-primary-hover)] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  @if (downloadingId() === doc.id) {
-                    <span class="inline-flex items-center gap-1">
-                      <svg class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Descargando...
-                    </span>
-                  } @else {
-                    Descargar
-                  }
-                </button>
-              </td>
-            </tr>
+    <!-- Filters Bar -->
+    <div class="flex flex-col sm:flex-row gap-3 items-center justify-between pb-3.5">
+      <!-- Search Input -->
+      <div class="relative w-full sm:max-w-xs">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-[var(--text-secondary)]/50">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          [value]="filterTitle()"
+          (input)="filterTitle.set($any($event.target).value)"
+          placeholder="Buscar por nombre..."
+          class="w-full rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] pl-9 pr-3 py-2 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--brand-primary)] focus:bg-[var(--surface)] transition duration-200"
+        />
+      </div>
+
+      <!-- Topic Dropdown Filter -->
+      <div class="w-full sm:w-auto">
+        <select
+          (change)="filterTopicId.set($any($event.target).value ? +$any($event.target).value : null)"
+          class="w-full sm:w-48 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] px-3 py-2 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--brand-primary)] focus:bg-[var(--surface)] transition duration-200 cursor-pointer"
+        >
+          <option value="">Todos los temas</option>
+          @for (topic of topicsList(); track topic.id) {
+            <option [value]="topic.id">{{ topic.title }}</option>
           }
-        </tbody>
-      </table>
+        </select>
+      </div>
     </div>
+
+    @if (groupedDocuments().length === 0) {
+      <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-secondary)]/40 py-12 text-center animate-fadeIn">
+        <svg class="mx-auto h-12 w-12 text-[var(--text-secondary)]/40 mb-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <p class="text-sm text-[var(--text-secondary)] font-medium">No se encontraron documentos con los filtros aplicados</p>
+      </div>
+    } @else {
+      <div class="space-y-6">
+        @for (group of groupedDocuments(); track group.topicId) {
+          <div class="space-y-3 animate-fade-in">
+            <h3 class="text-sm font-bold text-[var(--text-primary)] border-b border-[var(--border)] pb-2 flex items-center gap-2">
+              <svg class="h-4 w-4 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              @if (group.topicOrder !== 9999) {
+                <span>Semana {{ group.topicOrder }}:</span>
+              }
+              <span class="text-[var(--text-secondary)]">{{ group.topicName }}</span>
+            </h3>
+            
+            <div class="overflow-x-auto rounded-md border border-[var(--border)]/70 bg-[var(--surface)] shadow-sm">
+              <table class="w-full min-w-[550px] table-fixed">
+                <thead class="border-b border-[var(--border)] bg-[var(--bg-secondary)]/75">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)] w-auto">Título del Documento</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)] w-32">Acciones</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border)]/50">
+                  @for (doc of group.docs; track doc.id) {
+                    <tr class="transition hover:bg-[var(--bg-secondary)]/30 group/row">
+                      <td class="px-6 py-4 min-w-0" [title]="doc.title">
+                        <div class="flex items-center gap-3">
+                          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                          <p class="text-sm font-bold text-[var(--text-primary)] truncate group-hover/row:text-[var(--brand-primary)] transition-colors">{{ doc.title }}</p>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="flex items-center justify-end gap-2">
+                          <!-- Preview Button (Eye) -->
+                          <button
+                            type="button"
+                            (click)="previewDocument(courseId(), doc.id, doc.title)"
+                            class="p-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition shadow-sm cursor-pointer"
+                            title="Previsualizar documento"
+                          >
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+      
+                          <!-- Download Button -->
+                          <button
+                            type="button"
+                            (click)="downloadDocument(doc.id)"
+                            [disabled]="downloadingId() === doc.id"
+                            class="p-2 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            title="Descargar documento"
+                          >
+                            @if (downloadingId() === doc.id) {
+                              <svg class="h-4 w-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            } @else {
+                              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                              </svg>
+                            }
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </div>
+    }
   }
 </div>
+
+<!-- Document Preview Modal Overlay -->
+@if (previewSecureUrl() || previewLoading()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6" role="presentation">
+    <!-- Backdrop -->
+    <div 
+      class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+      (click)="closePreview()"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Modal Card -->
+    <div 
+      role="dialog"
+      aria-modal="true"
+      class="relative z-10 w-full max-w-5xl rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-2xl flex flex-col h-[85vh] max-h-[90vh] overflow-hidden animate-fade-in"
+    >
+      <!-- Header -->
+      <header class="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 bg-[var(--bg-secondary)]/30">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-sm font-extrabold text-[var(--text-primary)] truncate" title="Previsualizando: {{ previewDocumentTitle() }}">
+            Previsualización: {{ previewDocumentTitle() }}
+          </h3>
+        </div>
+        <button
+          type="button"
+          class="rounded-xl border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition active:scale-95 cursor-pointer"
+          (click)="closePreview()"
+          aria-label="Cerrar Previsualización"
+        >
+          ✕ Cerrar
+        </button>
+      </header>
+
+      <!-- Body / Iframe Area -->
+      <div class="flex-1 bg-[var(--bg-secondary)]/15 relative flex items-center justify-center p-3">
+        @if (previewLoading()) {
+          <div class="space-y-3 text-center z-20 absolute inset-0 flex flex-col items-center justify-center bg-[var(--surface)]/80">
+            <div class="inline-flex h-9 w-9 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]"></div>
+            <p class="text-xs font-bold text-[var(--text-secondary)]">Obteniendo enlace de lectura seguro...</p>
+          </div>
+        }
+
+        @if (previewSecureUrl(); as safeUrl) {
+          <iframe 
+            [src]="safeUrl" 
+            class="w-full h-full rounded-xl border border-[var(--border)] shadow-sm bg-[var(--surface)]"
+            frameborder="0"
+          ></iframe>
+        }
+      </div>
+    </div>
+  </div>
+}

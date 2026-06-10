@@ -45,4 +45,11 @@ export class ChatService {
       { withCredentials: true }
     );
   }
+
+  deleteChatSession(sessionId: number) {
+    return this.http.delete<void>(
+      `${this.baseUrl}/chat/sessions/${sessionId}`,
+      { withCredentials: true }
+    );
+  }
 }

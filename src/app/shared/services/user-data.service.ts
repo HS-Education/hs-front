@@ -22,6 +22,11 @@ export class UserDataService {
     return roles.some(role => ['COORDINATOR', 'ROLE_COORDINATOR', 'ADMIN', 'ROLE_ADMIN'].includes(role));
   });
 
+  readonly isAdmin = computed(() => {
+    const roles = this.user()?.roles ?? [];
+    return roles.some(role => ['ADMIN', 'ROLE_ADMIN'].includes(role));
+  });
+
   readonly isTeacher = computed(() => {
     const roles = this.user()?.roles ?? [];
     return roles.some(role => ['TEACHER', 'ROLE_TEACHER'].includes(role));

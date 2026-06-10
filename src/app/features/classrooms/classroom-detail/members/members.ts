@@ -12,20 +12,28 @@ import {Member} from '../../data-access/models/responses/member.model';
 export class Members {
   private readonly classroomService = inject(ClassroomService);
 
-  readonly courseId = input.required<number>();
+  readonly classroomId = input.required<number>();
   readonly members = signal<Member[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
   constructor() {
     effect(() => {
-      const id = this.courseId();
+      const id = this.classroomId();
       this.loading.set(true);
       this.error.set(null);
 
       this.classroomService.getClassroomMembers(id).subscribe({
         next: (members) => {
-          this.members.set(members);
+          // Sort: Docente/Teacher first, then by name
+          const sorted = [...members].sort((a, b) => {
+            const isTeacherA = a.roleInClassroom.toLowerCase() === 'docente' || a.roleInClassroom.toLowerCase() === 'teacher';
+            const isTeacherB = b.roleInClassroom.toLowerCase() === 'docente' || b.roleInClassroom.toLowerCase() === 'teacher';
+            if (isTeacherA && !isTeacherB) return -1;
+            if (!isTeacherA && isTeacherB) return 1;
+            return a.userName.localeCompare(b.userName);
+          });
+          this.members.set(sorted);
           this.loading.set(false);
         },
         error: (err) => {

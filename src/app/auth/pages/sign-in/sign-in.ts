@@ -50,7 +50,11 @@ export class SignIn {
       .subscribe({
         next: (profile) => {
           this.userDataService.setUser(profile);
-          void this.router.navigate(['/home']);
+          if (profile.roles.includes('ADMIN')) {
+            void this.router.navigate(['/admin/academic-years']);
+          } else {
+            void this.router.navigate(['/home']);
+          }
         },
         error: (err: unknown) => {
           this.errorMessage.set(

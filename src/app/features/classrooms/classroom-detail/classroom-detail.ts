@@ -20,7 +20,7 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
     RouterLink
   ],
   template: `
-    <div class="p-6 md:p-10 space-y-8 select-none">
+    <div class="p-4 sm:p-6 md:p-10 space-y-8 select-none">
       <!-- Breadcrumb / Header -->
       <div class="flex flex-col gap-1.5">
         <div class="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
@@ -33,16 +33,15 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
 
       <div class="space-y-6">
         <!-- Tabs Segment Control -->
-        <div class="flex border-b border-[var(--border)]">
-          <div class="flex gap-2">
+        <div class="flex border-b border-[var(--border)] overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div class="flex gap-2 min-w-max">
             @for (tab of tabs; track tab.id) {
               <button
                 type="button"
                 (click)="setTab(tab.id)"
-                class="relative px-5 py-3 text-sm font-semibold tracking-tight transition duration-250 focus:outline-none -mb-px"
+                class="relative px-5 py-3 text-sm font-semibold tracking-tight transition duration-250 focus:outline-none shrink-0"
+                [style.border-bottom]="activeTab() === tab.id ? '2px solid var(--brand-primary)' : '2px solid transparent'"
                 [class.text-[var(--brand-primary)]]="activeTab() === tab.id"
-                [class.border-b-2]="activeTab() === tab.id"
-                [class.border-[var(--brand-primary)]]="activeTab() === tab.id"
                 [class.text-[var(--text-secondary)]]="activeTab() !== tab.id"
                 [class.hover:text-[var(--text-primary)]]="activeTab() !== tab.id"
               >
@@ -56,8 +55,8 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
         <section class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
           @switch (activeTab()) {
             @case ('quizzes') {
-              @if (courseId(); as id) {
-                <app-quizzes [courseId]="id" />
+              @if (classroom(); as cls) {
+                <app-quizzes [courseId]="cls.courseId" [classroomId]="cls.id" />
               }
             }
             @case ('repo') {
@@ -66,11 +65,13 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
               }
             }
             @case ('progress') {
-              <app-progress />
+              @if (classroom(); as cls) {
+                <app-progress [classroomId]="cls.id" />
+              }
             }
             @case ('members') {
-              @if (courseId(); as id) {
-                <app-members [courseId]="id" />
+              @if (classroom(); as cls) {
+                <app-members [classroomId]="cls.id" />
               }
             }
           }

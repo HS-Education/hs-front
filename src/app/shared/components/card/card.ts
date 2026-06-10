@@ -8,11 +8,11 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
       class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm transition-all duration-300 ease-out hover:shadow-md hover:border-[var(--brand-primary)]/30 hover:-translate-y-1 block"
       role="none"
     >
-      <header class="mb-4 flex items-start justify-between">
-        <div class="flex-1">
+      <header class="mb-4 flex items-start justify-between gap-3 min-w-0">
+        <div class="flex-1 min-w-0">
           <ng-content select="[card-header]"></ng-content>
         </div>
-        <div class="ml-3 shrink-0">
+        <div class="shrink-0">
           <ng-content select="[card-meta]"></ng-content>
         </div>
       </header>

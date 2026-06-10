@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import {UserDataService} from '../../services/user-data.service';
 import {AuthService} from '../../../auth/services/auth.service';
 import {Router, RouterLink, RouterLinkActive} from '@angular/router';
@@ -21,6 +21,15 @@ export class Navbar {
   private readonly router = inject(Router);
 
   readonly userProfile = this.userDataService.userProfile;
+  readonly isMobileMenuOpen = signal(false);
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update((open: boolean) => !open);
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false);
+  }
 
   toggleViewMode(): void {
     this.userDataService.toggleTeacherViewMode();

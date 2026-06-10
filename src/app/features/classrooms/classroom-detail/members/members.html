@@ -1,8 +1,17 @@
 <div class="space-y-6 select-none">
   <!-- Header Area -->
-  <div>
-    <h2 class="text-lg font-bold text-[var(--text-primary)]">Miembros del Aula</h2>
-    <p class="text-xs text-[var(--text-secondary)] mt-0.5">Integrantes asignados a esta sección académica</p>
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-lg font-bold text-[var(--text-primary)]">Miembros del Aula</h2>
+      <p class="text-xs text-[var(--text-secondary)] mt-0.5">Integrantes asignados a esta sección académica</p>
+    </div>
+    
+    <!-- Count Badge -->
+    @if (!loading() && !error() && members().length > 0) {
+      <div class="text-xs font-semibold text-[var(--text-secondary)] bg-[var(--bg-secondary)]/40 border border-[var(--border)]/30 rounded-xl px-3 py-1.5 self-start sm:self-auto">
+        Total: <span class="text-[var(--brand-primary)] font-bold">{{ members().length }} miembros</span>
+      </div>
+    }
   </div>
 
   @if (loading()) {
@@ -31,44 +40,57 @@
       <p class="mt-1 text-xs text-[var(--text-secondary)] max-w-xs mx-auto">No se han encontrado estudiantes o docentes vinculados a este curso.</p>
     </div>
   } @else {
-    <!-- Table Wrapper -->
-    <div class="overflow-x-auto rounded-lg border border-[var(--border)]/70 bg-[var(--surface)]">
-      <table class="w-full border-collapse text-left text-sm text-[var(--text-secondary)]">
-        <thead class="bg-[var(--bg-secondary)]/75 border-b border-[var(--border)]">
-          <tr>
-            <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Usuario</th>
-            <th class="px-6 py-4 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] w-48">Rol en Aula</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-[var(--border)]/50 font-medium">
-          @for (member of members(); track member.userId) {
-            <tr class="transition-colors hover:bg-[var(--bg-secondary)]/50">
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-3">
-                  <!-- Avatar Icon Badge -->
-                  <div class="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] font-extrabold text-xs border border-[var(--border)]">
-                    {{ member.userName.slice(0, 2).toUpperCase() }}
-                  </div>
-                  <span class="text-sm font-bold text-[var(--text-primary)]">{{ member.userName }}</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span
-                  class="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold"
-                  [class.bg-[var(--brand-mustard)]/10]="member.roleInClassroom.toLowerCase() === 'docente' || member.roleInClassroom.toLowerCase() === 'teacher'"
-                  [class.text-[var(--brand-mustard)]]="member.roleInClassroom.toLowerCase() === 'docente' || member.roleInClassroom.toLowerCase() === 'teacher'"
-                  [class.border-[var(--brand-mustard)]/20]="member.roleInClassroom.toLowerCase() === 'docente' || member.roleInClassroom.toLowerCase() === 'teacher'"
-                  [class.bg-[var(--bg-secondary)]]="member.roleInClassroom.toLowerCase() !== 'docente' && member.roleInClassroom.toLowerCase() !== 'teacher'"
-                  [class.text-[var(--text-secondary)]]="member.roleInClassroom.toLowerCase() !== 'docente' && member.roleInClassroom.toLowerCase() !== 'teacher'"
-                  [class.border-[var(--border)]]="member.roleInClassroom.toLowerCase() !== 'docente' && member.roleInClassroom.toLowerCase() !== 'teacher'"
-                >
-                  {{ member.roleInClassroom }}
-                </span>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <!-- Grid Layout of Member Profiles -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (member of members(); track member.userId) {
+        @let isTeacher = member.roleInClassroom.toLowerCase() === 'docente' || member.roleInClassroom.toLowerCase() === 'teacher';
+        
+        <div 
+          class="flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 bg-[var(--surface)]"
+          [class.border-[var(--brand-mustard)]/40]="isTeacher"
+          [class.shadow-md]="isTeacher"
+          [class.shadow-[var(--brand-mustard)]/5]="isTeacher"
+          [class.border-[var(--border)]/70]="!isTeacher"
+          [class.hover:border-[var(--border)]]="!isTeacher"
+          [class.hover:bg-[var(--bg-secondary)]/10]="!isTeacher"
+        >
+          <!-- User initials Avatar Badge -->
+          <div 
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-bold text-sm transition-transform duration-300 hover:scale-105"
+            [class.bg-[var(--brand-mustard)]/10]="isTeacher"
+            [class.border-2]="isTeacher"
+            [class.border-[var(--brand-mustard)]/30]="isTeacher"
+            [class.text-[var(--brand-mustard)]]="isTeacher"
+            [class.bg-[var(--brand-primary)]/10]="!isTeacher"
+            [class.border]="!isTeacher"
+            [class.border-[var(--brand-primary)]/20]="!isTeacher"
+            [class.text-[var(--brand-primary)]]="!isTeacher"
+          >
+            {{ member.userName.slice(0, 2).toUpperCase() }}
+          </div>
+
+          <!-- Member Details -->
+          <div class="min-w-0 flex-1 space-y-1">
+            <h4 class="text-sm font-bold text-[var(--text-primary)] truncate" [title]="member.userName">
+              {{ member.userName }}
+            </h4>
+            
+            <div class="flex items-center">
+              <span 
+                class="inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider border"
+                [class.bg-[var(--brand-mustard)]/10]="isTeacher"
+                [class.text-[var(--brand-mustard)]]="isTeacher"
+                [class.border-[var(--brand-mustard)]/20]="isTeacher"
+                [class.bg-[var(--bg-secondary)]]="!isTeacher"
+                [class.text-[var(--text-secondary)]]="!isTeacher"
+                [class.border-[var(--border)]]="!isTeacher"
+              >
+                {{ member.roleInClassroom }}
+              </span>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   }
 </div>

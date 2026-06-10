@@ -1,12 +1,13 @@
 import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import {Navbar} from './shared/components/navbar/navbar';
+import {Toast} from './shared/components/toast/toast';
 import {UserDataService} from './shared/services/user-data.service';
 import {ThemeService} from './shared/services/theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar],
+  imports: [RouterOutlet, Navbar, Toast],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

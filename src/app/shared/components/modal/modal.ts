@@ -23,11 +23,11 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
             <h3 id="modal-title" class="text-sm font-bold">{{ title() }}</h3>
             <button
               type="button"
-              class="ml-4 rounded-lg px-2 py-1 text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition"
+              class="ml-4 rounded-lg p-1.5 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition focus:outline-none"
               (click)="close()"
               aria-label="Cerrar"
             >
-              ✕
+              <i class="bi bi-x-lg"></i>
             </button>
           </header>
  
