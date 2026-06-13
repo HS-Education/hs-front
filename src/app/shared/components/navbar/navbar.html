@@ -252,8 +252,7 @@
         <div class="overflow-hidden">
           <p class="text-xs font-bold text-[var(--text-primary)] truncate leading-tight">{{ user.name }}</p>
           <p class="text-[10px] text-[var(--text-secondary)]/80 truncate mt-0.5">
-            {{ userDataService.isTeacher() ? 'Docente' : userDataService.isCoordinator() ? 'Coordinador' : 'Estudiante'
-            }}
+            {{ userDataService.isAdmin() ? 'Administrador' : userDataService.isCoordinator() ? 'Coordinador' : userDataService.isTeacher() ? 'Docente' : 'Estudiante' }}
           </p>
         </div>
       </div>

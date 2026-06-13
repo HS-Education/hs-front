@@ -66,7 +66,7 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
             }
             @case ('progress') {
               @if (classroom(); as cls) {
-                <app-progress [classroomId]="cls.id" />
+                <app-progress [classroomId]="cls.id" [courseId]="cls.courseId" [academicYearId]="cls.academicYearId" />
               }
             }
             @case ('members') {

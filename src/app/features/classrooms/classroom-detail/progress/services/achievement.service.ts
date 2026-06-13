@@ -54,6 +54,26 @@ export interface GenerateRecommendationRequest {
   numQuestions: number;
 }
 
+export interface WeeklyPerformance {
+  weekNumber: number;
+  averageScore: number;
+  needsRemedial: boolean;
+}
+
+export interface DefinitiveGrade {
+  questionnaireId: number;
+  weekNumber: number;
+  score: number;
+}
+
+export interface StudentPerformanceSummaryResource {
+  studentId: number;
+  gradingPeriodId: number;
+  bimesterAverage: number;
+  weeklyProgression: WeeklyPerformance[];
+  definitiveGrades: DefinitiveGrade[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -65,11 +85,17 @@ export class AchievementService {
     return this.http.get<StudentAchievementResource>(`${this.apiUrl}/students/${studentId}`);
   }
 
+  getStudentPerformanceSummary(studentId: number, courseId: number, gradingPeriodId: number): Observable<StudentPerformanceSummaryResource> {
+    return this.http.get<StudentPerformanceSummaryResource>(
+      `${this.apiUrl}/students/${studentId}/courses/${courseId}/periods/${gradingPeriodId}/summary`
+    );
+  }
+
   getAreaAchievements(areaId: number): Observable<AreaAchievementResource> {
     return this.http.get<AreaAchievementResource>(`${this.apiUrl}/areas/${areaId}`);
   }
 
-  generateStudentInsight(studentId: number): Observable<any> {
+  generateStudentInsight(studentId: number): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/students/${studentId}/insights`, {});
   }
 
@@ -77,15 +103,16 @@ export class AchievementService {
     return this.http.get<ClassroomAchievementResource>(`${this.apiUrl}/classrooms/${classroomId}`);
   }
 
-  generateClassroomInsight(classroomId: number): Observable<any> {
+  generateClassroomInsight(classroomId: number): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/classrooms/${classroomId}/insights`, {});
   }
 
-  generateAreaInsight(areaId: number): Observable<any> {
+  generateAreaInsight(areaId: number): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/areas/${areaId}/insights`, {});
   }
 
-  generateClassroomRecommendation(classroomId: number, request: GenerateRecommendationRequest): Observable<any> {
+  generateClassroomRecommendation(classroomId: number, request: GenerateRecommendationRequest): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/classrooms/${classroomId}/recommendations`, request);
   }
 }
+

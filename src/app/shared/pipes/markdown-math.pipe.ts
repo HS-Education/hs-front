@@ -23,19 +23,8 @@ export class MarkdownMathPipe implements PipeTransform {
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-    // 1.5 Format Source Badges (e.g. from RAG or internal Contexts)
-    escaped = escaped.replace(/(?:\*\*)?Fuente:(?:\*\*)?\s*(.*?)\s*(?:\*\*)?Enlace de descarga:(?:\*\*)?\s*([^\s]+)/gi, (match, sourceName, link) => {
-      let finalName = sourceName.trim();
-      if (finalName.includes('Contexto') && link === 'N/A') {
-         finalName = 'Datos de Rendimiento (AI Interno)';
-      }
-      return `<br/><span class="inline-flex items-center gap-1.5 mt-3 mb-1 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] px-3 py-1.5 rounded-lg font-semibold text-[10px] uppercase tracking-wide transition border border-[var(--brand-primary)]/20 w-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-            </svg>
-            Fuente: ${finalName}
-          </span><br/>`;
-    });
+    // 1.5 Strip Source Badges completely (e.g. from RAG or internal Contexts)
+    escaped = escaped.replace(/(?:\*\*)?Fuente:(?:\*\*)?\s*(.*?)\s*(?:\*\*)?Enlace de descarga:(?:\*\*)?\s*([^\s]+)/gi, '');
 
     // Headers
     escaped = escaped.replace(/^###\s+(.*)$/gim, '<h3 class="text-sm font-bold text-[var(--text-primary)] mt-4 mb-2">$1</h3>');
