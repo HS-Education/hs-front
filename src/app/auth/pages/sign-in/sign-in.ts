@@ -57,6 +57,10 @@ export class SignIn {
           }
         },
         error: (err: unknown) => {
+          if (isPasswordUpdateRequired(err)) {
+            void this.router.navigate(['/update-password'], { queryParams: { username: this.form.controls.username.value } });
+            return;
+          }
           this.errorMessage.set(
             isHttpUnauthorized(err)
               ? 'Credenciales inválidas'
@@ -73,5 +77,18 @@ function isHttpUnauthorized(err: unknown): boolean {
     err !== null &&
     'status' in err &&
     (err as { status?: unknown }).status === 401
+  );
+}
+
+function isPasswordUpdateRequired(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'status' in err &&
+    (err as { status?: unknown }).status === 403 &&
+    'error' in err &&
+    typeof (err as { error?: unknown }).error === 'object' &&
+    (err as { error?: { reason?: string } }).error !== null &&
+    ((err as any).error.reason === 'TEMPORARY_PASSWORD' || (err as any).error.reason === 'PASSWORD_EXPIRED')
   );
 }

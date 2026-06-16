@@ -17,7 +17,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
-          class="relative z-10 max-h-[90vh] w-full max-w-3xl overflow-auto rounded-xl bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] shadow-lg"
+          [class]="'relative z-10 max-h-[90vh] w-full overflow-auto rounded-xl bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] shadow-lg ' + widthClass()"
         >
           <header class="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
             <h3 id="modal-title" class="text-sm font-bold">{{ title() }}</h3>
@@ -45,6 +45,7 @@ export class Modal {
   readonly isOpen = input.required<boolean>();
   readonly title = input<string | null>(null);
   readonly onClose = input<(() => void) | null>(null);
+  readonly widthClass = input<string>('max-w-3xl');
 
   close() {
     const cb = this.onClose();

@@ -13,11 +13,12 @@ export interface AvailableQuestionnaire {
   courseId: number;
   gradingPeriodId: number;
   weekNumber: number;
-  status: 'PENDING' | 'STARTED' | 'COMPLETED';
+  status: 'PENDING' | 'STARTED' | 'COMPLETED' | 'RETRY';
   activeInstanceId: number | null;
   attemptsLeft: number;
   maxAttempts: number;
   questionsPerAttempt: number;
+  type: string;
   pastAttempts: QuestionnaireAttempt[];
   createdAt?: string;
 }
@@ -99,6 +100,21 @@ export class QuestionnaireService {
     return this.http.post<void>(
       `${this.baseUrl}/assessments/questionnaires/generate`,
       { courseId, gradingPeriodId, weekNumber, allowedAttempts, questionsPerAttempt },
+      { withCredentials: true }
+    );
+  }
+
+  generateRemedialQuestionnaire(
+    studentId: number,
+    courseId: number,
+    gradingPeriodId: number,
+    weekNumber: number,
+    topicId: number,
+    numQuestions: number
+  ) {
+    return this.http.post<void>(
+      `${this.baseUrl}/assessments/questionnaires/generate-remedial`,
+      { studentId, courseId, gradingPeriodId, weekNumber, topicId, numQuestions },
       { withCredentials: true }
     );
   }

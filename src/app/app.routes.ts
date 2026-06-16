@@ -3,6 +3,7 @@ import { authGuard } from './auth/guards/auth-guard';
 import { guestGuard } from './auth/guards/guest-guard';
 import { adminGuard } from './auth/guards/admin-guard';
 import { SignIn } from './auth/pages/sign-in/sign-in';
+import { UpdatePassword } from './auth/pages/update-password/update-password';
 
 export const routes: Routes = [
   {
@@ -13,6 +14,11 @@ export const routes: Routes = [
   {
     path: 'sign-in',
     component: SignIn,
+    canActivate: [guestGuard],
+  },
+  {
+    path: 'update-password',
+    component: UpdatePassword,
     canActivate: [guestGuard],
   },
   {
@@ -33,6 +39,19 @@ export const routes: Routes = [
       import('./features/repository/repository').then((m) => m.Repository),
     canActivate: [authGuard],
     data: { expectedRoles: ['COORDINATOR', 'ADMIN'] }
+  },
+  {
+    path: 'metrics',
+    loadComponent: () =>
+      import('./features/areas/area-metrics/area-metrics').then((m) => m.AreaMetrics),
+    canActivate: [authGuard],
+    data: { expectedRoles: ['COORDINATOR', 'ADMIN'] }
+  },
+  {
+    path: 'help',
+    loadComponent: () =>
+      import('./features/help/help').then((m) => m.HelpCenter),
+    canActivate: [authGuard]
   },
   {
     path: 'chat',

@@ -28,7 +28,8 @@ export const responseInterceptor: HttpInterceptorFn = (
     }),
     catchError((error: HttpErrorResponse) => {
       // Ignorar 401 y 403, ya que son de seguridad y suelen redirigir al login o ya tienen un flujo definido
-      if (error.status !== 401 && error.status !== 403) {
+      // También ignoramos el 404 para evitar el toast cuando un estudiante no tiene datos de rendimiento aún
+      if (error.status !== 401 && error.status !== 403 && error.status !== 404) {
         let errorMsg = 'Ha ocurrido un error inesperado en el servidor.';
         
         // El backend suele devolver la estructura { "message": "..." } vía el GlobalExceptionHandler

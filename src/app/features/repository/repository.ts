@@ -136,7 +136,7 @@ export class Repository implements OnInit {
 
       this.classroomService.getAreas().subscribe({
         next: (areas) => {
-          const matchingArea = areas.find(a => a.coordinatorId === user.id);
+          const matchingArea = areas.find(a => a.coordinatorName === user.name);
           if (matchingArea) {
             this.coordinatorArea.set(matchingArea.name);
             this.coordinatorAreaId.set(matchingArea.id);

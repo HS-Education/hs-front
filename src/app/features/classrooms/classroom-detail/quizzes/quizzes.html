@@ -76,17 +76,22 @@
                 stroke-width="3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
               </svg>
-              <h4 class="text-xs font-bold text-[var(--text-primary)]">Cuestionario Semanal - Semana {{ quiz.weekNumber
-                }}</h4>
+              <h4 class="text-xs font-bold text-[var(--text-primary)]">
+                @if (quiz.type === 'REMEDIAL') {
+                  Cuestionario Extra - Semana {{ quiz.weekNumber }}
+                } @else {
+                  Cuestionario Semanal - Semana {{ quiz.weekNumber }}
+                }
+              </h4>
             </div>
             <p class="text-[10px] text-[var(--text-secondary)] flex items-center gap-2">
               <span>{{ getBimesterNameForPeriod(quiz.gradingPeriodId) }}</span>
               <span class="text-[var(--border)]">•</span>
               <span>Estado:</span>
               <span class="font-bold" [class.text-[#ca8a04]]="quiz.status === 'PENDING'"
-                [class.text-[var(--brand-primary)]]="quiz.status === 'STARTED'"
+                [class.text-[var(--brand-primary)]]="quiz.status === 'STARTED' || quiz.status === 'RETRY'"
                 [class.text-[#166534]]="quiz.status === 'COMPLETED'">
-                {{ quiz.status === 'PENDING' ? 'Pendiente' : quiz.status === 'STARTED' ? 'En Curso' : 'Completado' }}
+                {{ quiz.status === 'PENDING' ? 'Pendiente' : quiz.status === 'STARTED' ? 'En Curso' : quiz.status === 'RETRY' ? 'Disponible' : 'Completado' }}
               </span>
               @if (quiz.maxAttempts > 0) {
               <span class="text-[var(--border)]">•</span>
@@ -97,11 +102,11 @@
           </div>
 
           <div>
-            @if (quiz.status === 'PENDING') {
+            @if (quiz.status === 'PENDING' || quiz.status === 'RETRY') {
             <button type="button" (click)="$event.stopPropagation(); startQuiz(quiz.id, quiz.weekNumber)"
               [disabled]="quiz.attemptsLeft === 0"
               class="rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 text-xs shadow-sm transition active:scale-[0.98]">
-              Iniciar
+              {{ quiz.status === 'RETRY' ? 'Reintentar' : 'Iniciar' }}
             </button>
             } @else if (quiz.status === 'STARTED' && quiz.activeInstanceId && quiz.activeInstanceId !== null) {
             <button type="button"
@@ -278,15 +283,16 @@
       Anterior
     </button>
 
-    @if (currentIdx < questions.length - 1) { <button type="button" (click)="nextQuestion()"
-      [disabled]="!isCurrentQuestionAnswered()"
-      class="flex items-center gap-2 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed px-5 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-[0.98]">
-      Siguiente
-      <svg class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-      </svg>
+    @if (currentIdx < questions.length - 1) { 
+      <button type="button" (click)="nextQuestion()"
+        [disabled]="!isCurrentQuestionAnswered()"
+        class="flex items-center gap-2 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed px-5 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-[0.98]">
+        Siguiente
+        <svg class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
       </button>
-      } @else {
+    } @else {
       <button type="button" (click)="submitQuiz()" [disabled]="!isAllQuestionsAnswered() || submitting()"
         class="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--brand-forest)] to-[var(--brand-forest)]/90 hover:from-[var(--brand-forest)]/90 hover:to-[var(--brand-forest)]/80 disabled:from-[var(--brand-inactive)] disabled:to-[var(--brand-inactive)]/80 disabled:cursor-not-allowed px-6 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-[0.98]">
         @if (submitting()) {
@@ -295,15 +301,14 @@
         <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
-        Enviar Cuestionario
+        Entregar Cuestionario
         }
       </button>
-      }
+    }
   </div>
   }
 </div>
 }
-
 <!-- STATE 3: VIEW RESULTS & AI RAG FEEDBACK -->
 @case ('VIEW_RESULTS') {
 <div class="space-y-6 animate-fade-in">
@@ -350,13 +355,14 @@
     </div>
   </div>
 
-  <!-- Answers and AI Explanations List -->
-  <div class="space-y-6 pt-2">
-    <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Desglose de Preguntas y Feedback
-    </h4>
+  <!-- Answers and AI Explanations List with Sidebar -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+    <!-- Left Column: Answers List -->
+    <div class="lg:col-span-2 space-y-6">
+      <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Desglose de Preguntas y Feedback</h4>
 
-    @for (ans of sub.answers; track ans.questionId; let idx = $index) {
-    <div class="rounded-lg border border-[var(--border)]/70 bg-[var(--surface)] p-5 space-y-4">
+      @for (ans of sub.answers; track ans.questionId; let idx = $index) {
+      <div [id]="'q-' + idx" class="rounded-lg border border-[var(--border)]/70 bg-[var(--surface)] p-5 space-y-4 scroll-mt-24">
       <!-- Question line -->
       <div class="flex items-start justify-between gap-4 border-b border-[var(--border)]/50 pb-3">
         <div class="space-y-1.5">
@@ -418,55 +424,43 @@
         }
       </div>
 
-      <!-- AI Feedback Bubble -->
+      <!-- Inline AI Feedback Bubble (Mobile/Tablet Only) -->
       @if (ans.aiFeedback) {
-      <div class="rounded-lg bg-[var(--brand-primary)]/5 border border-[var(--brand-primary)]/10 p-4 space-y-2">
+      <div class="block lg:hidden mt-4 rounded-lg bg-[var(--brand-primary)]/5 border border-[var(--brand-primary)]/10 p-5 space-y-3">
         <div class="flex items-center gap-2">
-          <span
-            class="flex h-5 w-5 items-center justify-center rounded bg-[var(--brand-primary)] text-white font-extrabold text-[9px]"><i
-              class="bi bi-lightbulb !text-white"></i></span>
-          <span class="text-[10px] font-bold text-[var(--brand-primary)] uppercase tracking-wider">Explicación de
-            Sery</span>
+          <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white font-extrabold text-[10px]">
+            <i class="bi bi-lightbulb !text-white"></i>
+          </span>
+          <span class="text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wider">Explicación de Sery</span>
         </div>
-        <div [innerHTML]="cleanMessageContent(ans.aiFeedback) | markdownMath"
-          class="text-xs font-medium text-[var(--text-secondary)] leading-relaxed"></div>
-
+        <div [innerHTML]="cleanMessageContent(ans.aiFeedback) | markdownMath" class="text-xs font-medium text-[var(--text-secondary)] leading-relaxed"></div>
         <!-- Sources Cards -->
         @if (getSources(ans.aiFeedback).length > 0) {
-        <div class="mt-2.5 space-y-2 border-t border-[var(--brand-primary)]/10 pt-2.5">
-          <div
-            class="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-primary)]">
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        <div class="mt-3 space-y-2 border-t border-[var(--brand-primary)]/10 pt-3">
+          <div class="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--brand-primary)]">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
             Documentos de Referencia
           </div>
           <div class="grid gap-2">
             @for (src of getSources(ans.aiFeedback); track src.documentId) {
-            <div
-              class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 flex items-center justify-between gap-4 shadow-sm hover:border-[var(--brand-primary)]/30 transition duration-150">
+            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 flex items-center justify-between gap-4">
               <div class="flex items-center gap-2.5 min-w-0">
-                <div
-                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
+                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="25">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
                 <div class="min-w-0">
-                  <h5 class="text-xs font-bold text-[var(--text-primary)] truncate" [title]="src.name">{{ src.name }}
-                  </h5>
+                  <h5 class="text-[11px] font-bold text-[var(--text-primary)] truncate" [title]="src.name">{{ src.name }}</h5>
                 </div>
               </div>
-
               <div class="flex items-center gap-2 shrink-0">
-                <button type="button" (click)="previewDocument(src.courseId, src.documentId, src.name)"
-                  class="flex items-center gap-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-2.5 py-1.5 text-[9px] font-bold text-[var(--text-primary)] transition active:scale-95">
+                <button type="button" (click)="previewDocument(src.courseId, src.documentId, src.name)" class="flex items-center gap-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-2 py-1.5 text-[9px] font-bold text-[var(--text-primary)] transition active:scale-95">
                   Previsualizar
                 </button>
-                <button type="button" (click)="downloadSource(src.courseId, src.documentId)"
-                  class="flex items-center gap-1 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-2.5 py-1.5 text-[9px] font-bold text-white transition active:scale-95">
+                <button type="button" (click)="downloadSource(src.courseId, src.documentId)" class="flex items-center gap-1 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-2 py-1.5 text-[9px] font-bold text-white transition active:scale-95">
                   Descargar
                 </button>
               </div>
@@ -477,8 +471,150 @@
         }
       </div>
       }
+      </div>
+      }
     </div>
-    }
+
+    <!-- Right Column: Navigation & Sidebar Widgets -->
+    <div class="space-y-6">
+      <!-- Historial Rápido -->
+      @if (activeQuiz(); as quiz) {
+        @if (quiz.pastAttempts.length > 0) {
+          <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm space-y-3">
+            <h3 class="text-xs font-bold text-[var(--text-primary)] flex items-center gap-2">
+              <svg class="h-4 w-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Intentos Previos
+            </h3>
+            <div class="grid gap-2">
+              @for (attempt of quiz.pastAttempts; track attempt.instanceId; let idx = $index) {
+                <div class="flex items-center justify-between p-2 rounded-md border border-[var(--border)] bg-[var(--bg-secondary)]/50">
+                  <div>
+                    <span class="block text-[10px] font-bold text-[var(--text-primary)]">Intento {{ idx + 1 }}</span>
+                    <span class="block text-[9px] text-[var(--text-secondary)]">{{ attempt.submittedAt | date:'dd/MM' }}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs font-black" [class.text-[#166534]]="attempt.score >= 13" [class.text-[#b91c1c]]="attempt.score < 13">
+                      {{ attempt.score }}
+                    </span>
+                    <span class="text-[9px] text-[var(--text-secondary)] font-normal block -mt-1">/ 20</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      }
+
+      <div class="space-y-6 sticky top-6">
+      
+      <!-- Navegación de Preguntas (Grid) -->
+      <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+        <h3 class="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+          <svg class="h-4 w-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+          Navegación
+        </h3>
+        <div class="grid grid-cols-5 gap-2">
+          @for (ans of sub.answers; track ans.questionId; let idx = $index) {
+            <button type="button" (click)="scrollTo(idx)"
+              [ngClass]="{
+                'border-[var(--brand-forest)] bg-[var(--brand-forest)]/20 text-[var(--brand-forest)] ring-2 ring-[var(--brand-forest)]/30': ans.isCorrect && selectedResultIdx() === idx,
+                'border-[var(--brand-forest)]/50 bg-[var(--brand-forest)]/10 text-[var(--brand-forest)]': ans.isCorrect && selectedResultIdx() !== idx,
+                'border-[var(--brand-error)] bg-[var(--brand-error)]/20 text-[var(--brand-error)] ring-2 ring-[var(--brand-error)]/30': !ans.isCorrect && selectedResultIdx() === idx,
+                'border-[var(--brand-error)]/50 bg-[var(--brand-error)]/10 text-[var(--brand-error)]': !ans.isCorrect && selectedResultIdx() !== idx
+              }"
+              class="h-8 w-full rounded border flex items-center justify-center text-[10px] font-bold hover:opacity-80 transition-opacity">
+              {{ idx + 1 }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Dynamic AI Feedback Bubble -->
+      @if (sub.answers[selectedResultIdx()]; as activeAns) {
+        @if (activeAns.aiFeedback) {
+        <div class="hidden lg:block rounded-lg bg-[var(--brand-primary)]/5 border border-[var(--brand-primary)]/10 p-5 space-y-3 shadow-sm animate-fade-in">
+          <div class="flex items-center gap-2">
+            <span
+              class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white font-extrabold text-[10px]"><i
+                class="bi bi-lightbulb !text-white"></i></span>
+            <span class="text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wider">Explicación de
+              Sery</span>
+          </div>
+          <div [innerHTML]="cleanMessageContent(activeAns.aiFeedback) | markdownMath"
+            class="text-xs font-medium text-[var(--text-secondary)] leading-relaxed"></div>
+
+          <!-- Sources Cards -->
+          @if (getSources(activeAns.aiFeedback).length > 0) {
+          <div class="mt-3 space-y-2 border-t border-[var(--brand-primary)]/10 pt-3">
+            <div
+              class="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--brand-primary)]">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+              Documentos de Referencia
+            </div>
+            <div class="grid gap-2">
+              @for (src of getSources(activeAns.aiFeedback); track src.documentId) {
+              <div
+                class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 flex items-center justify-between gap-4 shadow-sm hover:border-[var(--brand-primary)]/30 transition duration-150">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="25">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div class="min-w-0">
+                    <h5 class="text-[11px] font-bold text-[var(--text-primary)] truncate" [title]="src.name">{{ src.name }}
+                    </h5>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                  <button type="button" (click)="previewDocument(src.courseId, src.documentId, src.name)"
+                    class="flex items-center gap-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-2 py-1.5 text-[9px] font-bold text-[var(--text-primary)] transition active:scale-95">
+                    Previsualizar
+                  </button>
+                  <button type="button" (click)="downloadSource(src.courseId, src.documentId)"
+                    class="flex items-center gap-1 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-2 py-1.5 text-[9px] font-bold text-white transition active:scale-95">
+                    Descargar
+                  </button>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+          <!-- Empty State when there is no feedback -->
+          <div class="hidden lg:flex rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] p-5 text-center shadow-sm flex-col items-center justify-center">
+            @if (activeAns.isCorrect) {
+              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--brand-forest)]/10 text-[var(--brand-forest)] mb-3">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p class="text-[11px] font-bold text-[var(--text-primary)] mb-1">¡Respuesta Correcta!</p>
+              <p class="text-[10px] text-[var(--text-secondary)] leading-relaxed">Selecciona una pregunta incorrecta (en rojo) en la navegación de arriba para ver la explicación y los recursos sugeridos por Sery.</p>
+            } @else {
+              <svg class="mx-auto h-8 w-8 text-[var(--text-secondary)]/40 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-xs font-bold text-[var(--text-secondary)]">No hay explicación disponible</p>
+            }
+          </div>
+        }
+      }
+
+      </div>
+    </div>
   </div>
   }
 </div>
@@ -509,7 +645,7 @@
         vinculados a los temas del bimestre y creará preguntas variadas para evaluar el aprendizaje.</p>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-5 items-end pt-2">
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end pt-2">
       <div class="space-y-2">
         <label for="gen-bim"
           class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Bimestre</label>
@@ -612,7 +748,7 @@
       No has generado ningún cuestionario aún en esta aula.
     </div>
     } @else {
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
       @for (quiz of courseQuizzes(); track quiz.id) {
       <div
         class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm hover:shadow-md transition-shadow">

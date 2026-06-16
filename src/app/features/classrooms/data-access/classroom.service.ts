@@ -130,7 +130,7 @@ export class ClassroomService {
   }
 
   getAreas() {
-    return this.http.get<Array<{ id: number; name: string; coordinatorId: number }>>(
+    return this.http.get<Array<{ id: number; name: string; coordinatorName: string }>>(
       `${this.baseUrl}/areas`,
       { withCredentials: true }
     );

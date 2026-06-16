@@ -28,16 +28,14 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Resumen de Inteligencia Artificial
+              Resumen de Sery
             </div>
           </div>
 
           @if (data.latestInsight) {
-            <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] p-3 rounded border border-[var(--border)]" [innerHTML]="data.latestInsight | markdownMath"></div>
+            <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] p-3 rounded border border-[var(--border)]" [innerHTML]="renderInsightContent(data.latestInsight)" (click)="handleInsightClick($event, data.latestInsight)"></div>
           } @else {
-            <div class="text-center py-4">
-              <p class="text-xs text-[var(--text-secondary)] mb-3">Aún no hay un análisis de IA disponible para tu progreso.</p>
-            </div>
+              <p class="text-xs text-[var(--text-secondary)] mb-3">Aún no hay un resumen de Sery disponible para tu progreso.</p>
           }
         </div>
       </div>
@@ -62,7 +60,7 @@
             class="rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] px-3 py-2 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--brand-primary)] focus:bg-[var(--surface)] transition duration-200 cursor-pointer"
           >
             @for (period of gradingPeriods(); track period.id) {
-              <option [value]="period.id" [selected]="selectedGradingPeriodId() === period.id">{{ period.bimester }}</option>
+              <option [value]="period.id" [selected]="selectedGradingPeriodId() === period.id">{{ translateBimester(period.bimester) }}</option>
             }
           </select>
         </div>
@@ -191,9 +189,9 @@
                       <td class="px-5 py-3 text-xs font-bold text-[var(--text-primary)]">Semana {{ grade.weekNumber }}</td>
                       <td class="px-5 py-3 text-xs text-[var(--text-secondary)]">#{{ grade.questionnaireId }}</td>
                       <td class="px-5 py-3 text-xs font-extrabold text-right"
-                          [class.text-[var(--brand-forest)]]="grade.score >= 80"
-                          [class.text-[var(--brand-mustard)]]="grade.score >= 50 && grade.score < 80"
-                          [class.text-[var(--brand-error)]]="grade.score < 50">
+                          [class.text-[var(--brand-forest)]]="grade.score >= 16"
+                          [class.text-[var(--brand-mustard)]]="grade.score >= 10 && grade.score < 16"
+                          [class.text-[var(--brand-error)]]="grade.score < 10">
                         {{ grade.score }}
                       </td>
                     </tr>
@@ -234,7 +232,7 @@
         </div>
 
         <!-- Scrollable Roadmap Pathway -->
-        <div class="overflow-x-auto pb-4 pt-6 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div class="overflow-x-auto pb-4 pt-6 -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth">
           <div class="flex items-stretch gap-6 relative min-w-max py-2">
             
             <!-- Beautiful background connecting path (Dashed track line) -->
@@ -263,7 +261,7 @@
                   
                   @if (topic.percentage >= 80) {
                     <!-- Trophy Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                     </svg>
                   } @else if (topic.percentage >= 50) {
@@ -360,7 +358,15 @@
   <!-- ============================================================ -->
   <div class="space-y-6 select-none animate-fadeIn">
     <div>
-      <h2 class="text-lg font-bold text-[var(--text-primary)]">Seguimiento de Avance</h2>
+        <div class="flex items-center gap-3">
+          <h3 class="text-xl font-black text-[var(--text-primary)]">Seguimiento de Avance</h3>
+          <!-- Refresh Button -->
+          <button (click)="refreshData()" class="p-1.5 text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 rounded-full transition-colors flex items-center justify-center cursor-pointer" title="Actualizar datos">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       <p class="text-xs text-[var(--text-secondary)] mt-0.5">Control de avance y rendimiento del aula</p>
     </div>
 
@@ -384,16 +390,14 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Análisis del Rendimiento del Aula (IA)
+              Análisis del Rendimiento del Aula (Sery)
             </div>
           </div>
 
           @if (data.latestInsight) {
-            <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] p-3 rounded border border-[var(--border)]" [innerHTML]="data.latestInsight | markdownMath"></div>
+            <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] p-3 rounded border border-[var(--border)]" [innerHTML]="renderInsightContent(data.latestInsight)" (click)="handleInsightClick($event, data.latestInsight)"></div>
           } @else {
-            <div class="text-center py-4">
-              <p class="text-xs text-[var(--text-secondary)] mb-3">Aún no hay un análisis de IA disponible para esta aula.</p>
-            </div>
+              <p class="text-xs text-[var(--text-secondary)] mb-3">Aún no hay un resumen de Sery disponible para esta aula.</p>
           }
         </div>
       </div>
@@ -548,7 +552,7 @@
           </thead>
           <tbody class="divide-y divide-[var(--border)]/50 font-medium text-xs">
             @for (student of data.performance.students; track student.studentId) {
-              <tr class="hover:bg-[var(--bg-secondary)]/50 transition cursor-pointer" (click)="toggleStudentDetails(student.studentId)">
+              <tr class="hover:bg-[var(--bg-secondary)]/50 transition cursor-pointer" (click)="toggleStudentDetails(student.studentId, student.studentName)">
                 <td class="px-6 py-4 font-bold text-[var(--text-primary)]">
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center font-bold">
@@ -597,22 +601,13 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            Sugerencia IA para {{ student.studentName }}
+                            Sugerencia de Sery para {{ student.studentName }}
                           </div>
                           <div class="flex items-center gap-2">
-                            <button (click)="generateInsightForStudent(student.studentId); $event.stopPropagation()"
-                              [disabled]="generatingInsightStudentId() === student.studentId"
-                              class="text-[10px] font-bold text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition disabled:opacity-50 flex items-center gap-1 cursor-pointer">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-                                [class.animate-spin]="generatingInsightStudentId() === student.studentId">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                              </svg>
-                              {{ generatingInsightStudentId() === student.studentId ? 'Generando...' : 'Regenerar' }}
-                            </button>
-                            <button (click)="openRecModal(student.studentName); $event.stopPropagation()"
+                            <button (click)="openRecModal(student); $event.stopPropagation()"
                               class="text-[10px] font-extrabold uppercase tracking-wider bg-[var(--brand-primary)] text-white px-3 py-1.5 rounded-lg hover:bg-[var(--brand-primary-hover)] transition cursor-pointer flex items-center gap-1">
                               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                               </svg>
                               Recomendación
                             </button>
@@ -625,9 +620,14 @@
                             <span class="text-[10px] text-[var(--text-secondary)]">Cargando sugerencia...</span>
                           </div>
                         } @else if (studentInsights()[student.studentId]; as insight) {
-                          <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed bg-[var(--bg-secondary)]/30 p-3 rounded border border-[var(--border)]" [innerHTML]="insight | markdownMath"></div>
+                          <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed bg-[var(--bg-secondary)]/30 p-3 rounded border border-[var(--border)]" [innerHTML]="renderInsightContent(insight)" (click)="handleInsightClick($event, insight)"></div>
+                        } @else if (generatingInsightStudentId() === student.studentId) {
+                          <div class="flex items-center gap-2 py-2">
+                            <div class="w-4 h-4 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
+                            <span class="text-[10px] text-[var(--text-secondary)] animate-pulse">Sery está analizando a {{ student.studentName }}...</span>
+                          </div>
                         } @else {
-                          <p class="text-[10px] text-[var(--text-secondary)] italic py-1">No hay sugerencia de IA disponible para este estudiante. Haz clic en "Regenerar" para solicitar una.</p>
+                          <p class="text-[10px] text-[var(--text-secondary)] italic py-1">No se pudo generar una sugerencia para este estudiante.</p>
                         }
                       </div>
 
@@ -640,29 +640,41 @@
                         } @else {
                           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             @for (topic of student.topics; track topic.topicId) {
-                              <div class="flex items-center gap-3">
-                                <div class="relative w-10 h-10 flex items-center justify-center">
-                                  <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                    <circle cx="18" cy="18" r="16" fill="none" class="stroke-[var(--bg-secondary)]" stroke-width="3"></circle>
-                                    <circle cx="18" cy="18" r="16" fill="none"
-                                            [attr.stroke-dasharray]="topic.percentage + ', 100'"
-                                            [class.stroke-[var(--brand-forest)]]="topic.percentage >= 80"
-                                            [class.stroke-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
-                                            [class.stroke-[var(--text-secondary)]]="topic.percentage < 50"
-                                            stroke-width="3" stroke-linecap="round"></circle>
-                                  </svg>
-                                  <div class="absolute flex flex-col items-center justify-center text-[8px] font-black"
-                                       [class.text-[var(--brand-forest)]]="topic.percentage >= 80"
-                                       [class.text-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
-                                       [class.text-[var(--text-secondary)]]="topic.percentage < 50">
-                                    {{ topic.percentage | number:'1.0-0' }}%
+                              <div class="flex-col w-full">
+                                  <div class="flex items-center gap-3 w-full p-2 rounded-lg transition-colors"
+                                       [class.cursor-pointer]="topic.progressHistory && topic.progressHistory.length > 1"
+                                       [class.hover:bg-[var(--bg-secondary)]]="topic.progressHistory && topic.progressHistory.length > 1"
+                                       (click)="openRoadmapModal(topic)">
+                                    <div class="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
+                                      <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                        <circle cx="18" cy="18" r="16" fill="none" class="stroke-[var(--bg-secondary)]" stroke-width="3"></circle>
+                                        <circle cx="18" cy="18" r="16" fill="none"
+                                                [attr.stroke-dasharray]="topic.percentage + ', 100'"
+                                                [class.stroke-[var(--brand-forest)]]="topic.percentage >= 80"
+                                                [class.stroke-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
+                                                [class.stroke-[var(--text-secondary)]]="topic.percentage < 50"
+                                                stroke-width="3" stroke-linecap="round"></circle>
+                                      </svg>
+                                      <div class="absolute flex flex-col items-center justify-center text-[8px] font-black"
+                                           [class.text-[var(--brand-forest)]]="topic.percentage >= 80"
+                                           [class.text-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
+                                           [class.text-[var(--text-secondary)]]="topic.percentage < 50">
+                                        {{ topic.percentage | number:'1.0-0' }}%
+                                      </div>
+                                    </div>
+                                    <div class="flex-1">
+                                      <p class="text-[10px] font-bold text-[var(--text-primary)] leading-tight">{{ topic.topicName }}</p>
+                                      <p class="text-[9px] text-[var(--text-secondary)] mt-0.5">Semana {{ topic.weekNumber }} • Máx: {{ topic.score | number:'1.0-1' }} pts</p>
+                                    </div>
+                                    @if (topic.progressHistory && topic.progressHistory.length > 1) {
+                                      <div class="flex items-center justify-center text-[var(--brand-primary)] pr-2" title="Ver roadmap de intentos">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                        </svg>
+                                      </div>
+                                    }
                                   </div>
                                 </div>
-                                <div class="flex-1">
-                                  <p class="text-[10px] font-bold text-[var(--text-primary)] leading-tight">{{ topic.topicName }}</p>
-                                  <p class="text-[9px] text-[var(--text-secondary)] mt-0.5">Semana {{ topic.weekNumber }} • {{ topic.score | number:'1.0-1' }} pts</p>
-                                </div>
-                              </div>
                             }
                           </div>
                         }
@@ -688,34 +700,178 @@
   <app-modal
     [isOpen]="isRecModalOpen()"
     [onClose]="closeRecModal"
+    widthClass="max-w-lg"
     [title]="recStudentName() ? 'Recomendación para ' + recStudentName() : 'Generar Recomendación de IA'">
-    <div body class="space-y-4">
-      <p class="text-xs text-[var(--text-secondary)]">Usa IA para generar un cuestionario recomendado. Especifica el tema y un contexto para que la IA personalice las preguntas de refuerzo.</p>
+    
+    <div class="space-y-4">
+      <p class="text-xs text-[var(--text-secondary)]">Usa IA para generar un cuestionario recomendado. Especifica el tema y la IA personalizará las preguntas de refuerzo.</p>
 
       <form [formGroup]="recForm" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-[var(--text-secondary)] mb-1">Nombre del Tema Sugerido</label>
-          <input type="text" formControlName="topicName" placeholder="Ej. Reforzamiento de Algoritmos" class="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition">
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-[var(--text-secondary)] mb-1">Contexto o Material Adicional</label>
-          <textarea formControlName="contextText" rows="3" placeholder="Ingresa texto, un resumen, o un caso de estudio..." class="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition resize-none"></textarea>
+          <select formControlName="topicId" class="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition">
+            @for (topic of currentStudentTopics(); track topic.topicId) {
+              <option [value]="topic.topicId">{{ topic.topicName }} (Semana {{ topic.weekNumber }})</option>
+            }
+          </select>
         </div>
 
         <div>
           <label class="block text-xs font-bold text-[var(--text-secondary)] mb-1">Cantidad de Preguntas</label>
-          <input type="number" formControlName="numQuestions" min="1" max="20" class="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition">
+          <div class="relative">
+            <input type="number" formControlName="numQuestions" min="5" max="10" class="w-full px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--brand-primary)] transition hide-spin-button">
+            <div class="absolute inset-y-0 right-0 flex flex-col border-l border-[var(--border)] rounded-r overflow-hidden">
+              <button type="button" (click)="increaseRecQuestions()"
+                class="flex-1 px-2 bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center">
+                <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
+              <div class="h-px bg-[var(--border)] w-full"></div>
+              <button type="button" (click)="decreaseRecQuestions()"
+                class="flex-1 px-2 bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center">
+                <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </div>
-    <div footer class="flex justify-end gap-2">
-      <button type="button" (click)="closeRecModal()" class="px-4 py-2 text-xs font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
+
+    <div class="mt-8 pt-4 border-t border-[var(--border)] flex justify-end gap-2">
+      <button type="button" (click)="closeRecModal()" class="px-4 py-2 text-xs font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] rounded-lg transition">
         Cancelar
       </button>
-      <button type="button" (click)="submitRecommendation()" [disabled]="recForm.invalid || isGeneratingRec()" class="px-4 py-2 text-xs font-bold bg-[var(--brand-primary)] text-white rounded hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50">
+      <button type="button" (click)="submitRecommendation()" [disabled]="recForm.invalid || isGeneratingRec()" class="px-4 py-2 text-xs font-bold bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50">
         {{ isGeneratingRec() ? 'Generando...' : 'Generar Cuestionario' }}
       </button>
     </div>
   </app-modal>
+
+<!-- Topic Roadmap Modal -->
+<app-modal [isOpen]="isRoadmapModalOpen()" [title]="'Roadmap de Intentos'" [onClose]="closeRoadmapModal">
+  <div class="p-6 pt-2">
+    <div class="mb-6 border-b border-[var(--border)] pb-4">
+      @if (selectedTopicForRoadmap(); as topic) {
+        <p class="text-sm text-[var(--text-secondary)]">
+          Evolución en el tema <span class="font-bold text-[var(--text-primary)]">{{ topic.topicName }}</span>
+        </p>
+      }
+    </div>
+
+    @if (selectedTopicForRoadmap(); as topic) {
+      <div class="mt-12 mb-12 px-4 relative">
+        <div class="relative flex items-center h-4 w-full">
+          <!-- Línea conectora -->
+          <div class="absolute left-4 right-4 top-1/2 transform -translate-y-1/2 h-1 bg-[var(--border)] rounded-full"></div>
+          
+          <!-- Puntos de progreso -->
+          <div class="absolute inset-0 flex items-center justify-between">
+            @for (attemptPercent of topic.progressHistory; track $index) {
+              <div class="relative group cursor-help flex flex-col items-center">
+                <!-- Porcentaje Arriba -->
+                <div class="absolute -top-10 font-black text-sm"
+                     [class.text-[var(--brand-forest)]]="attemptPercent >= 80"
+                     [class.text-[var(--brand-primary)]]="attemptPercent >= 50 && attemptPercent < 80"
+                     [class.text-[var(--text-secondary)]]="attemptPercent < 50">
+                  {{ attemptPercent | number:'1.0-0' }}%
+                </div>
+                
+                <div class="w-6 h-6 rounded-full border-4 border-[var(--surface)] shadow-md z-10 transition-transform hover:scale-110 flex items-center justify-center"
+                     [class.bg-[var(--brand-forest)]]="attemptPercent >= 80"
+                     [class.bg-[var(--brand-primary)]]="attemptPercent >= 50 && attemptPercent < 80"
+                     [class.bg-[var(--text-secondary)]]="attemptPercent < 50">
+                     <span class="text-[8px] font-bold text-white">{{ $index + 1 }}</span>
+                </div>
+                
+                <!-- Etiqueta Abajo -->
+                <div class="absolute -bottom-8 font-bold text-xs text-[var(--text-secondary)] whitespace-nowrap">
+                  Intento {{ $index + 1 }}
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-[var(--bg-secondary)] p-4 rounded-xl flex items-center justify-between border border-[var(--border)]">
+        <div>
+          <p class="text-xs text-[var(--text-secondary)] font-bold uppercase tracking-wider">Puntaje Máximo Alcanzado</p>
+          <p class="text-lg font-black text-[var(--text-primary)] mt-1">{{ topic.score | number:'1.0-1' }} pts <span class="text-sm font-bold text-[var(--text-secondary)] ml-1">({{ topic.percentage | number:'1.0-0' }}%)</span></p>
+        </div>
+        <div class="flex items-center justify-center w-12 h-12 rounded-full"
+             [class.bg-[var(--brand-forest)]]="topic.percentage >= 80"
+             [class.bg-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
+             [class.bg-[var(--text-secondary)]]="topic.percentage < 50">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+      </div>
+    }
+
+    <div class="mt-8 flex justify-end">
+      <button type="button" (click)="closeRoadmapModal()" class="px-6 py-2.5 rounded-xl font-bold text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</app-modal>
 }
+
+  <!-- Document Preview Modal Overlay -->
+  @if (previewSecureUrl() || previewLoading()) {
+  <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6" role="presentation">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300" (click)="closePreview()"
+      aria-hidden="true"></div>
+
+    <!-- Modal Card -->
+    <div role="dialog" aria-modal="true"
+      class="relative z-10 w-full max-w-5xl rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-2xl flex flex-col h-[85vh] max-h-[90vh] overflow-hidden animate-fade-in">
+      <!-- Header -->
+      <header
+        class="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 bg-[var(--bg-secondary)]/30">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-sm font-extrabold text-[var(--text-primary)] truncate"
+            title="Previsualizando: {{ previewDocumentTitle() }}">
+            Previsualización: {{ previewDocumentTitle() }}
+          </h3>
+        </div>
+        <button type="button"
+          class="rounded-xl border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition active:scale-95 cursor-pointer"
+          (click)="closePreview()" aria-label="Cerrar Previsualización">
+          ✕ Cerrar
+        </button>
+      </header>
+
+      <!-- Body / Iframe Area -->
+      <div class="flex-1 bg-[var(--bg-secondary)]/15 relative flex items-center justify-center p-3">
+        @if (previewLoading()) {
+        <div
+          class="space-y-3 text-center z-20 absolute inset-0 flex flex-col items-center justify-center bg-[var(--surface)]/80">
+          <div
+            class="inline-flex h-9 w-9 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]">
+          </div>
+          <p class="text-xs font-bold text-[var(--text-secondary)]">Obteniendo enlace de lectura seguro...</p>
+        </div>
+        }
+
+        @if (previewSecureUrl(); as safeUrl) {
+        <iframe [src]="safeUrl"
+          class="w-full h-full rounded-xl border border-[var(--border)] shadow-sm bg-[var(--surface)]"
+          frameborder="0"></iframe>
+        }
+      </div>
+    </div>
+  </div>
+  }

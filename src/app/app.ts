@@ -21,15 +21,15 @@ export class App implements OnInit {
   readonly currentUrl = signal(this.router.url);
 
   readonly showNavbar = computed(() => {
-    return this.userDataService.isAuthenticated() && !this.currentUrl().includes('/sign-in');
+    return this.userDataService.isAuthenticated() && !this.currentUrl().includes('/sign-in') && !this.currentUrl().includes('/update-password');
   });
 
   readonly shouldShowSplash = computed(() => {
     if (this.userDataService.isSessionLoaded()) {
       return false;
     }
-    const isSignIn = this.currentUrl().includes('/sign-in') || window.location.href.includes('sign-in');
-    return !isSignIn;
+    const isSignInOrUpdate = this.currentUrl().includes('/sign-in') || window.location.href.includes('sign-in') || this.currentUrl().includes('/update-password') || window.location.href.includes('update-password');
+    return !isSignInOrUpdate;
   });
 
   ngOnInit() {
@@ -39,7 +39,7 @@ export class App implements OnInit {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {
         navigationStartTime = Date.now();
-        if (!event.url.includes('sign-in')) {
+        if (!event.url.includes('sign-in') && !event.url.includes('update-password')) {
           this.isRouting.set(true);
         }
       } else if (

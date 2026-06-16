@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../../environment/environment';
 
@@ -9,6 +9,9 @@ export interface TopicPerformance {
   weekNumber: number;
   score: number;
   percentage: number;
+  gradingPeriodId: number;
+  courseId: number;
+  progressHistory?: number[];
 }
 
 export interface StudentPerformance {
@@ -95,8 +98,9 @@ export class AchievementService {
     return this.http.get<AreaAchievementResource>(`${this.apiUrl}/areas/${areaId}`);
   }
 
-  generateStudentInsight(studentId: number): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/students/${studentId}/insights`, {});
+  generateStudentPerformanceInsight(studentId: number, studentName: string): Observable<any> {
+    const params = new HttpParams().set('studentName', studentName);
+    return this.http.post(`${this.apiUrl}/students/${studentId}/insights`, {}, { params });
   }
 
   getClassroomAchievements(classroomId: number): Observable<ClassroomAchievementResource> {

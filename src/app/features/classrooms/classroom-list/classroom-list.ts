@@ -40,13 +40,13 @@ import { ClassroomCard } from './ui/classroom-card';
       @let classroomList = classrooms();
 
       @if (classroomList.length > 0) {
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           @for (classroom of classroomList; track classroom.id) {
             <a
               [routerLink]="['/classrooms', classroom.id]"
-              class="block focus:outline-none"
+              class="block h-full focus:outline-none"
             >
-              <app-classroom-card [classroom]="classroom"></app-classroom-card>
+              <app-classroom-card [classroom]="classroom" class="block h-full"></app-classroom-card>
             </a>
           }
         </div>

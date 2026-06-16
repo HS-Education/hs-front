@@ -6,6 +6,9 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
 @Component({
   selector: 'app-classroom-card',
   imports: [Card, TranslateEnumPipe],
+  host: {
+    class: 'block h-full'
+  },
   template: `
     @if (classroom(); as c) {
       <app-card>
@@ -15,7 +18,7 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
             {{ c.courseName.slice(0, 1) }}
           </div>
           <div class="space-y-1 min-w-0 flex-1">
-            <h3 class="text-sm font-extrabold text-[var(--text-primary)] leading-snug tracking-tight hover:text-[var(--brand-primary)] transition duration-150 break-words">
+            <h3 class="text-sm font-extrabold text-[var(--text-primary)] leading-snug tracking-tight hover:text-[var(--brand-primary)] transition duration-150 break-normal line-clamp-2">
               {{ c.courseName }}
             </h3>
             <p class="text-[10px] text-[var(--text-secondary)] font-semibold uppercase tracking-wider">
@@ -44,23 +47,23 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
         <section class="mt-3">
           <!-- Metadata grid: Section and Period -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[var(--text-secondary)]">
-            <div class="flex items-center gap-2 rounded-md bg-[var(--bg-secondary)]/50 border border-[var(--border)]/40 p-2">
+            <div class="flex items-center gap-2 rounded-md bg-[var(--bg-secondary)]/50 border border-[var(--border)]/40 p-2 min-w-0">
               <svg class="h-4 w-4 text-[var(--text-secondary)]/70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               <div class="overflow-hidden">
-                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider">Sección</span>
-                <span class="font-bold text-[var(--text-primary)] text-xxs truncate block">{{ sectionName() }}</span>
+                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider truncate">Sección</span>
+                <span class="font-bold text-[var(--text-primary)] text-[10px] truncate block">{{ sectionName() }}</span>
               </div>
             </div>
 
-            <div class="flex items-center gap-2 rounded-md bg-[var(--bg-secondary)]/50 border border-[var(--border)]/40 p-2">
+            <div class="flex items-center gap-2 rounded-md bg-[var(--bg-secondary)]/50 border border-[var(--border)]/40 p-2 min-w-0">
               <svg class="h-4 w-4 text-[var(--text-secondary)]/70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <div class="overflow-hidden">
-                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider">Periodo</span>
-                <span class="font-bold text-[var(--text-primary)] text-xxs truncate block">{{ academicYear() }}</span>
+                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider truncate">Periodo</span>
+                <span class="font-bold text-[var(--text-primary)] text-[10px] truncate block">{{ academicYear() }}</span>
               </div>
             </div>
           </div>

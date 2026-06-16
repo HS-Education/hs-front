@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject, input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, signal} from '@angular/core';
 import {Quizzes} from './quizzes/quizzes';
 import {Repo} from './repo/repo';
 import {Progress} from './progress/progress';
@@ -22,13 +22,24 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
   template: `
     <div class="p-4 sm:p-6 md:p-10 space-y-8 select-none">
       <!-- Breadcrumb / Header -->
-      <div class="flex flex-col gap-1.5">
+      <div class="flex flex-col gap-1.5 relative">
         <div class="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
           <a routerLink="/classrooms" class="hover:text-[var(--text-primary)] transition">Aulas</a>
           <span>/</span>
           <span class="text-[var(--text-primary)]">Detalle de Aula</span>
         </div>
-        <h1 class="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Detalle de Aula</h1>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h1 class="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Detalle de Aula</h1>
+          
+          @if (cameFromMetrics()) {
+            <button routerLink="/metrics" class="inline-flex items-center gap-2 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] text-xs font-bold rounded-lg hover:bg-[var(--bg-secondary)] transition-colors shadow-sm w-fit">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Regresar a Métricas
+            </button>
+          }
+        </div>
       </div>
 
       <div class="space-y-6">
@@ -52,7 +63,7 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
         </div>
 
         <!-- Tab Content Card -->
-        <section class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
+        <section class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-6 shadow-sm">
           @switch (activeTab()) {
             @case ('quizzes') {
               @if (classroom(); as cls) {
@@ -86,6 +97,8 @@ export class ClassroomDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly classroomService = inject(ClassroomService);
+
+  readonly cameFromMetrics = signal<boolean>(history.state?.fromMetrics === true);
 
   readonly classroom = toSignal(
     this.route.paramMap.pipe(

@@ -44,6 +44,7 @@ export class Quizzes implements OnInit {
 
   // Quiz-taking Signals
   readonly currentQuizInstanceId = signal<number | null>(null);
+  readonly activeQuiz = signal<AvailableQuestionnaire | null>(null);
   readonly quizQuestions = signal<Question[]>([]);
   readonly currentQuestionIndex = signal<number>(0);
   readonly selectedAnswers = signal<{[key: number]: number}>({});
@@ -53,6 +54,7 @@ export class Quizzes implements OnInit {
   // Results Signals
   readonly results = signal<QuestionnaireSubmission | null>(null);
   readonly loadingResults = signal(false);
+  readonly selectedResultIdx = signal<number>(0);
 
   // Expand State Signal
   readonly expandedQuizId = signal<number | null>(null);
@@ -117,7 +119,7 @@ export class Quizzes implements OnInit {
   // Calculate statistics for student view
   readonly totalQuizzesCount = computed(() => this.courseQuizzes().length);
   readonly completedQuizzesCount = computed(() => this.courseQuizzes().filter(q => q.status === 'COMPLETED').length);
-  readonly pendingQuizzesCount = computed(() => this.courseQuizzes().filter(q => q.status === 'PENDING' || q.status === 'STARTED').length);
+  readonly pendingQuizzesCount = computed(() => this.courseQuizzes().filter(q => q.status === 'PENDING' || q.status === 'STARTED' || q.status === 'RETRY').length);
   readonly averageScore = computed(() => {
     // Note: Since submissions list is filtered on backend by session-level queries,
     // we compute student statistics based on mock scores or completed scores.
@@ -173,6 +175,7 @@ export class Quizzes implements OnInit {
       if (instanceIdStr) {
         const instanceId = Number(instanceIdStr);
         if (!isNaN(instanceId)) {
+          this.currentQuizInstanceId.set(instanceId);
           this.viewResults(instanceId);
         }
       } else {
@@ -200,6 +203,9 @@ export class Quizzes implements OnInit {
     this.questionnaireService.getAvailableQuestionnaires().subscribe({
       next: (list) => {
         this.allQuizzes.set(list);
+        if (this.viewState() === 'VIEW_RESULTS' && this.currentQuizInstanceId()) {
+          this.trySetActiveQuiz(this.currentQuizInstanceId()!);
+        }
         this.loadingQuizzes.set(false);
       },
       error: (err: unknown) => {
@@ -276,6 +282,8 @@ export class Quizzes implements OnInit {
     this.questionnaireService.startQuestionnaire(questionnaireId).subscribe({
       next: (instanceId) => {
         this.currentQuizInstanceId.set(instanceId);
+        const q = this.allQuizzes().find(x => x.id === questionnaireId) || null;
+        this.activeQuiz.set(q);
         this.quizName.set(`Cuestionario - Semana ${weekNumber}`);
         this.loadQuestions(instanceId);
       },
@@ -288,6 +296,8 @@ export class Quizzes implements OnInit {
   resumeQuiz(instanceId: number, weekNumber: number): void {
     if (!instanceId || (instanceId as any) === 'null' || (instanceId as any) === 'undefined') return;
     this.currentQuizInstanceId.set(instanceId);
+    const q = this.allQuizzes().find(x => x.activeInstanceId === instanceId) || null;
+    this.activeQuiz.set(q);
     this.quizName.set(`Cuestionario - Semana ${weekNumber}`);
     this.loadQuestions(instanceId);
   }
@@ -384,6 +394,7 @@ export class Quizzes implements OnInit {
     this.questionnaireService.getSubmissionResults(instanceId).subscribe({
       next: (res) => {
         this.results.set(res);
+        this.trySetActiveQuiz(instanceId);
         this.loadingResults.set(false);
       },
       error: (err: unknown) => {
@@ -443,6 +454,15 @@ export class Quizzes implements OnInit {
     return sources;
   }
 
+  private trySetActiveQuiz(instanceId: number): void {
+    if (!this.activeQuiz()) {
+      const quiz = this.allQuizzes().find(q => q.activeInstanceId === instanceId || q.pastAttempts?.some(p => p.instanceId === instanceId)) || null;
+      if (quiz) {
+        this.activeQuiz.set(quiz);
+      }
+    }
+  }
+
   cleanMessageContent(content: string | null | undefined): string {
     if (!content) return '';
     const cleaned = content.replace(/Fuente:\s*[^\r\n]+\s*[\r\n]+\s*Enlace de descarga:\s*[^\r\n\s]+/gi, '');
@@ -466,6 +486,14 @@ export class Quizzes implements OnInit {
         alert('No se pudo cargar la previsualización del documento.');
       }
     });
+  }
+
+  scrollTo(idx: number): void {
+    this.selectedResultIdx.set(idx);
+    const el = document.getElementById('q-' + idx);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   closePreview(): void {
