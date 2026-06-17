@@ -46,6 +46,49 @@ export class ChatService {
     );
   }
 
+  async sendMessageStream(sessionId: number, question: string, onChunk: (text: string) => void): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/chat/sessions/${sessionId}/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ question }),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error en la solicitud: ${response.statusText}`);
+    }
+
+    if (!response.body) {
+      throw new Error('El entorno no soporta streaming (response.body es nulo).');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) {
+          onChunk(decoder.decode(value, { stream: true }));
+        }
+      }
+      // Flush any remaining bytes in the decoder
+      const remaining = decoder.decode();
+      if (remaining) {
+        onChunk(remaining);
+      }
+    } catch (streamError) {
+      // When Spring closes the connection, the reader may throw.
+      // This is expected behavior — the data was already delivered.
+      console.warn('Stream ended:', streamError);
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
   deleteChatSession(sessionId: number) {
     return this.http.delete<void>(
       `${this.baseUrl}/chat/sessions/${sessionId}`,

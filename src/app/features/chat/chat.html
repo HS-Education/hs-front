@@ -165,6 +165,7 @@
       } @else {
       <!-- Loop messages -->
       @for (msg of messages(); track msg.id) {
+      @if (msg.role.toUpperCase() === 'USER' || msg.content) {
       <div class="flex w-full" [class.justify-end]="msg.role.toUpperCase() === 'USER'">
         <div class="max-w-[75%] space-y-1">
           <!-- Avatar label -->
@@ -188,6 +189,7 @@
           </span>
         </div>
       </div>
+      }
       }
 
       <!-- Loading AI response state -->

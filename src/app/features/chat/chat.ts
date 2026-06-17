@@ -233,7 +233,7 @@ export class Chat implements OnInit {
     }, 50);
   }
 
-  sendMessage(): void {
+  async sendMessage(): Promise<void> {
     const sessionId = this.currentSessionId();
     const text = this.questionText().trim();
     if (!sessionId || !text || this.sendingMessage()) return;
@@ -241,36 +241,55 @@ export class Chat implements OnInit {
     this.sendingMessage.set(true);
     this.questionText.set('');
 
-    // Optimistic message append
     const userMsg: ChatMessage = {
       id: Date.now(),
       role: 'USER',
       content: text,
       createdAt: new Date().toISOString()
     };
-    this.messages.update(prev => [...prev, userMsg]);
+    
+    // Create a placeholder for the assistant message
+    const assistantId = Date.now() + 1;
+    const assistantMsg: ChatMessage = {
+      id: assistantId,
+      role: 'ASSISTANT',
+      content: '',
+      createdAt: new Date().toISOString()
+    };
+
+    this.messages.update(prev => [...prev, userMsg, assistantMsg]);
     this.scrollToBottom();
 
-    this.chatService.sendMessage(sessionId, text).subscribe({
-      next: (assistantMsg) => {
-        this.messages.update(prev => [...prev, assistantMsg]);
-        this.sendingMessage.set(false);
+    try {
+      let firstChunk = true;
+      await this.chatService.sendMessageStream(sessionId, text, (chunk) => {
+        if (firstChunk) {
+          this.sendingMessage.set(false);
+          firstChunk = false;
+        }
+        this.messages.update(prev => 
+          prev.map(msg => 
+            msg.id === assistantId 
+              ? { ...msg, content: (msg.content || '') + chunk } 
+              : msg
+          )
+        );
         this.scrollToBottom();
-      },
-      error: (err: unknown) => {
-        console.error('Error al enviar mensaje:', err);
-        this.sendingMessage.set(false);
-        // Show error message in chat window
-        const errorMsg: ChatMessage = {
-          id: Date.now() + 1,
-          role: 'ASSISTANT',
-          content: 'Lo siento, no pude procesar tu mensaje en este momento. Por favor, intenta de nuevo.',
-          createdAt: new Date().toISOString()
-        };
-        this.messages.update(prev => [...prev, errorMsg]);
-        this.scrollToBottom();
-      }
-    });
+      });
+      this.sendingMessage.set(false);
+    } catch (err) {
+      console.error('Error al enviar mensaje (stream):', err);
+      this.sendingMessage.set(false);
+      
+      this.messages.update(prev => 
+        prev.map(msg => 
+          msg.id === assistantId 
+            ? { ...msg, content: (msg.content || '') + '\n\n**Error:** Lo siento, no pude procesar tu mensaje en este momento. Por favor, intenta de nuevo.' } 
+            : msg
+        )
+      );
+      this.scrollToBottom();
+    }
   }
 
   // Preview Signals
