@@ -47,6 +47,9 @@ export class ChatService {
   }
 
   async sendMessageStream(sessionId: number, question: string, onChunk: (text: string) => void): Promise<void> {
+    const startTime = performance.now();
+    let isFirstToken = true;
+
     const response = await fetch(`${this.baseUrl}/chat/sessions/${sessionId}/stream`, {
       method: 'POST',
       headers: {
@@ -72,7 +75,15 @@ export class ChatService {
         const { value, done } = await reader.read();
         if (done) break;
         if (value) {
-          onChunk(decoder.decode(value, { stream: true }));
+          const chunkText = decoder.decode(value, { stream: true });
+          
+          if (isFirstToken && chunkText.trim() !== '') {
+            const firstTokenTime = performance.now();
+            console.log(`[TTFT TIMER] Time To First Token: ${(firstTokenTime - startTime).toFixed(2)} ms`);
+            isFirstToken = false;
+          }
+          
+          onChunk(chunkText);
         }
       }
       // Flush any remaining bytes in the decoder
