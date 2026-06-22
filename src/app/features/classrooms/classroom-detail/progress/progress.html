@@ -110,9 +110,11 @@
             </div>
           </div>
 
+          <!-- Weekly Progression and Definitive Grades Flex Container -->
+          <div class="flex flex-wrap items-start gap-4 mt-4">
           <!-- Weekly Progression Bar Chart -->
           @if (summary.weeklyProgression.length > 0) {
-            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
+            <div class="flex-1 min-w-[300px] xl:max-w-max rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
               <h4 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-4">Progresión Semanal</h4>
 
               <div class="overflow-x-auto">
@@ -136,11 +138,11 @@
                       [attr.fill]="getScoreColor(week.averageScore)" rx="4" ry="4" opacity="0.85">
                       <title>Semana {{ week.weekNumber }}: {{ week.averageScore | number:'1.0-1' }}%</title>
                     </rect>
-                    <text [attr.x]="i * 60 + 55" [attr.y]="160 - getBarHeight(week.averageScore) - 5"
-                      text-anchor="middle" class="fill-[var(--text-primary)]" font-size="9" font-weight="700">{{ week.averageScore | number:'1.0-0' }}</text>
+                    <text [attr.x]="i * 60 + 55" [attr.y]="160 - getBarHeight(week.averageScore) - 8"
+                      text-anchor="middle" class="fill-[var(--text-primary)]" font-size="10" font-weight="800">{{ week.averageScore | number:'1.0-0' }}</text>
                     @if (week.needsRemedial) {
-                      <circle [attr.cx]="i * 60 + 55" [attr.cy]="160 - getBarHeight(week.averageScore) - 14"
-                        r="4" fill="var(--brand-error)" opacity="0.8"><title>Necesita refuerzo</title></circle>
+                      <circle [attr.cx]="i * 60 + 55" [attr.cy]="160 - getBarHeight(week.averageScore) - 22"
+                        r="4" fill="var(--brand-error)" stroke="var(--surface)" stroke-width="1.5"><title>Necesita refuerzo</title></circle>
                     }
                     <text [attr.x]="i * 60 + 55" y="176" text-anchor="middle"
                       class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">S{{ week.weekNumber }}</text>
@@ -171,7 +173,7 @@
 
           <!-- Definitive Grades Table -->
           @if (summary.definitiveGrades.length > 0) {
-            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
+            <div class="flex-1 min-w-[300px] rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
               <div class="px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50">
                 <h4 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Notas Definitivas por Cuestionario</h4>
               </div>
@@ -200,6 +202,7 @@
               </table>
             </div>
           }
+          </div>
         } @else if (!isLoadingSummary() && gradingPeriods().length > 0) {
           <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-secondary)]/40 py-8 text-center">
             <p class="text-xs text-[var(--text-secondary)]">No hay datos de resumen disponibles para este bimestre.</p>
@@ -473,8 +476,8 @@
                   [attr.fill]="getScoreColor(week.averageScore)" rx="4" ry="4" opacity="0.85">
                   <title>Semana {{ week.weekNumber }}: Promedio {{ week.averageScore | number:'1.0-1' }}%</title>
                 </rect>
-                <text [attr.x]="i * 60 + 55" [attr.y]="160 - getBarHeight(week.averageScore) - 5"
-                  text-anchor="middle" class="fill-[var(--text-primary)]" font-size="9" font-weight="700">{{ week.averageScore | number:'1.0-0' }}</text>
+                <text [attr.x]="i * 60 + 55" [attr.y]="160 - getBarHeight(week.averageScore) - 8"
+                  text-anchor="middle" class="fill-[var(--text-primary)]" font-size="10" font-weight="800">{{ week.averageScore | number:'1.0-0' }}</text>
                 <text [attr.x]="i * 60 + 55" y="176" text-anchor="middle"
                   class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">S{{ week.weekNumber }}</text>
               }

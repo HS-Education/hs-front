@@ -69,7 +69,7 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
           </div>
 
           <!-- Subtle bottom identification meta info -->
-          <div class="flex items-center justify-between text-[9px] text-[var(--text-secondary)]/40 pt-2.5 border-t border-[var(--border)]/40 mt-3.5">
+          <div class="flex items-center justify-between text-[9px] text-[var(--text-secondary)]/70 font-medium pt-2.5 border-t border-[var(--border)]/70 mt-3.5">
             <span>Clase: #{{ c.id }}</span>
             <span>Curso: #{{ c.courseId }}</span>
           </div>

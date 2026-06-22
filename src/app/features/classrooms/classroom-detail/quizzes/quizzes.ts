@@ -48,6 +48,7 @@ export class Quizzes implements OnInit {
   readonly quizQuestions = signal<Question[]>([]);
   readonly currentQuestionIndex = signal<number>(0);
   readonly selectedAnswers = signal<{[key: number]: number}>({});
+  readonly answeredCount = computed(() => Object.keys(this.selectedAnswers()).length);
   readonly submitting = signal(false);
   readonly quizName = signal<string>('');
 
@@ -58,6 +59,9 @@ export class Quizzes implements OnInit {
 
   // Expand State Signal
   readonly expandedQuizId = signal<number | null>(null);
+
+  // Loading state for starting/retrying a quiz
+  readonly startingQuizId = signal<number | null>(null);
 
   // Confirm Modal signals
   readonly confirmModalOpen = signal(false);
@@ -114,6 +118,12 @@ export class Quizzes implements OnInit {
   // Filtered quizzes for active course
   readonly courseQuizzes = computed(() => {
     return this.allQuizzes().filter(q => q.courseId === this.courseId());
+  });
+
+  readonly displayedQuizzes = computed(() => {
+    const quizzes = this.courseQuizzes();
+    const active = quizzes.find(q => q.status === 'STARTED');
+    return active ? [active] : quizzes;
   });
 
   // Calculate statistics for student view
@@ -279,18 +289,25 @@ export class Quizzes implements OnInit {
 
   startQuiz(questionnaireId: number, weekNumber: number): void {
     if (!questionnaireId || (questionnaireId as any) === 'null' || (questionnaireId as any) === 'undefined') return;
-    this.questionnaireService.startQuestionnaire(questionnaireId).subscribe({
-      next: (instanceId) => {
-        this.currentQuizInstanceId.set(instanceId);
-        const q = this.allQuizzes().find(x => x.id === questionnaireId) || null;
-        this.activeQuiz.set(q);
-        this.quizName.set(`Cuestionario - Semana ${weekNumber}`);
-        this.loadQuestions(instanceId);
-      },
-      error: (err: unknown) => {
-        console.error('Error al iniciar cuestionario:', err);
-      }
-    });
+    this.startingQuizId.set(questionnaireId);
+    
+    // Añadir un pequeño retraso de 2 segundos para que se aprecie la animación de carga
+    setTimeout(() => {
+      this.questionnaireService.startQuestionnaire(questionnaireId).subscribe({
+        next: (instanceId) => {
+          this.currentQuizInstanceId.set(instanceId);
+          const q = this.allQuizzes().find(x => x.id === questionnaireId) || null;
+          this.activeQuiz.set(q);
+          this.quizName.set(`Cuestionario - Semana ${weekNumber}`);
+          this.startingQuizId.set(null);
+          this.loadQuestions(instanceId);
+        },
+        error: (err: unknown) => {
+          console.error('Error al iniciar cuestionario:', err);
+          this.startingQuizId.set(null);
+        }
+      });
+    }, 2000);
   }
 
   resumeQuiz(instanceId: number, weekNumber: number): void {
@@ -312,6 +329,7 @@ export class Quizzes implements OnInit {
         this.currentQuestionIndex.set(0);
         this.selectedAnswers.set({});
         this.viewState.set('TAKING_QUIZ');
+        this.userDataService.setTakingQuiz(true);
         this.loadingResults.set(false);
       },
       error: (err: unknown) => {
@@ -322,10 +340,15 @@ export class Quizzes implements OnInit {
   }
 
   selectOption(questionId: number, optionIndex: number): void {
-    this.selectedAnswers.update(curr => ({
-      ...curr,
-      [questionId]: optionIndex
-    }));
+    this.selectedAnswers.update(curr => {
+      const next = { ...curr };
+      if (next[questionId] === optionIndex) {
+        delete next[questionId];
+      } else {
+        next[questionId] = optionIndex;
+      }
+      return next;
+    });
   }
 
   nextQuestion(): void {
@@ -357,16 +380,23 @@ export class Quizzes implements OnInit {
 
   submitQuiz(): void {
     const instanceId = this.currentQuizInstanceId();
-    if (!instanceId || (instanceId as any) === 'null' || (instanceId as any) === 'undefined' || !this.isAllQuestionsAnswered() || this.submitting()) return;
+    if (!instanceId || (instanceId as any) === 'null' || (instanceId as any) === 'undefined' || this.submitting()) return;
 
-    this.confirmModalTitle.set('Enviar Respuestas');
-    this.confirmModalMessage.set('¿Estás seguro de enviar tus respuestas?');
+    if (!this.isAllQuestionsAnswered()) {
+      this.confirmModalTitle.set('Preguntas sin responder');
+      this.confirmModalMessage.set('¿Estás seguro de entregar el cuestionario? Tienes preguntas sin marcar.');
+    } else {
+      this.confirmModalTitle.set('Enviar Respuestas');
+      this.confirmModalMessage.set('¿Estás seguro de enviar tus respuestas?');
+    }
+
     this.confirmAction.set(() => {
       this.submitting.set(true);
       this.questionnaireService.submitQuestionnaire(instanceId, this.selectedAnswers()).subscribe({
         next: () => {
           this.confirmModalOpen.set(false);
           this.submitting.set(false);
+          this.userDataService.setTakingQuiz(false);
           this.viewResults(instanceId);
         },
         error: (err: unknown) => {
@@ -406,6 +436,7 @@ export class Quizzes implements OnInit {
 
   goBackToList(): void {
     this.viewState.set('LIST');
+    this.userDataService.setTakingQuiz(false);
     this.currentQuizInstanceId.set(null);
     this.quizQuestions.set([]);
     this.results.set(null);
@@ -429,6 +460,7 @@ export class Quizzes implements OnInit {
       error: (err: any) => {
         console.error('Error al generar cuestionario:', err);
         this.generating.set(false);
+        this.toastService.error('La Inteligencia Artificial tardó demasiado o el documento es muy extenso. Por favor, intenta de nuevo.');
       }
     });
   }

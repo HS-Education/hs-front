@@ -5,10 +5,11 @@ import {UserDataService} from '../../shared/services/user-data.service';
 import {ChatSession} from './data-access/models/chat-session.model';
 import {ChatMessage} from './data-access/models/chat-message.model';
 import {Classroom} from '../classrooms/data-access/models/responses/classroom.model';
+import {QuestionnaireService} from '../classrooms/data-access/questionnaire.service';
 import {FormsModule} from '@angular/forms';
 import {DatePipe} from '@angular/common';
 import {MarkdownMathPipe} from '../../shared/pipes/markdown-math.pipe';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {DomSanitizer, SafeResourceUrl, SafeHtml} from '@angular/platform-browser';
 import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
 
@@ -21,7 +22,7 @@ export interface ChatSource {
 
 @Component({
   selector: 'app-chat',
-  imports: [FormsModule, DatePipe, ConfirmModal],
+  imports: [FormsModule, DatePipe, ConfirmModal, RouterLink],
   templateUrl: './chat.html',
   styleUrl: './chat.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +34,7 @@ export class Chat implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   protected readonly sanitizer = inject(DomSanitizer);
+  private readonly questionnaireService = inject(QuestionnaireService);
 
   private readonly scrollContainer = viewChild<ElementRef<HTMLDivElement>>('scrollContainer');
 
@@ -49,6 +51,21 @@ export class Chat implements OnInit {
   readonly sendingMessage = signal(false);
   readonly loadingSessions = signal(false);
   readonly loadingMessages = signal(false);
+
+  // Block state
+  readonly isBlockedByQuizBackend = signal<boolean | null>(null);
+  readonly isBlockedByQuiz = computed(() => {
+    const backendCheck = this.isBlockedByQuizBackend();
+    const globalState = this.userDataService.isTakingQuiz();
+    
+    // If either the backend confirms an active quiz or the global sync says yes, block it.
+    if (backendCheck === true || globalState === true) return true;
+    
+    // If we are still waiting for the backend and the global state isn't screaming 'yes', show loading.
+    if (backendCheck === null && globalState === false) return null;
+    
+    return false;
+  });
 
   // Confirm Modal signals
   readonly confirmModalOpen = signal(false);
@@ -91,8 +108,24 @@ export class Chat implements OnInit {
         }
       });
       
-      // Load sessions and subscribe to query parameters
-      this.loadSessions();
+      // Check if user is currently taking a quiz via backend (hard check on reload)
+      this.questionnaireService.getAvailableQuestionnaires().subscribe({
+        next: (list) => {
+          const hasActiveQuiz = list.some(q => q.status === 'STARTED');
+          this.isBlockedByQuizBackend.set(hasActiveQuiz);
+          if (hasActiveQuiz) {
+             this.userDataService.setTakingQuiz(true); // Sync global state across tabs
+          } else {
+             // Load sessions only if not blocked
+             this.loadSessions();
+          }
+        },
+        error: (err: unknown) => {
+          console.error('Error al verificar estado del cuestionario:', err);
+          this.isBlockedByQuizBackend.set(false);
+          this.loadSessions();
+        }
+      });
 
       this.route.queryParamMap.subscribe((params) => {
         const querySessionId = params.get('sessionId');

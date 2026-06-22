@@ -1,4 +1,5 @@
-import {computed, inject, Injectable, signal} from '@angular/core';
+import {computed, inject, Injectable, signal, NgZone} from '@angular/core';
+import {Router} from '@angular/router';
 import {AuthService} from '../../auth/services/auth.service';
 import {UserProfile} from '../models/user-profile.model';
 import {firstValueFrom} from 'rxjs';
@@ -8,6 +9,8 @@ import {firstValueFrom} from 'rxjs';
 })
 export class UserDataService {
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly ngZone = inject(NgZone);
 
   private readonly user = signal<UserProfile | null>(null);
   private readonly sessionLoaded = signal(false);
@@ -64,6 +67,39 @@ export class UserDataService {
       this.clearUser();
     } finally {
       this.sessionLoaded.set(true);
+    }
+  }
+
+  readonly isTakingQuiz = signal(false);
+  private quizChannel: BroadcastChannel | null = null;
+
+  constructor() {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      this.quizChannel = new BroadcastChannel('quiz_state_channel');
+      
+      this.quizChannel.onmessage = (event) => {
+        this.ngZone.run(() => {
+          if (event.data && typeof event.data.isTakingQuiz === 'boolean') {
+            this.isTakingQuiz.set(event.data.isTakingQuiz);
+            if (event.data.isTakingQuiz && this.router.url.includes('/chat')) {
+              this.router.navigate(['/classrooms']);
+            }
+          } else if (event.data && event.data.type === 'REQUEST_STATE') {
+            if (this.isTakingQuiz()) {
+              this.quizChannel?.postMessage({ isTakingQuiz: this.isTakingQuiz() });
+            }
+          }
+        });
+      };
+
+      this.quizChannel.postMessage({ type: 'REQUEST_STATE' });
+    }
+  }
+
+  setTakingQuiz(state: boolean): void {
+    this.isTakingQuiz.set(state);
+    if (this.quizChannel) {
+      this.quizChannel.postMessage({ isTakingQuiz: state });
     }
   }
 }

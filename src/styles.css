@@ -12,7 +12,7 @@
   /* Brand and Semantic Colors */
   --brand-primary: #c2410c;
   --brand-primary-hover: #ea580c;
-  --brand-forest: #2e7d32;
+  --brand-forest: #2b7a6b; /* Lighter mid-tone teal for light mode */
   --brand-mustard: #ca8a04;
   --brand-error: #b91c1c;
   --brand-inactive: #78716c;
@@ -28,7 +28,9 @@
   --border: #44403c;
   
   /* Brand override for dark contrast */
-  --brand-forest: #81c784;
+  --brand-primary: #f97316;
+  --brand-primary-hover: #fb923c;
+  --brand-forest: #134e4a; /* Much darker teal/pine for dark mode */
   --brand-error: #f87171;
 }
 
@@ -58,6 +60,21 @@ html, body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   @apply antialiased;
+}
+
+/* Enforce hand pointer on all interactive elements */
+button:not(:disabled),
+a[href],
+a[routerLink],
+[role="button"],
+[tabindex]:not([tabindex="-1"]),
+select,
+label,
+input[type="checkbox"],
+input[type="radio"],
+input[type="submit"],
+input[type="button"] {
+  cursor: pointer;
 }
 
 /* Custom scrollbars */

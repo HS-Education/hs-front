@@ -50,7 +50,7 @@
       <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">Cargando cuestionarios...</p>
     </div>
   </div>
-  } @else if (courseQuizzes().length === 0) {
+  } @else if (displayedQuizzes().length === 0) {
   <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] py-16 text-center shadow-sm">
     <svg class="mx-auto h-12 w-12 text-[var(--text-secondary)]/40 mb-3" fill="none" viewBox="0 0 24 24"
       stroke="currentColor" stroke-width="1.5">
@@ -64,7 +64,7 @@
   } @else {
   <div class="rounded-lg border border-[var(--border)]/70 bg-[var(--surface)] overflow-hidden">
     <div class="divide-y divide-[var(--border)]/50">
-      @for (quiz of courseQuizzes(); track quiz.id) {
+      @for (quiz of displayedQuizzes(); track quiz.id) {
       <div class="border-b border-[var(--border)]/50 last:border-b-0">
         <!-- Header: Click to Expand -->
         <div (click)="toggleQuizExpand(quiz.id)"
@@ -103,17 +103,30 @@
 
           <div>
             @if (quiz.status === 'PENDING' || quiz.status === 'RETRY') {
-            <button type="button" (click)="$event.stopPropagation(); startQuiz(quiz.id, quiz.weekNumber)"
-              [disabled]="quiz.attemptsLeft === 0"
-              class="rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 text-xs shadow-sm transition active:scale-[0.98]">
-              {{ quiz.status === 'RETRY' ? 'Reintentar' : 'Iniciar' }}
-            </button>
+              <button type="button" (click)="$event.stopPropagation(); startQuiz(quiz.id, quiz.weekNumber)"
+                [disabled]="quiz.attemptsLeft === 0 || startingQuizId() === quiz.id"
+                class="rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 text-xs shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2">
+                @if (startingQuizId() === quiz.id) {
+                  <i class="bi bi-arrow-repeat animate-spin"></i>
+                  <span>Generando...</span>
+                } @else {
+                  <i class="bi bi-hand-index-thumb"></i>
+                  <span>{{ quiz.status === 'RETRY' ? 'Reintentar' : 'Iniciar' }}</span>
+                }
+              </button>
             } @else if (quiz.status === 'STARTED' && quiz.activeInstanceId && quiz.activeInstanceId !== null) {
-            <button type="button"
-              (click)="$event.stopPropagation(); resumeQuiz(quiz.activeInstanceId!, quiz.weekNumber)"
-              class="rounded-lg bg-[var(--brand-mustard)] hover:bg-[var(--brand-mustard)]/90 text-white font-bold px-4 py-2 text-xs shadow-sm transition active:scale-[0.98]">
-              Reanudar
-            </button>
+              <button type="button"
+                (click)="$event.stopPropagation(); resumeQuiz(quiz.activeInstanceId!, quiz.weekNumber)"
+                [disabled]="loadingResults()"
+                class="rounded-lg bg-[var(--brand-mustard)] hover:bg-[var(--brand-mustard)]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 text-xs shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2">
+                @if (loadingResults()) {
+                  <i class="bi bi-arrow-repeat animate-spin"></i>
+                  <span>Cargando...</span>
+                } @else {
+                  <i class="bi bi-hand-index-thumb"></i>
+                  <span>Reanudar</span>
+                }
+              </button>
             } @else if (quiz.status === 'COMPLETED') {
             <span
               class="inline-flex items-center rounded-lg border border-[#166534]/20 bg-[#166534]/10 px-3 py-1.5 text-xs font-bold text-[#166534]">
@@ -150,6 +163,7 @@
           </div>
 
           <!-- Past Attempts Section -->
+          @if (quiz.status !== 'STARTED') {
           <div class="space-y-2">
             <h5 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Historial de
               Intentos</h5>
@@ -176,13 +190,11 @@
                   </div>
                 </div>
 
-                <div class="flex items-center gap-4">
-                  <div class="text-right">
-                    <span
-                      class="text-[9px] font-extrabold uppercase text-[var(--text-secondary)] block tracking-wider">Nota</span>
-                    <span class="text-xs font-black block mt-0.5" [class.text-[#166534]]="attempt.score >= 13"
-                      [class.text-[#b91c1c]]="attempt.score < 13">
-                      {{ attempt.score }} <span class="text-[10px] text-[var(--text-secondary)] font-normal">/ 20</span>
+                <div class="flex items-center gap-4 text-right">
+                  <div class="hidden sm:block">
+                    <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">Nota</span>
+                    <span class="text-sm font-black text-[var(--brand-primary)] block mt-0.5">
+                      {{ attempt.score }}
                     </span>
                   </div>
 
@@ -196,6 +208,11 @@
             </div>
             }
           </div>
+          } @else {
+          <div class="rounded-lg bg-[#ca8a04]/10 border border-[#ca8a04]/20 p-4 mt-2">
+             <p class="text-[11px] text-[#ca8a04] font-bold text-center">Debes finalizar tu intento en curso para poder ver el historial y revisar tus notas anteriores.</p>
+          </div>
+          }
         </div>
         }
       </div>
@@ -226,18 +243,21 @@
   @let currentIdx = currentQuestionIndex();
   @let activeQ = questions[currentIdx];
 
-  <!-- Progress Bar -->
-  <div class="space-y-1.5">
-    <div
-      class="flex items-center justify-between text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-      <span>Avance del cuestionario</span>
-      <span>{{ currentIdx + 1 }} de {{ questions.length }} preguntas</span>
-    </div>
-    <div class="w-full bg-[var(--bg-secondary)] rounded-full h-2.5 overflow-hidden">
-      <div class="bg-[var(--brand-primary)] h-full transition-all duration-300 rounded-full"
-        [style.width.%]="((currentIdx + 1) / questions.length) * 100"></div>
-    </div>
-  </div>
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <!-- Left Column: Quiz Content -->
+    <div class="xl:col-span-2 space-y-6">
+      <!-- Progress Bar -->
+      <div class="space-y-1.5">
+        <div
+          class="flex items-center justify-between text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+          <span>Avance del cuestionario</span>
+          <span>{{ answeredCount() }} de {{ questions.length }} marcadas</span>
+        </div>
+        <div class="w-full bg-[var(--bg-secondary)] rounded-full h-2.5 overflow-hidden">
+          <div class="bg-[var(--brand-primary)] h-full transition-all duration-300 rounded-full"
+            [style.width.%]="(answeredCount() / questions.length) * 100"></div>
+        </div>
+      </div>
 
   <!-- Active Question Card -->
   <div class="rounded-lg border border-[var(--border)]/70 bg-[var(--bg-secondary)]/15 p-6 md:p-8 space-y-6">
@@ -254,10 +274,10 @@
     <div class="grid gap-3.5">
       @for (option of activeQ.options; track $index; let optIdx = $index) {
       <button type="button" (click)="selectOption(activeQ.id, optIdx)" [ngClass]="{
-                    'border-[var(--brand-primary)] bg-[var(--brand-primary)]/10 text-[var(--text-primary)] ring-2 ring-[var(--brand-primary)]/20': selectedAnswers()[activeQ.id] === optIdx,
-                    'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)]/80 text-[var(--text-secondary)]': selectedAnswers()[activeQ.id] !== optIdx
+                    'border-2 border-[var(--brand-primary)] bg-[var(--brand-primary)]/10 text-[var(--text-primary)] ring-4 ring-[var(--brand-primary)]/10': selectedAnswers()[activeQ.id] === optIdx,
+                    'border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)]/80 text-[var(--text-secondary)]': selectedAnswers()[activeQ.id] !== optIdx
                   }"
-        class="w-full text-left p-4 rounded-lg border font-bold text-xs transition duration-150 flex items-center gap-3.5 select-card">
+        class="w-full text-left p-4 rounded-lg font-bold text-xs transition duration-150 flex items-center gap-3.5 select-card">
         <!-- Radio Circle -->
         <span [ngClass]="{
                       'border-[var(--brand-primary)] bg-[var(--brand-primary)] ring-2 ring-[var(--brand-primary)]/20': selectedAnswers()[activeQ.id] === optIdx,
@@ -285,15 +305,14 @@
 
     @if (currentIdx < questions.length - 1) { 
       <button type="button" (click)="nextQuestion()"
-        [disabled]="!isCurrentQuestionAnswered()"
-        class="flex items-center gap-2 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed px-5 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-[0.98]">
+        class="flex items-center gap-2 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-[0.98]">
         Siguiente
         <svg class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       </button>
     } @else {
-      <button type="button" (click)="submitQuiz()" [disabled]="!isAllQuestionsAnswered() || submitting()"
+      <button type="button" (click)="submitQuiz()" [disabled]="submitting()"
         class="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--brand-forest)] to-[var(--brand-forest)]/90 hover:from-[var(--brand-forest)]/90 hover:to-[var(--brand-forest)]/80 disabled:from-[var(--brand-inactive)] disabled:to-[var(--brand-inactive)]/80 disabled:cursor-not-allowed px-6 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-[0.98]">
         @if (submitting()) {
         Enviando...
@@ -301,10 +320,76 @@
         <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
-        Entregar Cuestionario
+         Entregar Cuestionario
         }
       </button>
     }
+  </div>
+    </div>
+
+    <!-- Right Column: Info Panel -->
+    <div class="space-y-6 hidden xl:block">
+      <!-- Navegación de Preguntas -->
+      <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+        <h4 class="text-xs font-extrabold text-[var(--text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
+          <svg class="h-4 w-4 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+          </svg>
+          Navegación
+        </h4>
+        <div class="grid grid-cols-5 gap-2.5">
+          @for (q of questions; track q.id; let idx = $index) {
+          <button type="button" (click)="currentQuestionIndex.set(idx)"
+            [ngClass]="{
+              'bg-[var(--brand-forest)] text-white border-transparent ring-2 ring-offset-2 ring-offset-[var(--surface)] ring-[var(--brand-forest)]': currentIdx === idx && selectedAnswers()[q.id] !== undefined,
+              'bg-[var(--brand-error)] text-white border-transparent ring-2 ring-offset-2 ring-offset-[var(--surface)] ring-[var(--brand-error)]': currentIdx === idx && selectedAnswers()[q.id] === undefined,
+              'bg-[var(--brand-forest)]/10 text-[var(--brand-forest)] border border-[var(--brand-forest)]/30 hover:bg-[var(--brand-forest)]/20': currentIdx !== idx && selectedAnswers()[q.id] !== undefined,
+              'bg-[var(--brand-error)]/10 text-[var(--brand-error)] border border-[var(--brand-error)]/30 hover:bg-[var(--brand-error)]/20': currentIdx !== idx && selectedAnswers()[q.id] === undefined
+            }"
+            class="flex h-8 w-8 items-center justify-center rounded text-[11px] font-bold transition">
+            {{ idx + 1 }}
+          </button>
+          }
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
+        <h4 class="text-xs font-extrabold text-[var(--text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
+          <svg class="h-4 w-4 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Detalles de Evaluación
+        </h4>
+        
+        <div class="space-y-4">
+          <div class="flex justify-between items-center border-b border-[var(--border)]/50 pb-3">
+            <span class="text-[11px] font-bold text-[var(--text-secondary)]">Puntaje Máximo</span>
+            <span class="text-[11px] font-black text-[var(--text-primary)]">20 pts</span>
+          </div>
+          <div class="flex justify-between items-center border-b border-[var(--border)]/50 pb-3">
+            <span class="text-[11px] font-bold text-[var(--text-secondary)]">Intentos Restantes</span>
+            <span class="text-[11px] font-black text-[var(--text-primary)]">{{ activeQuiz()?.attemptsLeft ?? '-' }}</span>
+          </div>
+          <div class="flex justify-between items-center pb-1">
+            <span class="text-[11px] font-bold text-[var(--text-secondary)]">Preguntas Totales</span>
+            <span class="text-[11px] font-black text-[var(--text-primary)]">{{ questions.length }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help Bubble -->
+      <div class="rounded-lg border border-[var(--brand-mustard)]/20 bg-[var(--brand-mustard)]/5 p-5 shadow-sm">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-mustard)] text-white shadow-sm shrink-0">
+            <i class="bi bi-info-circle-fill text-[14px]"></i>
+          </span>
+          <h4 class="text-xs font-extrabold text-[var(--text-primary)] uppercase tracking-wider">Instrucciones</h4>
+        </div>
+        <p class="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+          Asegúrate de revisar bien todas las alternativas antes de continuar. Puedes navegar hacia atrás si necesitas cambiar una respuesta antes de enviar el cuestionario.
+        </p>
+      </div>
+    </div>
   </div>
   }
 </div>
@@ -355,265 +440,135 @@
     </div>
   </div>
 
-  <!-- Answers and AI Explanations List with Sidebar -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-    <!-- Left Column: Answers List -->
-    <div class="lg:col-span-2 space-y-6">
-      <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Desglose de Preguntas y Feedback</h4>
-
+  <!-- Answers and AI Explanations List (2-column Grid) -->
+  <div class="pt-2">
+    <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-6">Desglose de Preguntas y Feedback</h4>
+    
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
       @for (ans of sub.answers; track ans.questionId; let idx = $index) {
-      <div [id]="'q-' + idx" class="rounded-lg border border-[var(--border)]/70 bg-[var(--surface)] p-5 space-y-4 scroll-mt-24">
-      <!-- Question line -->
-      <div class="flex items-start justify-between gap-4 border-b border-[var(--border)]/50 pb-3">
-        <div class="space-y-1.5">
-          <span class="text-[10px] font-black text-[var(--text-secondary)] uppercase">Pregunta {{ idx + 1 }}</span>
-          <p class="text-sm font-bold text-[var(--text-primary)] leading-relaxed">{{ ans.questionText }}</p>
-        </div>
-        <!-- Status tag -->
-        <span [ngClass]="{
-                      'bg-[var(--brand-forest)]/10 text-[var(--brand-forest)] border-[var(--brand-forest)]/20': ans.isCorrect,
-                      'bg-[var(--brand-error)]/10 text-[var(--brand-error)] border-[var(--brand-error)]/20': !ans.isCorrect
-                    }" class="inline-flex shrink-0 items-center rounded border px-2.5 py-1 text-xs font-bold gap-2">
-          <span>{{ ans.isCorrect ? 'Correcta' : 'Incorrecta' }}</span>
-          @if (ans.isCorrect) {
-          <span
-            class="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[var(--brand-forest)] text-white shrink-0">
-            <i class="bi bi-check-lg !text-white text-[10px]"></i>
-          </span>
-          } @else {
-          <span
-            class="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[var(--brand-error)] text-white shrink-0">
-            <i class="bi bi-x-lg !text-white text-[9px]"></i>
-          </span>
-          }
-        </span>
-      </div>
-
-      <!-- Options Grid in results -->
-      <div class="grid gap-2.5 pt-1">
-        @for (option of ans.options; track $index; let optIdx = $index) {
-        <div [ngClass]="{
-                        'border-[var(--brand-forest)] text-[var(--text-primary)]': optIdx === ans.correctOptionIndex,
-                        'border-[var(--brand-error)] text-[var(--text-primary)]': optIdx === ans.selectedOptionIndex && optIdx !== ans.correctOptionIndex,
-                        'border-[var(--border)] text-[var(--text-secondary)]/75': optIdx !== ans.selectedOptionIndex && optIdx !== ans.correctOptionIndex
-                      }"
-          [style.background-color]="optIdx === ans.correctOptionIndex ? 'color-mix(in srgb, var(--brand-forest) 8%, transparent)' : optIdx === ans.selectedOptionIndex ? 'color-mix(in srgb, var(--brand-error) 8%, transparent)' : 'var(--surface)'"
-          class="flex items-center gap-3.5 p-3.5 rounded-lg border text-xs font-bold transition duration-150">
-          <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold" [ngClass]="{
-                              'bg-[var(--brand-forest)] text-white': optIdx === ans.correctOptionIndex,
-                              'bg-[var(--brand-error)] text-white': optIdx === ans.selectedOptionIndex && optIdx !== ans.correctOptionIndex,
-                              'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border)]': optIdx !== ans.selectedOptionIndex && optIdx !== ans.correctOptionIndex
-                            }">
-            @if (optIdx === ans.correctOptionIndex) {
-            <i class="bi bi-check-lg !text-white"></i>
-            } @else if (optIdx === ans.selectedOptionIndex) {
-            <i class="bi bi-x-lg !text-white"></i>
+      <div [id]="'q-' + idx"
+        class="rounded-xl border-2 border-[var(--border)] bg-[var(--surface)] p-5 md:p-6 flex flex-col shadow-sm">
+        <!-- Question line -->
+        <div class="flex items-start justify-between gap-4 border-b border-[var(--border)]/50 pb-4 mb-4">
+          <div class="space-y-1.5">
+            <span class="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-wider">Pregunta {{ idx + 1 }}</span>
+            <p class="text-sm font-bold text-[var(--text-primary)] leading-relaxed">{{ ans.questionText }}</p>
+          </div>
+          <!-- Status tag -->
+          <span [ngClass]="{
+                        'bg-[var(--brand-forest)]/10 text-[var(--brand-forest)] border-[var(--brand-forest)]/20': ans.isCorrect,
+                        'bg-[var(--brand-error)]/10 text-[var(--brand-error)] border-[var(--brand-error)]/20': !ans.isCorrect
+                      }" class="inline-flex shrink-0 items-center rounded-lg border px-2.5 py-1 text-xs font-bold gap-2">
+            <span>{{ ans.isCorrect ? 'Correcta' : 'Incorrecta' }}</span>
+            @if (ans.isCorrect) {
+            <span class="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[var(--brand-forest)] text-white shrink-0">
+              <i class="bi bi-check-lg !text-white text-[10px]"></i>
+            </span>
             } @else {
-            {{ optIdx + 1 }}
+            <span class="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[var(--brand-error)] text-white shrink-0">
+              <i class="bi bi-x-lg !text-white text-[9px]"></i>
+            </span>
             }
           </span>
-          <span>{{ option }}</span>
-          @if (optIdx === ans.correctOptionIndex) {
-          <span
-            class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-forest)] ml-auto">Correcta</span>
-          } @else if (optIdx === ans.selectedOptionIndex) {
-          <span class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-error)] ml-auto">Tu
-            elección</span>
-          }
         </div>
-        }
-      </div>
 
-      <!-- Inline AI Feedback Bubble (Mobile/Tablet Only) -->
-      @if (ans.aiFeedback) {
-      <div class="block lg:hidden mt-4 rounded-lg bg-[var(--brand-primary)]/5 border border-[var(--brand-primary)]/10 p-5 space-y-3">
-        <div class="flex items-center gap-2">
-          <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white font-extrabold text-[10px]">
-            <i class="bi bi-lightbulb !text-white"></i>
-          </span>
-          <span class="text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wider">Explicación de Sery</span>
-        </div>
-        <div [innerHTML]="cleanMessageContent(ans.aiFeedback) | markdownMath" class="text-xs font-medium text-[var(--text-secondary)] leading-relaxed"></div>
-        <!-- Sources Cards -->
-        @if (getSources(ans.aiFeedback).length > 0) {
-        <div class="mt-3 space-y-2 border-t border-[var(--brand-primary)]/10 pt-3">
-          <div class="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--brand-primary)]">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            Documentos de Referencia
-          </div>
-          <div class="grid gap-2">
-            @for (src of getSources(ans.aiFeedback); track src.documentId) {
-            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 flex items-center justify-between gap-4">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="25">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div class="min-w-0">
-                  <h5 class="text-[11px] font-bold text-[var(--text-primary)] truncate" [title]="src.name">{{ src.name }}</h5>
-                </div>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <button type="button" (click)="previewDocument(src.courseId, src.documentId, src.name)" class="flex items-center gap-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-2 py-1.5 text-[9px] font-bold text-[var(--text-primary)] transition active:scale-95">
-                  Previsualizar
-                </button>
-                <button type="button" (click)="downloadSource(src.courseId, src.documentId)" class="flex items-center gap-1 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-2 py-1.5 text-[9px] font-bold text-white transition active:scale-95">
-                  Descargar
-                </button>
-              </div>
-            </div>
-            }
-          </div>
-        </div>
-        }
-      </div>
-      }
-      </div>
-      }
-    </div>
-
-    <!-- Right Column: Navigation & Sidebar Widgets -->
-    <div class="space-y-6">
-      <!-- Historial Rápido -->
-      @if (activeQuiz(); as quiz) {
-        @if (quiz.pastAttempts.length > 0) {
-          <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm space-y-3">
-            <h3 class="text-xs font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <svg class="h-4 w-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Intentos Previos
-            </h3>
-            <div class="grid gap-2">
-              @for (attempt of quiz.pastAttempts; track attempt.instanceId; let idx = $index) {
-                <div class="flex items-center justify-between p-2 rounded-md border border-[var(--border)] bg-[var(--bg-secondary)]/50">
-                  <div>
-                    <span class="block text-[10px] font-bold text-[var(--text-primary)]">Intento {{ idx + 1 }}</span>
-                    <span class="block text-[9px] text-[var(--text-secondary)]">{{ attempt.submittedAt | date:'dd/MM' }}</span>
-                  </div>
-                  <div class="text-right">
-                    <span class="text-xs font-black" [class.text-[#166534]]="attempt.score >= 13" [class.text-[#b91c1c]]="attempt.score < 13">
-                      {{ attempt.score }}
-                    </span>
-                    <span class="text-[9px] text-[var(--text-secondary)] font-normal block -mt-1">/ 20</span>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-        }
-      }
-
-      <div class="space-y-6 sticky top-6">
-      
-      <!-- Navegación de Preguntas (Grid) -->
-      <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
-        <h3 class="text-xs font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-          <svg class="h-4 w-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-          </svg>
-          Navegación
-        </h3>
-        <div class="grid grid-cols-5 gap-2">
-          @for (ans of sub.answers; track ans.questionId; let idx = $index) {
-            <button type="button" (click)="scrollTo(idx)"
+        <!-- Options Grid in results -->
+        <div class="grid gap-2.5 flex-1">
+          @for (option of ans.options; track $index; let optIdx = $index) {
+          <div [ngClass]="{
+                          'border-2 border-[var(--brand-forest)] text-[var(--text-primary)]': optIdx === ans.correctOptionIndex,
+                          'border-2 border-[var(--brand-error)] text-[var(--text-primary)]': optIdx === ans.selectedOptionIndex && optIdx !== ans.correctOptionIndex,
+                          'border border-[var(--border)] text-[var(--text-secondary)]/75': optIdx !== ans.selectedOptionIndex && optIdx !== ans.correctOptionIndex
+                        }"
+            [style.background-color]="optIdx === ans.correctOptionIndex ? 'color-mix(in srgb, var(--brand-forest) 8%, transparent)' : optIdx === ans.selectedOptionIndex ? 'color-mix(in srgb, var(--brand-error) 8%, transparent)' : 'var(--surface)'"
+            class="flex items-center gap-3.5 p-3.5 rounded-lg text-xs font-bold transition duration-150">
+            <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
               [ngClass]="{
-                'border-[var(--brand-forest)] bg-[var(--brand-forest)]/20 text-[var(--brand-forest)] ring-2 ring-[var(--brand-forest)]/30': ans.isCorrect && selectedResultIdx() === idx,
-                'border-[var(--brand-forest)]/50 bg-[var(--brand-forest)]/10 text-[var(--brand-forest)]': ans.isCorrect && selectedResultIdx() !== idx,
-                'border-[var(--brand-error)] bg-[var(--brand-error)]/20 text-[var(--brand-error)] ring-2 ring-[var(--brand-error)]/30': !ans.isCorrect && selectedResultIdx() === idx,
-                'border-[var(--brand-error)]/50 bg-[var(--brand-error)]/10 text-[var(--brand-error)]': !ans.isCorrect && selectedResultIdx() !== idx
-              }"
-              class="h-8 w-full rounded border flex items-center justify-center text-[10px] font-bold hover:opacity-80 transition-opacity">
-              {{ idx + 1 }}
-            </button>
-          }
-        </div>
-      </div>
-
-      <!-- Dynamic AI Feedback Bubble -->
-      @if (sub.answers[selectedResultIdx()]; as activeAns) {
-        @if (activeAns.aiFeedback) {
-        <div class="hidden lg:block rounded-lg bg-[var(--brand-primary)]/5 border border-[var(--brand-primary)]/10 p-5 space-y-3 shadow-sm animate-fade-in">
-          <div class="flex items-center gap-2">
-            <span
-              class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white font-extrabold text-[10px]"><i
-                class="bi bi-lightbulb !text-white"></i></span>
-            <span class="text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wider">Explicación de
-              Sery</span>
-          </div>
-          <div [innerHTML]="cleanMessageContent(activeAns.aiFeedback) | markdownMath"
-            class="text-xs font-medium text-[var(--text-secondary)] leading-relaxed"></div>
-
-          <!-- Sources Cards -->
-          @if (getSources(activeAns.aiFeedback).length > 0) {
-          <div class="mt-3 space-y-2 border-t border-[var(--brand-primary)]/10 pt-3">
-            <div
-              class="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--brand-primary)]">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-              Documentos de Referencia
-            </div>
-            <div class="grid gap-2">
-              @for (src of getSources(activeAns.aiFeedback); track src.documentId) {
-              <div
-                class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 flex items-center justify-between gap-4 shadow-sm hover:border-[var(--brand-primary)]/30 transition duration-150">
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <div
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="25">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div class="min-w-0">
-                    <h5 class="text-[11px] font-bold text-[var(--text-primary)] truncate" [title]="src.name">{{ src.name }}
-                    </h5>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0">
-                  <button type="button" (click)="previewDocument(src.courseId, src.documentId, src.name)"
-                    class="flex items-center gap-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-2 py-1.5 text-[9px] font-bold text-[var(--text-primary)] transition active:scale-95">
-                    Previsualizar
-                  </button>
-                  <button type="button" (click)="downloadSource(src.courseId, src.documentId)"
-                    class="flex items-center gap-1 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-2 py-1.5 text-[9px] font-bold text-white transition active:scale-95">
-                    Descargar
-                  </button>
-                </div>
-              </div>
+                                'bg-[var(--brand-forest)] text-white': optIdx === ans.correctOptionIndex,
+                                'bg-[var(--brand-error)] text-white': optIdx === ans.selectedOptionIndex && optIdx !== ans.correctOptionIndex,
+                                'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border)]': optIdx !== ans.selectedOptionIndex && optIdx !== ans.correctOptionIndex
+                              }">
+              @if (optIdx === ans.correctOptionIndex) {
+              <i class="bi bi-check-lg !text-white"></i>
+              } @else if (optIdx === ans.selectedOptionIndex) {
+              <i class="bi bi-x-lg !text-white"></i>
+              } @else {
+              {{ optIdx + 1 }}
               }
-            </div>
-          </div>
-          }
-        </div>
-        } @else {
-          <!-- Empty State when there is no feedback -->
-          <div class="hidden lg:flex rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] p-5 text-center shadow-sm flex-col items-center justify-center">
-            @if (activeAns.isCorrect) {
-              <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--brand-forest)]/10 text-[var(--brand-forest)] mb-3">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <p class="text-[11px] font-bold text-[var(--text-primary)] mb-1">¡Respuesta Correcta!</p>
-              <p class="text-[10px] text-[var(--text-secondary)] leading-relaxed">Selecciona una pregunta incorrecta (en rojo) en la navegación de arriba para ver la explicación y los recursos sugeridos por Sery.</p>
-            } @else {
-              <svg class="mx-auto h-8 w-8 text-[var(--text-secondary)]/40 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p class="text-xs font-bold text-[var(--text-secondary)]">No hay explicación disponible</p>
+            </span>
+            <span class="leading-relaxed">{{ option }}</span>
+            @if (optIdx === ans.correctOptionIndex) {
+            <span class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-forest)] ml-auto shrink-0">Correcta</span>
+            } @else if (optIdx === ans.selectedOptionIndex) {
+            <span class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-error)] ml-auto shrink-0">Tu elección</span>
             }
           </div>
-        }
-      }
+          }
+        </div>
 
+        <!-- Inline AI Feedback Bubble -->
+        @if (ans.aiFeedback) {
+        <div class="mt-5 pt-5 border-t border-[var(--border)]/50">
+          <div class="rounded-xl bg-[var(--brand-primary)]/5 border border-[var(--brand-primary)]/10 p-5 space-y-3">
+            <div class="flex items-center gap-2.5">
+              <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white font-extrabold text-[10px]">
+                <i class="bi bi-lightbulb !text-white"></i>
+              </span>
+              <span class="text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wider">Explicación de Sery</span>
+            </div>
+            <div [innerHTML]="cleanMessageContent(ans.aiFeedback) | markdownMath" class="text-xs font-medium text-[var(--text-secondary)] leading-relaxed"></div>
+            
+            <!-- Sources Cards -->
+            @if (getSources(ans.aiFeedback).length > 0) {
+            <div class="mt-4 space-y-3 border-t border-[var(--brand-primary)]/10 pt-4">
+              <div class="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--brand-primary)]">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                Documentos de Referencia
+              </div>
+              <div class="grid gap-2">
+                @for (src of getSources(ans.aiFeedback); track src.documentId) {
+                <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--brand-primary)]/30 p-3 flex flex-col xl:flex-row xl:items-center justify-between gap-3 transition duration-150">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="25">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div class="min-w-0">
+                      <h5 class="text-[11px] font-bold text-[var(--text-primary)] truncate" [title]="src.name">{{ src.name }}</h5>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" (click)="previewDocument(src.courseId, src.documentId, src.name)" class="flex-1 xl:flex-none justify-center flex items-center gap-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-2.5 py-1.5 text-[10px] font-bold text-[var(--text-primary)] transition active:scale-95">
+                      Previsualizar
+                    </button>
+                    <button type="button" (click)="downloadSource(src.courseId, src.documentId)" class="flex-1 xl:flex-none justify-center flex items-center gap-1 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-2.5 py-1.5 text-[10px] font-bold text-white transition active:scale-95">
+                      Descargar
+                    </button>
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        } @else if (ans.isCorrect) {
+        <div class="mt-5 pt-5 border-t border-[var(--border)]/50">
+          <div class="rounded-xl bg-[var(--brand-forest)]/5 border border-[var(--brand-forest)]/20 p-6 flex flex-col items-center justify-center gap-3 text-center">
+            <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--brand-forest)]/10 text-[var(--brand-forest)] shrink-0">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p class="text-sm font-black text-[var(--brand-forest)] uppercase tracking-widest">¡Respuesta Correcta!</p>
+          </div>
+        </div>
+        }
       </div>
+      }
     </div>
   </div>
   }
@@ -851,4 +806,5 @@
 
 <!-- Modal: Confirmación -->
 <app-confirm-modal [isOpen]="confirmModalOpen()" [title]="confirmModalTitle()" [message]="confirmModalMessage()"
+  [loading]="submitting()"
   [onCancel]="closeConfirmModal" [onConfirmCallback]="confirmAction()"></app-confirm-modal>
