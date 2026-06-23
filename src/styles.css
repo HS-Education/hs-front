@@ -12,7 +12,8 @@
   /* Brand and Semantic Colors */
   --brand-primary: #c2410c;
   --brand-primary-hover: #ea580c;
-  --brand-forest: #2b7a6b; /* Lighter mid-tone teal for light mode */
+  --brand-forest: #2e7d32;
+  --brand-sery: #2b7a6b;
   --brand-mustard: #ca8a04;
   --brand-error: #b91c1c;
   --brand-inactive: #78716c;
@@ -30,7 +31,8 @@
   /* Brand override for dark contrast */
   --brand-primary: #f97316;
   --brand-primary-hover: #fb923c;
-  --brand-forest: #134e4a; /* Much darker teal/pine for dark mode */
+  --brand-forest: #81c784;
+  --brand-sery: #134e4a;
   --brand-error: #f87171;
 }
 
@@ -49,6 +51,7 @@
   --color-brand-primary: var(--brand-primary);
   --color-brand-primary-hover: var(--brand-primary-hover);
   --color-brand-forest: var(--brand-forest);
+  --color-brand-sery: var(--brand-sery);
   --color-brand-mustard: var(--brand-mustard);
   --color-brand-error: var(--brand-error);
   --color-brand-inactive: var(--brand-inactive);

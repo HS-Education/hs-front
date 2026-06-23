@@ -55,7 +55,7 @@
     </div>
 
     <!-- Sery Tip -->
-    <div class="relative overflow-hidden rounded-3xl bg-[var(--brand-forest)] p-6 shadow-md text-white flex flex-col">
+    <div class="relative overflow-hidden rounded-3xl bg-[var(--brand-sery)] p-6 shadow-md text-white flex flex-col">
       <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
         <svg class="h-24 w-24" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
@@ -76,21 +76,21 @@
           <p class="text-xs text-white/90 leading-relaxed font-medium">
             Recuerda que puedes solicitar insights automatizados en el área de <strong>Métricas</strong> para identificar rápidamente fortalezas y debilidades de las aulas.
           </p>
-          <a routerLink="/metrics" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-forest)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
+          <a routerLink="/metrics" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
             Ir a Métricas
           </a>
         } @else if (user.roles.includes('TEACHER')) {
           <p class="text-xs text-white/90 leading-relaxed font-medium">
             Sery puede ayudarte a entender el rendimiento de tus estudiantes. Visita la sección de <strong>Progreso</strong> dentro de tus aulas para obtener insights personalizados.
           </p>
-          <a routerLink="/classrooms" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-forest)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
+          <a routerLink="/classrooms" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
             Ver mis aulas
           </a>
         } @else {
           <p class="text-xs text-white/90 leading-relaxed font-medium">
             ¿Tienes dudas sobre cómo usar la plataforma? Sery y el Centro de Ayuda están disponibles para guiarte en cada paso.
           </p>
-          <a routerLink="/help" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-forest)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
+          <a routerLink="/help" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
             Centro de Ayuda
           </a>
         }
