@@ -4,8 +4,8 @@
   <!-- ============================================================ -->
   <div class="space-y-6 select-none animate-fadeIn">
     <div>
-      <h2 class="text-lg font-bold text-[var(--text-primary)]">Progreso Académico</h2>
-      <p class="text-xs text-[var(--text-secondary)] mt-0.5">Estado del desarrollo y revisiones de tus temas de estudio</p>
+      <h2 class="text-lg font-bold text-[var(--text-primary)]">{{ 'PROGRESS.STUDENT_TITLE' | transloco }}</h2>
+      <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'PROGRESS.STUDENT_SUBTITLE' | transloco }}</p>
     </div>
 
     @if (isLoading()) {
@@ -14,47 +14,56 @@
       </div>
     } @else if (studentData(); as data) {
 
-      <!-- AI Insight Card (pre-loaded from backend) -->
-      <div class="rounded-xl border border-[var(--brand-primary)]/20 bg-gradient-to-br from-[var(--surface)] to-[var(--bg-secondary)] p-5 shadow-sm relative overflow-hidden">
-        <div class="absolute -right-4 -top-4 text-[var(--brand-primary)]/10">
-          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-        </div>
-
-        <div class="relative z-10">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2 text-[var(--brand-primary)] font-bold text-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Resumen de Sery
-            </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- AI Insight Card (pre-loaded from backend) -->
+        <div class="lg:col-span-2 rounded-xl border border-[var(--brand-primary)]/20 bg-gradient-to-br from-[var(--surface)] to-[var(--bg-secondary)] p-6 shadow-sm relative overflow-hidden flex flex-col justify-center">
+          <div class="absolute -right-4 -top-4 text-[var(--brand-primary)]/5 pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
           </div>
 
-          @if (data.latestInsight) {
-            <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] p-3 rounded border border-[var(--border)]" [innerHTML]="renderInsightContent(data.latestInsight)" (click)="handleInsightClick($event, data.latestInsight)"></div>
-          } @else {
-              <p class="text-xs text-[var(--text-secondary)] mb-3">Aún no hay un resumen de Sery disponible para tu progreso.</p>
-          }
-        </div>
-      </div>
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2 text-[var(--brand-primary)] font-bold text-sm uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {{ 'PROGRESS.SERY.TITLE' | transloco }}
+              </div>
+            </div>
 
-      <!-- Progress Bar Card -->
-      <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-[var(--text-secondary)]">Porcentaje de Avance General</span>
-          <span class="text-xs font-extrabold text-[var(--brand-primary)]">{{ data.performance.averageScore | number:'1.0-0' }}% Completado</span>
+            @if (data.latestInsight) {
+              <div class="text-sm font-medium text-[var(--text-primary)] leading-relaxed bg-[var(--surface)]/90 backdrop-blur p-5 rounded-2xl border border-[var(--brand-primary)]/20 shadow-sm cursor-pointer hover:shadow-md transition-shadow" [innerHTML]="renderInsightContent(data.latestInsight)" (click)="handleInsightClick($event, data.latestInsight)"></div>
+            } @else {
+                <p class="text-sm font-medium text-[var(--text-secondary)]">{{ 'PROGRESS.SERY.NO_INSIGHT_STUDENT' | transloco }}</p>
+            }
+          </div>
         </div>
-        <div class="w-full bg-[var(--bg-secondary)] rounded-full h-3">
-          <div class="bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-primary-hover)] h-3 rounded-full shadow-inner transition-all duration-1000" [style.width.%]="data.performance.averageScore > 100 ? 100 : data.performance.averageScore"></div>
+
+        <!-- Progress Bar Card -->
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 flex flex-col justify-center items-center text-center shadow-sm">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          </div>
+          <span class="text-[10px] font-extrabold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'PROGRESS.STUDENT_STATS.GENERAL_ADVANCE' | transloco }}</span>
+          <h2 class="text-4xl font-black text-[var(--brand-primary)] font-['Plus_Jakarta_Sans'] leading-none">
+            {{ data.performance.averageScore | number:'1.0-0' }}<span class="text-lg text-[var(--text-secondary)] font-bold">%</span>
+          </h2>
+          <div class="w-full bg-[var(--bg-secondary)] rounded-full h-2 mt-5 overflow-hidden shadow-inner">
+            <div class="bg-[var(--brand-primary)] h-full rounded-full transition-all duration-1000 relative" [style.width.%]="data.performance.averageScore > 100 ? 100 : data.performance.averageScore">
+              <div class="absolute inset-0 bg-white/20"></div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Bimester Selector + Summary Section -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Resumen por Bimestre</h3>
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.BIMESTER_SUMMARY' | transloco }}</h3>
           <select
             (change)="onGradingPeriodChange($event)"
             class="rounded-xl bg-[var(--bg-secondary)] border border-[var(--border)] px-3 py-2 text-xs text-[var(--text-primary)] outline-none focus:border-[var(--brand-primary)] focus:bg-[var(--surface)] transition duration-200 cursor-pointer"
@@ -70,12 +79,12 @@
             <div class="w-6 h-6 border-3 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
           </div>
         } @else if (summaryData(); as summary) {
-          <!-- Summary Cards Row -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Summary Cards Row - 3 cols -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <!-- Donut Chart Card: Bimester Average -->
-            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-5">
+            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-4 shadow-sm">
               <div class="relative flex-shrink-0">
-                <svg class="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
+                <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" fill="none" class="stroke-[var(--bg-secondary)]" stroke-width="8"></circle>
                   <circle cx="50" cy="50" r="40" fill="none"
                     [attr.stroke]="getScoreColor(summary.bimesterAverage)"
@@ -85,40 +94,51 @@
                   </circle>
                 </svg>
                 <div class="absolute inset-0 flex items-center justify-center">
-                  <span class="text-sm font-black text-[var(--text-primary)]">{{ summary.bimesterAverage | number:'1.0-0' }}%</span>
+                  <span class="text-xs font-black text-[var(--text-primary)]">{{ summary.bimesterAverage | number:'1.0-0' }}%</span>
                 </div>
               </div>
               <div>
-                <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Promedio del Bimestre</p>
-                <p class="text-2xl font-black text-[var(--text-primary)] mt-1">{{ summary.bimesterAverage | number:'1.0-1' }}<span class="text-sm font-bold text-[var(--text-secondary)]">%</span></p>
-                <p class="text-[10px] text-[var(--text-secondary)] mt-0.5">{{ summary.weeklyProgression.length }} semanas evaluadas</p>
+                <p class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] leading-tight"><span [innerHTML]="'PROGRESS.STUDENT_STATS.BIMESTER_AVG' | transloco"></span></p>
+                <p class="text-2xl font-black text-[var(--text-primary)] mt-1">{{ summary.bimesterAverage | number:'1.0-0' }}<span class="text-xs font-bold text-[var(--text-secondary)]">%</span></p>
               </div>
             </div>
 
-            <!-- Definitive Grades Count -->
-            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-5">
-              <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <!-- {{ 'PROGRESS.STUDENT_STATS.WEEKS_EVALUATED' | transloco }} -->
+            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-4 shadow-sm">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.WEEKS_EVALUATED' | transloco }}</p>
+                <p class="text-2xl font-black text-[var(--text-primary)] mt-0.5">{{ summary.weeklyProgression.length }}</p>
+              </div>
+            </div>
+
+            <!-- {{ 'PROGRESS.STUDENT_STATS.DEFINITIVE_GRADES' | transloco }} Count -->
+            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-4 shadow-sm">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-forest)]/10 text-[var(--brand-forest)]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
               <div>
-                <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Notas Definitivas</p>
-                <p class="text-2xl font-black text-[var(--text-primary)] mt-1">{{ summary.definitiveGrades.length }}</p>
-                <p class="text-[10px] text-[var(--text-secondary)] mt-0.5">cuestionarios rendidos</p>
+                <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.DEFINITIVE_GRADES' | transloco }}</p>
+                <p class="text-2xl font-black text-[var(--text-primary)] mt-0.5">{{ summary.definitiveGrades.length }}</p>
               </div>
             </div>
           </div>
 
-          <!-- Weekly Progression and Definitive Grades Flex Container -->
-          <div class="flex flex-wrap items-start gap-4 mt-4">
+          <!-- Weekly Progression and Definitive Grades Grid -->
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
           <!-- Weekly Progression Bar Chart -->
           @if (summary.weeklyProgression.length > 0) {
-            <div class="flex-1 min-w-[300px] xl:max-w-max rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-              <h4 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-4">Progresión Semanal</h4>
+            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm w-full overflow-hidden">
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-6">{{ 'PROGRESS.STUDENT_STATS.WEEKLY_PROG' | transloco }}</h4>
 
-              <div class="overflow-x-auto">
-                <svg [attr.width]="summary.weeklyProgression.length * 60 + 40" height="200" class="min-w-full">
+              <div class="overflow-x-auto w-full flex justify-center">
+                <svg [attr.width]="summary.weeklyProgression.length * 60 + 40" height="200">
                   <line x1="30" [attr.x2]="summary.weeklyProgression.length * 60 + 30" y1="20" y2="20" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
                   <line x1="30" [attr.x2]="summary.weeklyProgression.length * 60 + 30" y1="55" y2="55" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
                   <line x1="30" [attr.x2]="summary.weeklyProgression.length * 60 + 30" y1="90" y2="90" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
@@ -136,13 +156,13 @@
                       [attr.x]="i * 60 + 40" [attr.y]="160 - getBarHeight(week.averageScore)"
                       width="30" [attr.height]="getBarHeight(week.averageScore)"
                       [attr.fill]="getScoreColor(week.averageScore)" rx="4" ry="4" opacity="0.85">
-                      <title>Semana {{ week.weekNumber }}: {{ week.averageScore | number:'1.0-1' }}%</title>
+                      <title>{{ 'PROGRESS.STUDENT_STATS.WEEK' | transloco }} {{ week.weekNumber }}: {{ week.averageScore | number:'1.0-1' }}%</title>
                     </rect>
                     <text [attr.x]="i * 60 + 55" [attr.y]="160 - getBarHeight(week.averageScore) - 8"
                       text-anchor="middle" class="fill-[var(--text-primary)]" font-size="10" font-weight="800">{{ week.averageScore | number:'1.0-0' }}</text>
                     @if (week.needsRemedial) {
                       <circle [attr.cx]="i * 60 + 55" [attr.cy]="160 - getBarHeight(week.averageScore) - 22"
-                        r="4" fill="var(--brand-error)" stroke="var(--surface)" stroke-width="1.5"><title>Necesita refuerzo</title></circle>
+                        r="4" fill="var(--brand-error)" stroke="var(--surface)" stroke-width="1.5"><title>{{ 'PROGRESS.STUDENT_STATS.NEEDS_REMEDIAL' | transloco }}</title></circle>
                     }
                     <text [attr.x]="i * 60 + 55" y="176" text-anchor="middle"
                       class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">S{{ week.weekNumber }}</text>
@@ -153,19 +173,63 @@
               <div class="flex items-center gap-4 mt-3 pt-3 border-t border-[var(--border)]">
                 <div class="flex items-center gap-1.5">
                   <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-forest)]"></div>
-                  <span class="text-[10px] text-[var(--text-secondary)] font-medium">≥ 80% Excelente</span>
+                  <span class="text-[10px] text-[var(--text-secondary)] font-medium">≥ 80% {{ 'PROGRESS.STUDENT_STATS.EXCELLENT' | transloco }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                   <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-mustard)]"></div>
-                  <span class="text-[10px] text-[var(--text-secondary)] font-medium">≥ 50% Regular</span>
+                  <span class="text-[10px] text-[var(--text-secondary)] font-medium">≥ 50% {{ 'PROGRESS.STUDENT_STATS.REGULAR' | transloco }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                   <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-error)]"></div>
-                  <span class="text-[10px] text-[var(--text-secondary)] font-medium">&lt; 50% En riesgo</span>
+                  <span class="text-[10px] text-[var(--text-secondary)] font-medium">&lt; 50% {{ 'PROGRESS.KPI.AT_RISK' | transloco }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                   <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-error)]"></div>
-                  <span class="text-[10px] text-[var(--text-secondary)] font-medium">Necesita refuerzo</span>
+                  <span class="text-[10px] text-[var(--text-secondary)] font-medium">{{ 'PROGRESS.STUDENT_STATS.NEEDS_REMEDIAL' | transloco }}</span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Strengths and Weaknesses Widget -->
+          @if (studentStrengths(); as strengths) {
+            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm overflow-hidden flex flex-col">
+              <div class="px-6 py-4 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50">
+                <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.STRENGTHS_OPPS' | transloco }}</h4>
+              </div>
+              <div class="p-6 flex flex-col justify-center gap-6 flex-1">
+                <!-- Best Topic -->
+                <div class="bg-[var(--brand-forest)]/5 border border-[var(--brand-forest)]/20 rounded-xl p-4 relative overflow-hidden">
+                  <div class="absolute -right-3 -top-3 text-[var(--brand-forest)]/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="relative z-10">
+                    <p class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-1">{{ 'PROGRESS.STUDENT_STATS.BEST_TOPIC' | transloco }}</p>
+                    <p class="text-xs font-bold text-[var(--text-primary)] leading-tight mb-2 pr-4">{{ strengths.best.topicName }}</p>
+                    <div class="flex items-center gap-2">
+                      <span class="text-lg font-black text-[var(--brand-forest)]">{{ strengths.best.percentage | number:'1.0-0' }}%</span>
+                      <span class="text-[9px] text-[var(--text-secondary)] font-medium bg-[var(--surface)] px-2 py-0.5 rounded-full border border-[var(--border)]">S{{ strengths.best.weekNumber }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Worst Topic -->
+                <div class="bg-[var(--brand-error)]/5 border border-[var(--brand-error)]/20 rounded-xl p-4 relative overflow-hidden">
+                  <div class="absolute -right-2 -top-2 text-[var(--brand-error)]/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="relative z-10">
+                    <p class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-1">{{ 'PROGRESS.STUDENT_STATS.IMPROVEMENT_OPP' | transloco }}</p>
+                    <p class="text-xs font-bold text-[var(--text-primary)] leading-tight mb-2 pr-4">{{ strengths.worst.topicName }}</p>
+                    <div class="flex items-center gap-2">
+                      <span class="text-lg font-black text-[var(--brand-error)]">{{ strengths.worst.percentage | number:'1.0-0' }}%</span>
+                      <span class="text-[9px] text-[var(--text-secondary)] font-medium bg-[var(--surface)] px-2 py-0.5 rounded-full border border-[var(--border)]">S{{ strengths.worst.weekNumber }}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -173,22 +237,22 @@
 
           <!-- Definitive Grades Table -->
           @if (summary.definitiveGrades.length > 0) {
-            <div class="flex-1 min-w-[300px] rounded-xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
-              <div class="px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50">
-                <h4 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Notas Definitivas por Cuestionario</h4>
+            <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm overflow-hidden h-full">
+              <div class="px-6 py-4 border-b border-[var(--border)] bg-[var(--bg-secondary)]/50">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.DEFINITIVE_GRADES' | transloco }} por Cuestionario</h4>
               </div>
               <table class="w-full text-left text-sm">
                 <thead class="bg-[var(--bg-secondary)]/30 border-b border-[var(--border)]">
                   <tr>
-                    <th class="px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Semana</th>
-                    <th class="px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Cuestionario</th>
-                    <th class="px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] text-right">Puntaje</th>
+                    <th class="px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.WEEK' | transloco }}</th>
+                    <th class="px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.QUIZ' | transloco }}</th>
+                    <th class="px-5 py-2.5 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] text-right">{{ 'PROGRESS.STUDENT_STATS.SCORE' | transloco }}</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[var(--border)]/50">
                   @for (grade of summary.definitiveGrades; track grade.questionnaireId) {
                     <tr class="hover:bg-[var(--bg-secondary)]/30 transition">
-                      <td class="px-5 py-3 text-xs font-bold text-[var(--text-primary)]">Semana {{ grade.weekNumber }}</td>
+                      <td class="px-5 py-3 text-xs font-bold text-[var(--text-primary)]">{{ 'PROGRESS.STUDENT_STATS.WEEK' | transloco }} {{ grade.weekNumber }}</td>
                       <td class="px-5 py-3 text-xs text-[var(--text-secondary)]">#{{ grade.questionnaireId }}</td>
                       <td class="px-5 py-3 text-xs font-extrabold text-right"
                           [class.text-[var(--brand-forest)]]="grade.score >= 16"
@@ -205,7 +269,7 @@
           </div>
         } @else if (!isLoadingSummary() && gradingPeriods().length > 0) {
           <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-secondary)]/40 py-8 text-center">
-            <p class="text-xs text-[var(--text-secondary)]">No hay datos de resumen disponibles para este bimestre.</p>
+            <p class="text-xs text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.NO_SUMMARY' | transloco }}</p>
           </div>
         }
       </div>
@@ -214,22 +278,22 @@
       <div class="space-y-4 animate-fadeIn">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Ruta de Aprendizaje del Bimestre</h3>
-            <p class="text-[10px] text-[var(--text-secondary)] mt-0.5">Visualización de tu progreso y cuestionarios completados</p>
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.LEARNING_PATH' | transloco }}</h3>
+            <p class="text-[10px] text-[var(--text-secondary)] mt-0.5">{{ 'PROGRESS.STUDENT_STATS.LEARNING_PATH_DESC' | transloco }}</p>
           </div>
           <!-- Legend badge indicators -->
           <div class="hidden sm:flex items-center gap-3">
             <span class="inline-flex items-center gap-1 text-[9px] font-bold text-[var(--text-secondary)] bg-[var(--brand-forest)]/10 px-2 py-0.5 rounded-full border border-[var(--brand-forest)]/20">
               <span class="w-1.5 h-1.5 rounded-full bg-[var(--brand-forest)]"></span>
-              Excelente (≥80%)
+              {{ 'PROGRESS.STUDENT_STATS.EXCELLENT_PATH' | transloco }}
             </span>
             <span class="inline-flex items-center gap-1 text-[9px] font-bold text-[var(--text-secondary)] bg-[var(--brand-mustard)]/10 px-2 py-0.5 rounded-full border border-[var(--brand-mustard)]/20">
               <span class="w-1.5 h-1.5 rounded-full bg-[var(--brand-mustard)]"></span>
-              Regular (50-79%)
+              {{ 'PROGRESS.STUDENT_STATS.REGULAR_PATH' | transloco }}
             </span>
             <span class="inline-flex items-center gap-1 text-[9px] font-bold text-[var(--text-secondary)] bg-[var(--brand-error)]/10 px-2 py-0.5 rounded-full border border-[var(--brand-error)]/20">
               <span class="w-1.5 h-1.5 rounded-full bg-[var(--brand-error)]"></span>
-              En Riesgo (&lt;50%)
+              {{ 'PROGRESS.STUDENT_STATS.AT_RISK_PATH' | transloco }}
             </span>
           </div>
         </div>
@@ -297,7 +361,7 @@
                   <!-- Card Header -->
                   <div class="mt-1">
                     <div class="flex items-center justify-between gap-2">
-                      <span class="text-[9px] font-bold text-[var(--text-secondary)] tracking-wider">TEMA {{ i + 1 }}</span>
+                      <span class="text-[9px] font-bold text-[var(--text-secondary)] tracking-wider">{{ 'PROGRESS.STUDENT_STATS.TOPIC' | transloco }} {{ i + 1 }}</span>
                       
                       <!-- Status badge tag -->
                       <span class="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -307,7 +371,7 @@
                             [class.text-[var(--brand-mustard)]]="topic.percentage >= 50 && topic.percentage < 80"
                             [class.bg-[var(--brand-error)]/10]="topic.percentage < 50"
                             [class.text-[var(--brand-error)]]="topic.percentage < 50">
-                        @if (topic.percentage >= 80) { Excelente } @else if (topic.percentage >= 50) { Aprobado } @else { Reforzar }
+                        @if (topic.percentage >= 80) { {{ 'PROGRESS.STUDENT_STATS.EXCELLENT' | transloco }} } @else if (topic.percentage >= 50) { {{ 'PROGRESS.STUDENT_STATS.APPROVED' | transloco }} } @else { {{ 'PROGRESS.STUDENT_STATS.REINFORCE' | transloco }} }
                       </span>
                     </div>
 
@@ -319,7 +383,7 @@
                   <!-- Card Footer / Performance statistics -->
                   <div class="space-y-2.5">
                     <div class="flex items-center justify-between text-[10px] font-bold">
-                      <span class="text-[var(--text-secondary)]">Nota: {{ topic.score | number:'1.0-1' }}</span>
+                      <span class="text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.GRADE' | transloco }} {{ topic.score | number:'1.0-1' }}</span>
                       <span [class.text-[var(--brand-forest)]]="topic.percentage >= 80"
                             [class.text-[var(--brand-mustard)]]="topic.percentage >= 50 && topic.percentage < 80"
                             [class.text-[var(--brand-error)]]="topic.percentage < 50"
@@ -345,7 +409,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[var(--text-secondary)] opacity-40 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <p class="text-xs text-[var(--text-secondary)]">No hay hitos evaluados todavía en este bimestre.</p>
+                <p class="text-xs text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.NO_MILESTONES' | transloco }}</p>
               </div>
             }
 
@@ -362,15 +426,15 @@
   <div class="space-y-6 select-none animate-fadeIn">
     <div>
         <div class="flex items-center gap-3">
-          <h3 class="text-xl font-black text-[var(--text-primary)]">Seguimiento de Calificaciones del Aula</h3>
+          <h3 class="text-xl font-black text-[var(--text-primary)]">{{ 'PROGRESS.TEACHER_TITLE' | transloco }}</h3>
           <!-- Refresh Button -->
-          <button (click)="refreshData()" class="p-1.5 text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 rounded-full transition-colors flex items-center justify-center cursor-pointer" title="Actualizar datos">
+          <button (click)="refreshData()" class="p-1.5 text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 rounded-full transition-colors flex items-center justify-center cursor-pointer" title="{{ 'PROGRESS.TOOLTIPS.REFRESH_DATA' | transloco }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
         </div>
-      <p class="text-xs text-[var(--text-secondary)] mt-0.5">Control de calificaciones, evaluaciones y rendimiento general</p>
+      <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'PROGRESS.TEACHER_SUBTITLE' | transloco }}</p>
     </div>
 
     @if (isLoading()) {
@@ -379,38 +443,12 @@
       </div>
     } @else if (classroomData(); as data) {
 
-      <!-- AI Insight Card (pre-loaded from backend) -->
-      <div class="rounded-xl border border-[var(--brand-primary)]/20 bg-gradient-to-br from-[var(--surface)] to-[var(--bg-secondary)] p-5 shadow-sm relative overflow-hidden">
-        <div class="absolute -right-4 -top-4 text-[var(--brand-primary)]/10">
-          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-        </div>
-
-        <div class="relative z-10">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2 text-[var(--brand-primary)] font-bold text-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Análisis del Rendimiento del Aula (Sery)
-            </div>
-          </div>
-
-          @if (data.latestInsight) {
-            <div class="text-xs text-[var(--text-secondary)] leading-relaxed bg-[var(--surface)] p-3 rounded border border-[var(--border)]" [innerHTML]="renderInsightContent(data.latestInsight)" (click)="handleInsightClick($event, data.latestInsight)"></div>
-          } @else {
-              <p class="text-xs text-[var(--text-secondary)] mb-3">Aún no hay un resumen de Sery disponible para esta aula.</p>
-          }
-        </div>
-      </div>
-
-      <!-- KPI Cards + Donut Chart -->
-      <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
-        <!-- Donut: Classroom Average -->
-        <div class="sm:col-span-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-5">
+      <!-- Row 1: KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Promedio -->
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-4 shadow-sm">
           <div class="relative flex-shrink-0">
-            <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+            <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="40" fill="none" class="stroke-[var(--bg-secondary)]" stroke-width="8"></circle>
               <circle cx="50" cy="50" r="40" fill="none"
                 [attr.stroke]="getScoreColor(data.performance.averageScore)"
@@ -420,54 +458,196 @@
               </circle>
             </svg>
             <div class="absolute inset-0 flex items-center justify-center">
-              <span class="text-lg font-black text-[var(--text-primary)]">{{ data.performance.averageScore | number:'1.0-0' }}%</span>
+              <span class="text-sm font-black text-[var(--text-primary)]">{{ data.performance.averageScore | number:'1.0-0' }}%</span>
             </div>
           </div>
           <div>
-            <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Promedio de Calificaciones</p>
-            <p class="text-3xl font-black text-[var(--text-primary)] mt-1">{{ data.performance.averageScore | number:'1.0-1' }}<span class="text-base font-bold text-[var(--text-secondary)]">%</span></p>
-            <p class="text-[9px] text-[var(--text-secondary)] mt-0.5">En base al 100%</p>
+            <p class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] leading-tight" [innerHTML]="'PROGRESS.KPI.AVERAGE' | transloco"></p>
           </div>
         </div>
 
         <!-- Total Estudiantes -->
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 text-center flex flex-col justify-center">
-          <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Estudiantes</p>
-          <p class="text-2xl font-black text-[var(--text-primary)] mt-1">{{ totalStudents() }}</p>
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-4 shadow-sm">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.KPI.STUDENTS' | transloco }}</p>
+            <p class="text-2xl font-black text-[var(--text-primary)] mt-0.5">{{ totalStudents() }}</p>
+          </div>
         </div>
 
         <!-- Aprobados -->
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 text-center flex flex-col justify-center">
-          <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Aprobados</p>
-          <p class="text-2xl font-black text-[var(--brand-forest)] mt-1">{{ studentsExcelling() }}</p>
-          <p class="text-[9px] text-[var(--text-secondary)]">≥ 80%</p>
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-4 shadow-sm">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-forest)]/10 text-[var(--brand-forest)]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.KPI.EXCELLING' | transloco }}</p>
+            <p class="text-2xl font-black text-[var(--brand-forest)] mt-0.5">{{ studentsExcelling() }}</p>
+          </div>
         </div>
 
         <!-- En Riesgo -->
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 text-center flex flex-col justify-center">
-          <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">En Riesgo</p>
-          <p class="text-2xl font-black text-[var(--brand-error)] mt-1">{{ studentsAtRisk() }}</p>
-          <p class="text-[9px] text-[var(--text-secondary)]">&lt; 50%</p>
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 flex items-center gap-4 shadow-sm">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-error)]/10 text-[var(--brand-error)]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.KPI.AT_RISK' | transloco }}</p>
+            <p class="text-2xl font-black text-[var(--brand-error)] mt-0.5">{{ studentsAtRisk() }}</p>
+          </div>
         </div>
       </div>
 
-      <!-- NEW: Weekly Classroom Trend Chart -->
-      @if (weeklyClassroomTrend().length > 0) {
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Tendencia de Calificaciones Promedio del Aula</h4>
+      <!-- Row 2: AI Insight, Topic Mastery & Early Warning -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <!-- AI Insight Card (col-span-2) -->
+        <div class="xl:col-span-2 rounded-xl border border-[var(--brand-primary)]/20 bg-gradient-to-br from-[var(--surface)] to-[var(--bg-secondary)] p-6 shadow-sm relative overflow-hidden flex flex-col justify-center">
+          <div class="absolute -right-4 -top-4 text-[var(--brand-primary)]/5 pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
           </div>
 
-          <div class="overflow-x-auto">
-            <svg [attr.width]="weeklyClassroomTrend().length * 60 + 40" height="210" class="min-w-full">
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2 text-[var(--brand-primary)] font-bold text-sm uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {{ 'PROGRESS.SERY.TITLE' | transloco }}
+              </div>
+            </div>
+
+            @if (data.latestInsight) {
+              <div class="text-sm font-medium text-[var(--text-primary)] leading-relaxed bg-[var(--surface)]/90 backdrop-blur p-5 rounded-2xl border border-[var(--brand-primary)]/20 shadow-sm cursor-pointer hover:shadow-md transition-shadow" [innerHTML]="renderInsightContent(data.latestInsight)" (click)="handleInsightClick($event, data.latestInsight)"></div>
+            } @else {
+                <p class="text-sm font-medium text-[var(--text-secondary)]">{{ 'PROGRESS.SERY.NO_INSIGHT_TEACHER' | transloco }}</p>
+            }
+          </div>
+        </div>
+
+        <!-- Combined Right Column: Topic Mastery & Early Warning -->
+        <div class="flex flex-col gap-6">
+          <!-- Topic Mastery Widget -->
+          <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex flex-col max-h-[300px] overflow-hidden">
+            <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-4">{{ 'PROGRESS.TOPICS.TITLE' | transloco }}</h4>
+            
+            <div class="overflow-y-auto pr-2 space-y-4 flex-1">
+              @for (topic of topicMastery(); track topic.name; let i = $index) {
+                <div>
+                  <div class="flex items-center justify-between mb-1.5 text-xs">
+                    <span class="font-bold text-[var(--text-primary)] truncate pr-2">{{ i + 1 }}. {{ topic.name }}</span>
+                    <span class="font-extrabold text-[10px]"
+                          [class.text-[var(--brand-forest)]]="topic.average >= 80"
+                          [class.text-[var(--brand-primary)]]="topic.average >= 50 && topic.average < 80"
+                          [class.text-[var(--brand-error)]]="topic.average < 50">
+                      {{ topic.average | number:'1.0-0' }}%
+                    </span>
+                  </div>
+                  <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5 shadow-inner overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-700 relative"
+                         [class.bg-[var(--brand-forest)]]="topic.average >= 80"
+                         [class.bg-[var(--brand-primary)]]="topic.average >= 50 && topic.average < 80"
+                         [class.bg-[var(--brand-error)]]="topic.average < 50"
+                         [style.width.%]="topic.average > 100 ? 100 : topic.average"></div>
+                  </div>
+                </div>
+              } @empty {
+                <p class="text-xs text-[var(--text-secondary)] mt-4">{{ 'PROGRESS.TOPICS.EMPTY' | transloco }}</p>
+              }
+            </div>
+          </div>
+          
+          <!-- Early Warning System -->
+          <div class="rounded-xl border border-[var(--brand-error)]/30 bg-[var(--brand-error)]/5 p-6 shadow-sm flex-1">
+            <div class="flex items-center gap-2 text-[var(--brand-error)] mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h4 class="text-[10px] font-extrabold uppercase tracking-wider">{{ 'PROGRESS.EARLY_WARNING.TITLE' | transloco }}</h4>
+            </div>
+            
+            <div class="space-y-3">
+              @for (student of earlyWarningStudents(); track student.studentId) {
+                <div class="flex items-center justify-between bg-[var(--surface)] p-2.5 rounded-lg border border-[var(--border)] shadow-sm">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-[var(--brand-error)]/10 text-[var(--brand-error)] flex items-center justify-center font-bold text-[10px]">
+                      {{ student.studentName.charAt(0) | uppercase }}
+                    </div>
+                    <span class="text-xs font-bold text-[var(--text-primary)] truncate max-w-[100px]">{{ student.studentName }}</span>
+                  </div>
+                  <span class="text-xs font-black text-[var(--brand-error)]">{{ student.averageScore | number:'1.0-0' }}%</span>
+                </div>
+              } @empty {
+                <div class="flex flex-col items-center justify-center h-24 text-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[var(--brand-forest)]/40 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p class="text-[10px] font-bold text-[var(--text-secondary)]">{{ 'PROGRESS.EARLY_WARNING.EMPTY' | transloco }}</p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Grade Distribution Histogram -->
+          <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex flex-col justify-between max-h-[500px]">
+            <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-6">{{ 'PROGRESS.DISTRIBUTION.TITLE' | transloco }}</h4>
+            
+            <div class="flex items-end h-32 gap-4 mb-4">
+              @for (bucket of gradeDistribution(); track bucket.label) {
+                <div class="flex-1 flex flex-col items-center justify-end h-full group relative">
+                  <!-- Tooltip -->
+                  <div class="absolute -top-8 bg-[var(--text-primary)] text-[var(--surface)] text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+                    {{ bucket.count }} estudiantes
+                  </div>
+                  
+                  <span class="text-xs font-black mb-2" [style.color]="bucket.color">{{ bucket.count }}</span>
+                  <div class="w-full max-w-[40px] rounded-t-md transition-all duration-1000 shadow-sm"
+                       [style.height.%]="bucket.height" [style.background-color]="bucket.color"></div>
+                  <span class="text-[9px] font-bold text-[var(--text-secondary)] mt-2">{{ bucket.label }}</span>
+                </div>
+              }
+            </div>
+            
+            <!-- Leyenda -->
+            <div class="flex flex-wrap items-center justify-center gap-3 mt-4 pt-4 border-t border-[var(--border)]/50">
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[var(--brand-error)]"></span><span class="text-[9px] font-bold text-[var(--text-secondary)]">{{ 'PROGRESS.DISTRIBUTION.CRITICAL' | transloco }}</span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[var(--brand-mustard)]"></span><span class="text-[9px] font-bold text-[var(--text-secondary)]">{{ 'PROGRESS.DISTRIBUTION.BASIC' | transloco }}</span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]"></span><span class="text-[9px] font-bold text-[var(--text-secondary)]">{{ 'PROGRESS.DISTRIBUTION.INTERMEDIATE' | transloco }}</span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[var(--brand-forest)]"></span><span class="text-[9px] font-bold text-[var(--text-secondary)]">{{ 'PROGRESS.DISTRIBUTION.ADVANCED' | transloco }}</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Tendencia & Ranking -->
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <!-- Weekly Classroom Trend Chart -->
+        @if (weeklyClassroomTrend().length > 0) {
+          <div class="xl:col-span-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm overflow-x-auto">
+            <div class="flex items-center justify-between mb-6">
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.TREND.TITLE' | transloco }}</h4>
+            </div>
+
+            <div class="w-full flex justify-center min-w-[600px]">
+              <svg [attr.width]="weeklyClassroomTrend().length * 80 + 60" height="200" class="max-w-full">
               <!-- Y-Axis Title -->
-              <text x="24" y="10" text-anchor="middle" class="fill-[var(--text-secondary)]" font-size="8" font-weight="600">Nota (%)</text>
+              <text x="24" y="10" text-anchor="middle" class="fill-[var(--text-secondary)]" font-size="8" font-weight="600">{{ 'PROGRESS.STUDENT_STATS.GRADE_PERCENT' | transloco }}</text>
               
-              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 60 + 30" y1="20" y2="20" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
-              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 60 + 30" y1="55" y2="55" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
-              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 60 + 30" y1="90" y2="90" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
-              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 60 + 30" y1="125" y2="125" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
-              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 60 + 30" y1="160" y2="160" stroke="var(--border)" stroke-width="1"/>
+              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 80 + 30" y1="20" y2="20" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
+              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 80 + 30" y1="55" y2="55" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
+              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 80 + 30" y1="90" y2="90" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
+              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 80 + 30" y1="125" y2="125" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="4"/>
+              <line x1="30" [attr.x2]="weeklyClassroomTrend().length * 80 + 30" y1="160" y2="160" stroke="var(--border)" stroke-width="1"/>
 
               <text x="24" y="24" text-anchor="end" class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">100</text>
               <text x="24" y="59" text-anchor="end" class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">75</text>
@@ -477,243 +657,191 @@
 
               @for (week of weeklyClassroomTrend(); track week.weekNumber; let i = $index) {
                 <rect
-                  [attr.x]="i * 60 + 40" [attr.y]="160 - getBarHeight(week.averageScore)"
-                  width="30" [attr.height]="getBarHeight(week.averageScore)"
-                  [attr.fill]="getScoreColor(week.averageScore)" rx="4" ry="4" opacity="0.85">
-                  <title>Semana {{ week.weekNumber }}: Promedio {{ week.averageScore | number:'1.0-1' }}%</title>
+                  [attr.x]="i * 80 + 50" [attr.y]="160 - getBarHeight(week.averageScore)"
+                  width="50" [attr.height]="getBarHeight(week.averageScore)"
+                  [attr.fill]="getScoreColor(week.averageScore)" rx="6" ry="6" opacity="0.9">
+                  <title>{{ 'PROGRESS.STUDENT_STATS.WEEK' | transloco }} {{ week.weekNumber }}: Promedio {{ week.averageScore | number:'1.0-1' }}%</title>
                 </rect>
-                <text [attr.x]="i * 60 + 55" [attr.y]="160 - getBarHeight(week.averageScore) - 8"
-                  text-anchor="middle" class="fill-[var(--text-primary)]" font-size="10" font-weight="800">{{ week.averageScore | number:'1.0-0' }}</text>
-                <text [attr.x]="i * 60 + 55" y="176" text-anchor="middle"
-                  class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">Sem. {{ week.weekNumber }}</text>
+                <text [attr.x]="i * 80 + 75" [attr.y]="160 - getBarHeight(week.averageScore) - 8"
+                  text-anchor="middle" class="fill-[var(--text-primary)]" font-size="11" font-weight="800">{{ week.averageScore | number:'1.0-0' }}</text>
+                <text [attr.x]="i * 80 + 75" y="176" text-anchor="middle"
+                  class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">{{ 'PROGRESS.STUDENT_STATS.WEEK_ABBR' | transloco }} {{ week.weekNumber }}</text>
               }
               
               <!-- X-Axis Title -->
-              <text [attr.x]="(weeklyClassroomTrend().length * 60 + 40) / 2" y="195" text-anchor="middle" class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">Semanas Académicas</text>
+              <text [attr.x]="(weeklyClassroomTrend().length * 80 + 60) / 2" y="195" text-anchor="middle" class="fill-[var(--text-secondary)]" font-size="9" font-weight="600">{{ 'PROGRESS.STUDENT_STATS.ACADEMIC_WEEKS' | transloco }}</text>
             </svg>
+            </div>
           </div>
+        } @else {
+          <!-- Placeholder if no trend data -->
+          <div class="xl:col-span-2 rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-secondary)]/30 p-6 flex items-center justify-center">
+            <p class="text-xs text-[var(--text-secondary)]">{{ 'PROGRESS.TREND.NO_DATA' | transloco }}</p>
+          </div>
+        }
+
+      <!-- Ranking del Aula (Table) -->
+      <div class="overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-sm max-h-[500px] flex flex-col">
+        <div class="px-6 py-4 border-b border-[var(--border)] bg-[var(--bg-secondary)]/40 flex items-center justify-between sticky top-0 z-10 shrink-0">
+          <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.RANKING.TITLE' | transloco }}</h4>
+          <span class="text-[9px] text-[var(--text-secondary)]">{{ 'PROGRESS.RANKING.HINT' | transloco }}</span>
         </div>
-      }
-
-      <!-- Horizontal Bar Chart: Student Ranking -->
-      @if (sortedStudents().length > 0) {
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5">
-          <h3 class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-4">Rendimiento Comparativo por Estudiante</h3>
-
-          <div class="space-y-2.5">
-            @for (student of sortedStudents(); track student.studentId; let i = $index) {
-              <div class="flex items-center gap-3">
-                <div class="w-6 text-right">
-                  <span class="text-[10px] font-bold text-[var(--text-secondary)]">{{ i + 1 }}</span>
-                </div>
-                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                     [class.bg-[var(--brand-forest)]/10]="student.averageScore >= 80"
-                     [class.text-[var(--brand-forest)]]="student.averageScore >= 80"
-                     [class.bg-[var(--brand-primary)]/10]="student.averageScore >= 50 && student.averageScore < 80"
-                     [class.text-[var(--brand-primary)]]="student.averageScore >= 50 && student.averageScore < 80"
-                     [class.bg-[var(--bg-secondary)]]="student.averageScore < 50"
-                     [class.text-[var(--text-secondary)]]="student.averageScore < 50"
-                >{{ student.studentName.charAt(0) | uppercase }}</div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-[10px] font-bold text-[var(--text-primary)] truncate">{{ student.studentName }}</span>
-                    <span class="text-[10px] font-extrabold ml-2 shrink-0"
-                          [class.text-[var(--brand-forest)]]="student.averageScore >= 80"
-                          [class.text-[var(--brand-primary)]]="student.averageScore >= 50 && student.averageScore < 80"
-                          [class.text-[var(--text-secondary)]]="student.averageScore < 50"
-                    >{{ student.averageScore | number:'1.0-0' }}%</span>
-                  </div>
-                  <div class="w-full bg-[var(--bg-secondary)] rounded-full h-2">
-                    <div class="h-2 rounded-full transition-all duration-700"
-                         [class.bg-[var(--brand-forest)]]="student.averageScore >= 80"
-                         [class.bg-[var(--brand-primary)]]="student.averageScore >= 50 && student.averageScore < 80"
-                         [class.bg-[var(--brand-inactive)]]="student.averageScore < 50"
-                         [style.width.%]="student.averageScore > 100 ? 100 : student.averageScore"></div>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-
-          <div class="flex items-center gap-4 mt-4 pt-3 border-t border-[var(--border)]">
-            <div class="flex items-center gap-1.5">
-              <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-forest)]"></div>
-              <span class="text-[10px] text-[var(--text-secondary)] font-medium">≥ 80% Excelente</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-primary)]"></div>
-              <span class="text-[10px] text-[var(--text-secondary)] font-medium">≥ 50% Regular</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <div class="w-2.5 h-2.5 rounded-full bg-[var(--brand-inactive)]"></div>
-              <span class="text-[10px] text-[var(--text-secondary)] font-medium">&lt; 50% En riesgo</span>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Detailed Progress Table -->
-      <div class="overflow-x-auto rounded-lg border border-[var(--border)]/70 bg-[var(--surface)]">
-        <table class="w-full text-left text-sm text-[var(--text-secondary)] min-w-[500px]">
-          <thead class="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
-            <tr>
-              <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Estudiante</th>
-              <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] w-64">Progreso / Rendimiento</th>
-              <th class="px-6 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] text-right w-16"></th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[var(--border)]/50 font-medium text-xs">
-            @for (student of data.performance.students; track student.studentId) {
-              <tr class="hover:bg-[var(--bg-secondary)]/50 transition cursor-pointer" (click)="toggleStudentDetails(student.studentId, student.studentName)">
-                <td class="px-6 py-4 font-bold text-[var(--text-primary)]">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] flex items-center justify-center font-bold">
-                      {{ student.studentName.charAt(0) | uppercase }}
+        <div class="overflow-y-auto overflow-x-auto flex-1">
+          <table class="w-full text-left text-sm text-[var(--text-secondary)] min-w-[250px]">
+            <thead class="bg-[var(--bg-secondary)]/30 border-b border-[var(--border)] sticky top-0 z-10">
+              <tr>
+                <th class="px-4 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] w-12 text-center">{{ 'PROGRESS.RANKING.RANK' | transloco }}</th>
+                <th class="px-4 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.RANKING.STUDENT' | transloco }}</th>
+                <th class="px-4 py-3 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] w-28">{{ 'PROGRESS.RANKING.AVERAGE' | transloco }}</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[var(--border)]/50 font-medium text-xs">
+              @for (student of sortedStudents(); track student.studentId; let i = $index) {
+                <tr class="hover:bg-[var(--bg-secondary)]/50 transition cursor-pointer" (click)="openStudentModal(student.studentId, student.studentName)">
+                  <td class="px-4 py-3 text-center">
+                    <span class="text-xs font-black text-[var(--text-secondary)]">{{ i + 1 }}</span>
+                  </td>
+                  <td class="px-4 py-3 font-bold text-[var(--text-primary)]">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px]"
+                           [class.bg-[var(--brand-forest)]/15]="student.averageScore >= 80"
+                           [class.text-[var(--brand-forest)]]="student.averageScore >= 80"
+                           [class.bg-[var(--brand-primary)]/15]="student.averageScore >= 50 && student.averageScore < 80"
+                           [class.text-[var(--brand-primary)]]="student.averageScore >= 50 && student.averageScore < 80"
+                           [class.bg-[var(--bg-secondary)]]="student.averageScore < 50"
+                           [class.text-[var(--text-secondary)]]="student.averageScore < 50">
+                        {{ student.studentName.charAt(0) | uppercase }}
+                      </div>
+                      <span class="truncate max-w-[80px]">{{ student.studentName }}</span>
                     </div>
-                    {{ student.studentName }}
-                  </div>
-                </td>
-                <td class="px-6 py-4">
-                  <div class="flex flex-col gap-1.5">
-                    <div class="flex items-center justify-between text-[10px] font-bold">
-                      <span class="text-[var(--text-secondary)]">Promedio General</span>
-                      <span [class.text-[var(--brand-forest)]]="student.averageScore >= 80"
+                  </td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-12 bg-[var(--bg-secondary)] rounded-full h-1.5 overflow-hidden flex-shrink-0">
+                        <div class="h-full rounded-full transition-all duration-700"
+                             [class.bg-[var(--brand-forest)]]="student.averageScore >= 80"
+                             [class.bg-[var(--brand-primary)]]="student.averageScore >= 50 && student.averageScore < 80"
+                             [class.bg-[var(--brand-error)]]="student.averageScore < 50"
+                             [style.width.%]="student.averageScore > 100 ? 100 : student.averageScore"></div>
+                      </div>
+                      <span class="text-[10px] font-extrabold w-6 text-right"
+                            [class.text-[var(--brand-forest)]]="student.averageScore >= 80"
                             [class.text-[var(--brand-primary)]]="student.averageScore >= 50 && student.averageScore < 80"
-                            [class.text-[var(--text-secondary)]]="student.averageScore < 50">
+                            [class.text-[var(--brand-error)]]="student.averageScore < 50">
                         {{ student.averageScore | number:'1.0-0' }}%
                       </span>
                     </div>
-                    <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5">
-                      <div class="h-1.5 rounded-full transition-all duration-1000"
-                           [class.bg-[var(--brand-forest)]]="student.averageScore >= 80"
-                           [class.bg-[var(--brand-primary)]]="student.averageScore < 80"
-                           [style.width.%]="student.averageScore > 100 ? 100 : student.averageScore"></div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 text-right">
-                  <button class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform" [class.rotate-180]="expandedStudentId() === student.studentId" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Expanded Student Details -->
-              @if (expandedStudentId() === student.studentId) {
-                <tr class="bg-[var(--bg-secondary)]/30 border-b border-[var(--border)]">
-                  <td colspan="3" class="px-6 py-4">
-                    <div class="space-y-4">
-
-                      <!-- Student AI Insight (loaded from backend) -->
-                      <div class="rounded-xl border border-[var(--brand-primary)]/15 bg-[var(--surface)] p-4">
-                        <div class="flex items-center justify-between mb-2.5">
-                          <div class="flex items-center gap-1.5 text-[var(--brand-primary)] font-bold text-[10px] uppercase tracking-wider">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            Sugerencia de Sery para {{ student.studentName }}
-                          </div>
-                          <div class="flex items-center gap-2">
-                            <button (click)="openRecModal(student); $event.stopPropagation()"
-                              class="text-[10px] font-extrabold uppercase tracking-wider bg-[var(--brand-primary)] text-white px-3 py-1.5 rounded-lg hover:bg-[var(--brand-primary-hover)] transition cursor-pointer flex items-center gap-1">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                              </svg>
-                              Recomendación
-                            </button>
-                          </div>
-                        </div>
-
-                        @if (loadingStudentInsightId() === student.studentId) {
-                          <div class="flex items-center gap-2 py-2">
-                            <div class="w-4 h-4 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
-                            <span class="text-[10px] text-[var(--text-secondary)]">Cargando sugerencia...</span>
-                          </div>
-                        } @else if (studentInsights()[student.studentId]; as insight) {
-                          <div class="text-[11px] text-[var(--text-secondary)] leading-relaxed bg-[var(--bg-secondary)]/30 p-3 rounded border border-[var(--border)]" [innerHTML]="renderInsightContent(insight)" (click)="handleInsightClick($event, insight)"></div>
-                        } @else if (generatingInsightStudentId() === student.studentId) {
-                          <div class="flex items-center gap-2 py-2">
-                            <div class="w-4 h-4 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
-                            <span class="text-[10px] text-[var(--text-secondary)] animate-pulse">Sery está analizando a {{ student.studentName }}...</span>
-                          </div>
-                        } @else {
-                          <p class="text-[10px] text-[var(--text-secondary)] italic py-1">No se pudo generar una sugerencia para este estudiante.</p>
-                        }
-                      </div>
-
-                      <!-- Topic Details with Charts -->
-                      <div class="p-4 bg-[var(--surface)] border border-[var(--border)] rounded-lg shadow-sm">
-                        <h4 class="text-xs font-bold text-[var(--text-primary)] mb-3">Rendimiento Detallado por Temas</h4>
-
-                        @if (student.topics.length === 0) {
-                          <p class="text-[10px] text-[var(--text-secondary)] italic">El estudiante no ha rendido cuestionarios todavía.</p>
-                        } @else {
-                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @for (topic of student.topics; track topic.topicId) {
-                              <div class="flex-col w-full">
-                                  <div class="flex items-center gap-3 w-full p-2 rounded-lg transition-colors"
-                                       [class.cursor-pointer]="topic.progressHistory && topic.progressHistory.length > 1"
-                                       [class.hover:bg-[var(--bg-secondary)]]="topic.progressHistory && topic.progressHistory.length > 1"
-                                       (click)="openRoadmapModal(topic)">
-                                    <div class="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
-                                      <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                                        <circle cx="18" cy="18" r="16" fill="none" class="stroke-[var(--bg-secondary)]" stroke-width="3"></circle>
-                                        <circle cx="18" cy="18" r="16" fill="none"
-                                                [attr.stroke-dasharray]="topic.percentage + ', 100'"
-                                                [class.stroke-[var(--brand-forest)]]="topic.percentage >= 80"
-                                                [class.stroke-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
-                                                [class.stroke-[var(--text-secondary)]]="topic.percentage < 50"
-                                                stroke-width="3" stroke-linecap="round"></circle>
-                                      </svg>
-                                      <div class="absolute flex flex-col items-center justify-center text-[8px] font-black"
-                                           [class.text-[var(--brand-forest)]]="topic.percentage >= 80"
-                                           [class.text-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
-                                           [class.text-[var(--text-secondary)]]="topic.percentage < 50">
-                                        {{ topic.percentage | number:'1.0-0' }}%
-                                      </div>
-                                    </div>
-                                    <div class="flex-1">
-                                      <p class="text-[10px] font-bold text-[var(--text-primary)] leading-tight">{{ topic.topicName }}</p>
-                                      <p class="text-[9px] text-[var(--text-secondary)] mt-0.5">Semana {{ topic.weekNumber }} • Máx: {{ topic.score | number:'1.0-1' }} pts</p>
-                                    </div>
-                                    @if (topic.progressHistory && topic.progressHistory.length > 1) {
-                                      <div class="flex items-center justify-center text-[var(--brand-primary)] pr-2" title="Ver roadmap de intentos">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                        </svg>
-                                      </div>
-                                    }
-                                  </div>
-                                </div>
-                            }
-                          </div>
-                        }
-                      </div>
-                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="3" class="px-4 py-8 text-center text-[var(--text-secondary)]">
+                    {{ 'PROGRESS.RANKING.EMPTY' | transloco }}
                   </td>
                 </tr>
               }
-            } @empty {
-              <tr>
-                <td colspan="3" class="px-6 py-8 text-center text-[var(--text-secondary)]">
-                  No hay estudiantes enrolados en esta aula.
-                </td>
-              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+  <!-- Student Details Modal -->
+  <app-modal [isOpen]="isStudentModalOpen()" [title]="('PROGRESS.MODALS.STUDENT_DETAIL' | transloco) + ' ' + (selectedStudentData()?.studentName || '')" [onClose]="closeStudentModal" widthClass="max-w-4xl">
+    @if (selectedStudentData(); as student) {
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-2 h-[500px]">
+        <!-- Análisis Sery -->
+        <div class="flex flex-col h-full overflow-hidden">
+          <div class="rounded-xl border border-[var(--brand-primary)]/20 bg-gradient-to-br from-[var(--surface)] to-[var(--bg-secondary)] p-5 shadow-sm flex flex-col h-full overflow-hidden">
+            <div class="flex items-center justify-between mb-4 shrink-0">
+              <div class="flex items-center gap-2 text-[var(--brand-primary)] font-bold text-xs uppercase tracking-wider">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Análisis del Estudiante (Sery)
+              </div>
+              <div class="flex gap-2">
+                @if (generatingInsightStudentId() === student.studentId) {
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                }
+                <button (click)="openRecModal(student)" class="text-[10px] bg-[var(--brand-primary)] text-white px-3 py-1.5 rounded-lg hover:bg-[var(--brand-primary-hover)] transition font-bold uppercase tracking-wider flex items-center gap-1">
+                  <i class="bi bi-magic"></i> Recomendar
+                </button>
+              </div>
+            </div>
+
+            @if (loadingStudentInsightId() === student.studentId) {
+              <div class="flex items-center gap-2 py-2 shrink-0">
+                <div class="w-4 h-4 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs font-medium text-[var(--text-secondary)]">Cargando sugerencia...</span>
+              </div>
+            } @else if (studentInsights()[student.studentId]; as insight) {
+              <div class="text-sm font-medium text-[var(--text-primary)] leading-relaxed bg-[var(--surface)] p-5 rounded-2xl border border-[var(--border)] shadow-sm flex-1 overflow-y-auto" [innerHTML]="renderInsightContent(insight)" (click)="handleInsightClick($event, insight)"></div>
+            } @else if (generatingInsightStudentId() === student.studentId) {
+              <div class="flex items-center gap-2 py-2 shrink-0">
+                <div class="w-4 h-4 border-2 border-[var(--brand-primary)] border-t-transparent rounded-full animate-spin"></div>
+                <span class="text-xs font-medium text-[var(--text-secondary)] animate-pulse">Sery está analizando a {{ student.studentName }}...</span>
+              </div>
+            } @else {
+              <p class="text-xs font-medium text-[var(--text-secondary)] italic shrink-0">No se ha generado una sugerencia para este estudiante.</p>
             }
-          </tbody>
-        </table>
+          </div>
+        </div>
+
+        <!-- Dominio por Temas -->
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm flex flex-col h-full overflow-hidden">
+          <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)] mb-4 shrink-0">Rendimiento por Temas</h4>
+          <div class="overflow-y-auto pr-2 space-y-4 flex-1">
+            @for (topic of student.topics; track topic.topicId) {
+              <div class="flex items-center gap-3 w-full p-3 rounded-xl border border-[var(--border)] transition-colors hover:border-[var(--brand-primary)]/30 hover:shadow-sm"
+                   [class.cursor-pointer]="topic.progressHistory && topic.progressHistory.length > 1"
+                   (click)="openRoadmapModal(topic)">
+                <div class="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="16" fill="none" class="stroke-[var(--bg-secondary)]" stroke-width="3"></circle>
+                    <circle cx="18" cy="18" r="16" fill="none"
+                            [attr.stroke-dasharray]="topic.percentage + ', 100'"
+                            [class.stroke-[var(--brand-forest)]]="topic.percentage >= 80"
+                            [class.stroke-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
+                            [class.stroke-[var(--text-secondary)]]="topic.percentage < 50"
+                            stroke-width="3" stroke-linecap="round"></circle>
+                  </svg>
+                  <div class="absolute flex flex-col items-center justify-center text-[10px] font-black"
+                       [class.text-[var(--brand-forest)]]="topic.percentage >= 80"
+                       [class.text-[var(--brand-primary)]]="topic.percentage >= 50 && topic.percentage < 80"
+                       [class.text-[var(--text-secondary)]]="topic.percentage < 50">
+                    {{ topic.percentage | number:'1.0-0' }}%
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs font-bold text-[var(--text-primary)] leading-tight mb-0.5">{{ topic.topicName }}</p>
+                  <p class="text-[10px] text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.WEEK_ABBR' | transloco }} {{ topic.weekNumber }} • Max: <span class="font-bold text-[var(--text-primary)]">{{ topic.score | number:'1.0-1' }} pts</span></p>
+                </div>
+                @if (topic.progressHistory && topic.progressHistory.length > 1) {
+                  <div class="flex items-center justify-center text-[var(--brand-primary)]" title="{{ 'PROGRESS.TOOLTIPS.VIEW_ATTEMPTS_ROADMAP' | transloco }}">
+                    <i class="bi bi-diagram-3-fill"></i>
+                  </div>
+                }
+              </div>
+            } @empty {
+              <p class="text-xs font-medium text-[var(--text-secondary)] italic">No hay temas evaluados.</p>
+            }
+          </div>
+        </div>
       </div>
     }
-  </div>
+  </app-modal>
 
-  <!-- Generar Recomendación Modal (per student) -->
+  <!-- Generar {{ 'PROGRESS.MODALS.RECOMMENDATION' | transloco }} Modal (per student) -->
   <app-modal
     [isOpen]="isRecModalOpen()"
     [onClose]="closeRecModal"
     widthClass="max-w-lg"
-    [title]="recStudentName() ? 'Recomendación para ' + recStudentName() : 'Generar Recomendación de IA'">
+    [title]="recStudentName() ? ('PROGRESS.MODALS.RECOMMENDATION' | transloco) + ' para ' + recStudentName() : 'Generar ' + ('PROGRESS.MODALS.RECOMMENDATION' | transloco) + ' de IA'">
     
     <div class="space-y-4">
       <p class="text-xs text-[var(--text-secondary)]">Usa IA para generar un cuestionario recomendado. Especifica el tema y la IA personalizará las preguntas de refuerzo.</p>
@@ -757,13 +885,13 @@
         Cancelar
       </button>
       <button type="button" (click)="submitRecommendation()" [disabled]="recForm.invalid || isGeneratingRec()" class="px-4 py-2 text-xs font-bold bg-[var(--brand-primary)] text-white rounded-lg hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50">
-        {{ isGeneratingRec() ? 'Generando...' : 'Generar Cuestionario' }}
+        {{ isGeneratingRec() ? 'Generando...' : ('PROGRESS.MODALS.GENERATE_REC' | transloco) }}
       </button>
     </div>
   </app-modal>
 
 <!-- Topic Roadmap Modal -->
-<app-modal [isOpen]="isRoadmapModalOpen()" [title]="'Roadmap de Intentos'" [onClose]="closeRoadmapModal">
+<app-modal [isOpen]="isRoadmapModalOpen()" [title]="'PROGRESS.MODALS.ROADMAP' | transloco" [onClose]="closeRoadmapModal">
   <div class="p-6 pt-2">
     <div class="mb-6 border-b border-[var(--border)] pb-4">
       @if (selectedTopicForRoadmap(); as topic) {
@@ -855,7 +983,7 @@
             </svg>
           </div>
           <h3 class="text-sm font-extrabold text-[var(--text-primary)] truncate"
-            title="Previsualizando: {{ previewDocumentTitle() }}">
+            title="{{ 'CLASSROOMS.REPO.PREVIEW_TITLE' | transloco }} {{ previewDocumentTitle() }}">
             Previsualización: {{ previewDocumentTitle() }}
           </h3>
         </div>

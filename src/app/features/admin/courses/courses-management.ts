@@ -10,15 +10,17 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Modal } from '../../../shared/components/modal/modal';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 type Tab = 'AREAS_COURSES' | 'SECTIONS' | 'STUDY_PLANS';
 import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { ConfirmModal } from '../../../shared/components/modal/confirm-modal';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-courses-management',
   standalone: true,
-  imports: [Modal, FormsModule, ConfirmModal, TranslateEnumPipe],
+  imports: [CommonModule, FormsModule, Modal, ConfirmModal, TranslateEnumPipe, TranslocoPipe],
   templateUrl: './courses-management.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -26,6 +28,7 @@ export class CoursesManagement implements OnInit {
   private readonly coursesService = inject(CoursesManagementService);
   private readonly userService = inject(UserService);
   private readonly toastService = inject(ToastService);
+  private readonly translocoService = inject(TranslocoService);
 
   readonly activeTab = signal<Tab>('AREAS_COURSES');
   readonly isLoading = signal(false);
@@ -170,7 +173,7 @@ export class CoursesManagement implements OnInit {
     if (this.editingArea()) {
       this.coursesService.updateArea(this.editingArea()!.id, payload).subscribe({
         next: () => {
-          this.toastService.success('Área actualizada');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.AREA_UPDATED'));
           this.isSubmitting.set(false);
           this.closeAreaModal();
           this.loadAreas();
@@ -183,7 +186,7 @@ export class CoursesManagement implements OnInit {
     } else {
       this.coursesService.createArea(payload).subscribe({
         next: () => {
-          this.toastService.success('Área creada');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.AREA_CREATED'));
           this.isSubmitting.set(false);
           this.closeAreaModal();
           this.loadAreas();
@@ -197,12 +200,12 @@ export class CoursesManagement implements OnInit {
   }
 
   deleteArea(id: number) {
-    this.confirmModalTitle.set('Eliminar Área');
-    this.confirmModalMessage.set('¿Estás seguro de eliminar esta área?');
+    this.confirmModalTitle.set(this.translocoService.translate('ADMIN.CONFIRM.DELETE_AREA_TITLE'));
+    this.confirmModalMessage.set(this.translocoService.translate('ADMIN.CONFIRM.DELETE_AREA_MSG'));
     this.confirmAction.set(() => {
       this.coursesService.deleteArea(id).subscribe({
         next: () => {
-          this.toastService.success('Área eliminada');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.AREA_DELETED'));
           this.confirmModalOpen.set(false);
           this.loadAreas();
         },
@@ -243,7 +246,7 @@ export class CoursesManagement implements OnInit {
     if (this.editingCourse()) {
       this.coursesService.updateCourse(this.editingCourse()!.id, payload).subscribe({
         next: () => {
-          this.toastService.success('Curso actualizado');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.COURSE_UPDATED'));
           this.isSubmitting.set(false);
           this.closeCourseModal();
           this.loadCourses(this.selectedArea()!.id);
@@ -256,7 +259,7 @@ export class CoursesManagement implements OnInit {
     } else {
       this.coursesService.createCourse(payload).subscribe({
         next: () => {
-          this.toastService.success('Curso creado');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.COURSE_CREATED'));
           this.isSubmitting.set(false);
           this.closeCourseModal();
           this.loadCourses(this.selectedArea()!.id);
@@ -270,12 +273,12 @@ export class CoursesManagement implements OnInit {
   }
 
   deleteCourse(id: number) {
-    this.confirmModalTitle.set('Eliminar Curso');
-    this.confirmModalMessage.set('¿Estás seguro de eliminar este curso?');
+    this.confirmModalTitle.set(this.translocoService.translate('ADMIN.CONFIRM.DELETE_COURSE_TITLE'));
+    this.confirmModalMessage.set(this.translocoService.translate('ADMIN.CONFIRM.DELETE_COURSE_MSG'));
     this.confirmAction.set(() => {
       this.coursesService.deleteCourse(id).subscribe({
         next: () => {
-          this.toastService.success('Curso eliminado');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.COURSE_DELETED'));
           this.confirmModalOpen.set(false);
           if (this.selectedArea()) this.loadCourses(this.selectedArea()!.id);
         },
@@ -327,7 +330,7 @@ export class CoursesManagement implements OnInit {
 
     this.coursesService.createSection(payload).subscribe({
       next: () => {
-        this.toastService.success('Sección registrada exitosamente');
+        this.toastService.success(this.translocoService.translate('ADMIN.TOAST.SECTION_CREATED'));
         this.isSubmitting.set(false);
         this.closeSectionModal();
         this.loadSections();
@@ -340,12 +343,12 @@ export class CoursesManagement implements OnInit {
   }
 
   deleteSection(id: number) {
-    this.confirmModalTitle.set('Eliminar Sección');
-    this.confirmModalMessage.set('¿Estás seguro de eliminar esta sección?');
+    this.confirmModalTitle.set(this.translocoService.translate('ADMIN.CONFIRM.DELETE_SECTION_TITLE'));
+    this.confirmModalMessage.set(this.translocoService.translate('ADMIN.CONFIRM.DELETE_SECTION_MSG'));
     this.confirmAction.set(() => {
       this.coursesService.deleteSection(id).subscribe({
         next: () => {
-          this.toastService.success('Sección eliminada');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.SECTION_DELETED'));
           this.confirmModalOpen.set(false);
           this.loadSections();
         },
@@ -409,7 +412,7 @@ export class CoursesManagement implements OnInit {
 
     this.coursesService.addCourseToStudyPlan(payload).subscribe({
       next: () => {
-        this.toastService.success('Curso asignado al plan de estudios');
+        this.toastService.success(this.translocoService.translate('ADMIN.TOAST.COURSE_ASSIGNED'));
         this.isSubmitting.set(false);
         this.closeStudyPlanModal();
         this.loadStudyPlans();
@@ -422,12 +425,12 @@ export class CoursesManagement implements OnInit {
   }
 
   removeCourseFromStudyPlan(studyPlanId: number) {
-    this.confirmModalTitle.set('Remover Curso');
-    this.confirmModalMessage.set('¿Estás seguro de quitar este curso del plan de estudios?');
+    this.confirmModalTitle.set(this.translocoService.translate('ADMIN.CONFIRM.REMOVE_COURSE_TITLE'));
+    this.confirmModalMessage.set(this.translocoService.translate('ADMIN.CONFIRM.REMOVE_COURSE_MSG'));
     this.confirmAction.set(() => {
       this.coursesService.removeCourseFromStudyPlan(studyPlanId).subscribe({
         next: () => {
-          this.toastService.success('Curso removido del plan');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.COURSE_REMOVED'));
           this.confirmModalOpen.set(false);
           this.loadStudyPlans();
         },

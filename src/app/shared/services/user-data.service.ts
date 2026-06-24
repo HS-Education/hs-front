@@ -40,8 +40,8 @@ export class UserDataService {
   readonly isStudentView = computed(() => {
     const user = this.user();
     if (!user) return false;
-    const hasTeacherRole = user.roles.some(role => ['TEACHER', 'ROLE_TEACHER'].includes(role));
-    if (hasTeacherRole) {
+    const hasStaffRole = user.roles.some(role => ['TEACHER', 'ROLE_TEACHER', 'COORDINATOR', 'ROLE_COORDINATOR', 'ADMIN', 'ROLE_ADMIN'].includes(role));
+    if (hasStaffRole) {
       return this.teacherViewMode() === 'STUDENT';
     }
     return user.roles.some(role => ['STUDENT', 'ROLE_STUDENT'].includes(role));

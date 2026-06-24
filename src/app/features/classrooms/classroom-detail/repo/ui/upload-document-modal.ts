@@ -7,7 +7,9 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Modal } from '../../../../../shared/components/modal/modal';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { ClassroomService } from '../../../data-access/classroom.service';
 import { Topic } from '../../../data-access/models/responses/topic.model';
 import {
@@ -20,9 +22,9 @@ import {UploadDocumentRequest} from '../../../data-access/models/requests/upload
 
 @Component({
   selector: 'app-upload-document-modal',
-  imports: [Modal],
+  imports: [Modal, TranslocoPipe],
   template: `
-    <app-modal [isOpen]="isOpen()" [title]="'Agregar documento'" [onClose]="closeModal">
+    <app-modal [isOpen]="isOpen()" [title]="'CLASSROOMS.REPO.ADD_DOCUMENT' | transloco" [onClose]="closeModal">
       <form class="space-y-4" (submit)="submit($event)">
         <div>
           <label class="text-sm font-medium" for="document-title">Título</label>

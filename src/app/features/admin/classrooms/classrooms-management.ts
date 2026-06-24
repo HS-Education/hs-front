@@ -13,11 +13,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Modal } from '../../../shared/components/modal/modal';
 import { ConfirmModal } from '../../../shared/components/modal/confirm-modal';
 import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-classrooms-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal, ConfirmModal, TranslateEnumPipe],
+  imports: [CommonModule, FormsModule, Modal, ConfirmModal, TranslateEnumPipe, TranslocoPipe],
   templateUrl: './classrooms-management.html',
   host: {
     class: 'block h-full'
@@ -28,6 +29,7 @@ export class ClassroomsManagement implements OnInit {
   private readonly academicYearService = inject(AcademicYearService);
   private readonly userService = inject(UserService);
   private readonly toastService = inject(ToastService);
+  private readonly translocoService = inject(TranslocoService);
 
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
@@ -324,12 +326,12 @@ export class ClassroomsManagement implements OnInit {
 
   // --- Delete Classroom ---
   deleteClassroom(id: number) {
-    this.confirmModalTitle.set('Eliminar Aula');
-    this.confirmModalMessage.set('¿Estás seguro de eliminar esta aula? Se perderán las asignaciones y matrículas.');
+    this.confirmModalTitle.set(this.translocoService.translate('ADMIN.CONFIRM.DELETE_CLASSROOM_TITLE'));
+    this.confirmModalMessage.set(this.translocoService.translate('ADMIN.CONFIRM.DELETE_CLASSROOM_MSG'));
     this.confirmAction.set(() => {
       this.classroomsService.deleteClassroom(id).subscribe({
         next: () => {
-          this.toastService.success('Aula eliminada exitosamente');
+          this.toastService.success(this.translocoService.translate('ADMIN.TOAST.CLASSROOM_DELETED'));
           this.confirmModalOpen.set(false);
           this.loadClassrooms();
         },
@@ -347,8 +349,8 @@ export class ClassroomsManagement implements OnInit {
     const teacher = this.classroomTeachers()[classroomId];
     if (!teacher) return;
     
-    this.confirmModalTitle.set('Desvincular Profesor');
-    this.confirmModalMessage.set(`¿Estás seguro de desvincular al profesor ${teacher.name} de esta aula?`);
+    this.confirmModalTitle.set(this.translocoService.translate('ADMIN.CONFIRM.UNASSIGN_TEACHER_TITLE'));
+    this.confirmModalMessage.set(this.translocoService.translate('ADMIN.CONFIRM.UNASSIGN_TEACHER_MSG', { teacherName: teacher.name }));
     this.confirmAction.set(() => {
       this.classroomsService.unassignTeacher({
         teacherId: teacher.id,
@@ -376,8 +378,8 @@ export class ClassroomsManagement implements OnInit {
     const classroomId = this.selectedClassroomId();
     if (!classroomId) return;
     
-    this.confirmModalTitle.set('Desvincular Alumno');
-    this.confirmModalMessage.set(`¿Estás seguro de desvincular al alumno ${studentName}?`);
+    this.confirmModalTitle.set(this.translocoService.translate('ADMIN.CONFIRM.UNENROLL_STUDENT_TITLE'));
+    this.confirmModalMessage.set(this.translocoService.translate('ADMIN.CONFIRM.UNENROLL_STUDENT_MSG', { studentName: studentName }));
     this.confirmAction.set(() => {
       this.classroomsService.unenrollStudent({
         userId: studentId,

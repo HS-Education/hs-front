@@ -15,10 +15,11 @@ import { MarkdownMathPipe } from '../../../../shared/pipes/markdown-math.pipe';
 import { ClassroomService } from '../../data-access/classroom.service';
 import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { QuestionnaireService } from '../../data-access/questionnaire.service';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-progress',
-  imports: [ReactiveFormsModule, DecimalPipe, UpperCasePipe, Modal],
+  imports: [ReactiveFormsModule, DecimalPipe, UpperCasePipe, Modal, TranslocoPipe],
   templateUrl: './progress.html',
   styles: `
     .hide-spin-button::-webkit-outer-spin-button,
@@ -77,6 +78,13 @@ export class Progress {
 
   // Teacher View UI State
   readonly expandedStudentId = signal<number | null>(null);
+  readonly isStudentModalOpen = signal(false);
+
+  readonly selectedStudentData = computed(() => {
+    const studentId = this.expandedStudentId();
+    if (!studentId) return null;
+    return this.classroomData()?.performance.students.find(s => s.studentId === studentId) || null;
+  });
 
   readonly recForm = this.fb.group({
     topicId: [0, Validators.required],
@@ -125,6 +133,22 @@ export class Progress {
       .sort((a, b) => a.weekNumber - b.weekNumber);
   });
 
+  // New Student Strengths Widget Data
+  readonly studentStrengths = computed(() => {
+    const topics = this.sortedStudentTopics();
+    if (topics.length === 0) return null;
+    
+    let best = topics[0];
+    let worst = topics[0];
+    
+    for (const t of topics) {
+      if (t.percentage > best.percentage) best = t;
+      if (t.percentage < worst.percentage) worst = t;
+    }
+    
+    return { best, worst };
+  });
+
   // Computed for new Classroom Trend Graph
   readonly weeklyClassroomTrend = computed(() => {
     const data = this.classroomData();
@@ -149,6 +173,49 @@ export class Progress {
         averageScore: stats.total / stats.count
       }))
       .sort((a, b) => a.weekNumber - b.weekNumber);
+  });
+
+  // New Dashboard Widgets Data
+  readonly gradeDistribution = computed(() => {
+    const data = this.classroomData();
+    if (!data) return [];
+    let buckets = [
+      { label: '< 50%', count: 0, color: 'var(--brand-error)' },
+      { label: '50-64%', count: 0, color: 'var(--brand-mustard)' },
+      { label: '65-79%', count: 0, color: 'var(--brand-primary)' },
+      { label: '≥ 80%', count: 0, color: 'var(--brand-forest)' }
+    ];
+    for (const s of data.performance.students) {
+      if (s.averageScore < 50) buckets[0].count++;
+      else if (s.averageScore < 65) buckets[1].count++;
+      else if (s.averageScore < 80) buckets[2].count++;
+      else buckets[3].count++;
+    }
+    const max = Math.max(...buckets.map(b => b.count));
+    return buckets.map(b => ({ ...b, height: max > 0 ? (b.count / max) * 100 : 0 }));
+  });
+
+  readonly topicMastery = computed(() => {
+    const data = this.classroomData();
+    if (!data) return [];
+    const topicsMap = new Map<number, { name: string, total: number, count: number }>();
+    for (const student of data.performance.students) {
+      for (const topic of student.topics) {
+        if (topic.courseId === this.courseId()) {
+          const current = topicsMap.get(topic.topicId) || { name: topic.topicName, total: 0, count: 0 };
+          current.total += topic.percentage;
+          current.count += 1;
+          topicsMap.set(topic.topicId, current);
+        }
+      }
+    }
+    return Array.from(topicsMap.values())
+      .map(t => ({ name: t.name, average: t.total / t.count }))
+      .sort((a, b) => b.average - a.average);
+  });
+
+  readonly earlyWarningStudents = computed(() => {
+    return this.sortedStudents().filter(s => s.averageScore < 50).slice(0, 5);
   });
 
   // SVG chart helpers
@@ -347,13 +414,15 @@ export class Progress {
   }
 
   // Toggle student expanded + load insight
-  toggleStudentDetails(studentId: number, studentName: string) {
-    if (this.expandedStudentId() === studentId) {
-      this.expandedStudentId.set(null);
-    } else {
-      this.expandedStudentId.set(studentId);
-      this.loadStudentInsight(studentId, studentName);
-    }
+  openStudentModal(studentId: number, studentName: string) {
+    this.expandedStudentId.set(studentId);
+    this.isStudentModalOpen.set(true);
+    this.loadStudentInsight(studentId, studentName);
+  }
+
+  closeStudentModal = () => {
+    this.isStudentModalOpen.set(false);
+    this.expandedStudentId.set(null);
   }
 
   // Recommendations (per student context)

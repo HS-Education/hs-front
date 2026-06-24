@@ -11,6 +11,7 @@ import {Modal} from '../../shared/components/modal/modal';
 import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
 import {TranslateEnumPipe} from '../../shared/pipes/translate-enum.pipe';
 import {BIMESTER_OPTIONS, EDUCATION_LEVEL_OPTIONS, GRADE_LEVEL_OPTIONS} from '../../shared/models/academic-levels.model';
+import {TranslocoPipe} from '@jsverse/transloco';
 
 interface GradingPeriodResource {
   id: number;
@@ -27,7 +28,7 @@ interface UploadFileMetadata {
 
 @Component({
   selector: 'app-repository',
-  imports: [Modal, ConfirmModal, FormsModule, TranslateEnumPipe],
+  imports: [Modal, ConfirmModal, FormsModule, TranslateEnumPipe, TranslocoPipe],
   templateUrl: './repository.html',
   styleUrl: './repository.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

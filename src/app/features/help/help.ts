@@ -3,11 +3,12 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Modal } from '../../shared/components/modal/modal';
+import { TranslocoService, TranslocoPipe } from '@jsverse/transloco';
 
 export interface Tutorial {
   id: number;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   type: 'VIDEO' | 'DOCUMENT';
   duration: string; // e.g., '3 min', 'PDF'
   thumbnailUrl?: string;
@@ -17,8 +18,8 @@ export interface Tutorial {
 
 export interface Faq {
   id: number;
-  question: string;
-  answer: string;
+  questionKey: string;
+  answerKey: string;
   isOpen?: boolean;
 }
 
@@ -27,11 +28,12 @@ export type HelpFilter = 'ALL' | 'VIDEO' | 'DOCUMENT' | 'FAQ';
 @Component({
   selector: 'app-help',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal],
+  imports: [CommonModule, FormsModule, Modal, TranslocoPipe],
   templateUrl: './help.html',
   styleUrls: []
 })
 export class HelpCenter {
+  private readonly translocoService = inject(TranslocoService);
   readonly searchQuery = signal('');
   readonly selectedFilter = signal<HelpFilter>('ALL');
 
@@ -43,32 +45,39 @@ export class HelpCenter {
   readonly tutorials = signal<Tutorial[]>([
     {
       id: 1,
-      title: 'Cómo analizar el progreso del estudiante',
-      description: 'Aprende a interpretar los gráficos de tendencia y rendimiento detallado por temas.',
+      titleKey: 'HELP.TUTORIAL_1.TITLE',
+      descriptionKey: 'HELP.TUTORIAL_1.DESC',
       type: 'VIDEO',
       duration: '4:20',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ' // placeholder or leave empty for mock
+      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
     },
     {
       id: 2,
-      title: 'Carga masiva de documentos',
-      description: 'Guía paso a paso para subir múltiples archivos al repositorio de la clase.',
+      titleKey: 'HELP.TUTORIAL_2.TITLE',
+      descriptionKey: 'HELP.TUTORIAL_2.DESC',
       type: 'VIDEO',
-      duration: '2:45'
+      duration: '5:45'
     },
     {
       id: 3,
-      title: 'Guía de Métricas del Área',
-      description: 'Documento detallando cómo utilizar el panel de coordinación para tomar decisiones.',
+      titleKey: 'HELP.TUTORIAL_3.TITLE',
+      descriptionKey: 'HELP.TUTORIAL_3.DESC',
       type: 'DOCUMENT',
       duration: 'PDF (2.3 MB)'
     },
     {
       id: 4,
-      title: 'Uso de Sery para generar Insights',
-      description: 'Aprovecha la inteligencia artificial para obtener resúmenes de rendimiento de tus aulas.',
+      titleKey: 'HELP.TUTORIAL_4.TITLE',
+      descriptionKey: 'HELP.TUTORIAL_4.DESC',
       type: 'VIDEO',
-      duration: '5:10'
+      duration: '3:15'
+    },
+    {
+      id: 5,
+      titleKey: 'HELP.TUTORIAL_5.TITLE',
+      descriptionKey: 'HELP.TUTORIAL_5.DESC',
+      type: 'DOCUMENT',
+      duration: 'PDF (1.8 MB)'
     }
   ]);
 
@@ -76,23 +85,28 @@ export class HelpCenter {
   readonly faqs = signal<Faq[]>([
     {
       id: 1,
-      question: '¿Qué significan los colores en el rendimiento?',
-      answer: 'El color verde indica un desempeño sobresaliente (mayor o igual a 80%). El color amarillo/mostaza significa que el rendimiento está en proceso o es aceptable (entre 50% y 79%). El color rojo indica que requiere atención inmediata (menor a 50%).'
+      questionKey: 'HELP.FAQ_1.Q',
+      answerKey: 'HELP.FAQ_1.A'
     },
     {
       id: 2,
-      question: '¿Cómo puedo cambiar mi contraseña?',
-      answer: 'Actualmente, el cambio de contraseña debe solicitarse directamente al administrador del sistema o a través del enlace de "Olvidé mi contraseña" en la pantalla de inicio de sesión.'
+      questionKey: 'HELP.FAQ_2.Q',
+      answerKey: 'HELP.FAQ_2.A'
     },
     {
       id: 3,
-      question: '¿Quién tiene acceso a las Métricas del Área?',
-      answer: 'Solo los usuarios con rol de Coordinador Académico o Administrador tienen acceso a esta sección. Los profesores solo pueden ver el progreso de las aulas que tienen asignadas.'
+      questionKey: 'HELP.FAQ_3.Q',
+      answerKey: 'HELP.FAQ_3.A'
     },
     {
       id: 4,
-      question: '¿Puedo subir videos al Repositorio de la clase?',
-      answer: 'El repositorio está optimizado para documentos (PDF, Word, etc.). Si deseas compartir un video, te recomendamos subirlo a una plataforma de streaming externa y compartir el enlace en un documento.'
+      questionKey: 'HELP.FAQ_4.Q',
+      answerKey: 'HELP.FAQ_4.A'
+    },
+    {
+      id: 5,
+      questionKey: 'HELP.FAQ_5.Q',
+      answerKey: 'HELP.FAQ_5.A'
     }
   ]);
 
@@ -108,8 +122,12 @@ export class HelpCenter {
       if (filter === 'DOCUMENT' && tut.type !== 'DOCUMENT') return false;
       
       // 2. Filter by Search Query
-      if (query && !tut.title.toLowerCase().includes(query) && !tut.description.toLowerCase().includes(query)) {
-        return false;
+      if (query) {
+        const title = this.translocoService.translate(tut.titleKey).toLowerCase();
+        const desc = this.translocoService.translate(tut.descriptionKey).toLowerCase();
+        if (!title.includes(query) && !desc.includes(query)) {
+          return false;
+        }
       }
       return true;
     });
@@ -125,8 +143,12 @@ export class HelpCenter {
       if (filter === 'VIDEO' || filter === 'DOCUMENT') return false; // Hide FAQs if video/doc is selected
       
       // 2. Filter by Search Query
-      if (query && !faq.question.toLowerCase().includes(query) && !faq.answer.toLowerCase().includes(query)) {
-        return false;
+      if (query) {
+        const question = this.translocoService.translate(faq.questionKey).toLowerCase();
+        const answer = this.translocoService.translate(faq.answerKey).toLowerCase();
+        if (!question.includes(query) && !answer.includes(query)) {
+          return false;
+        }
       }
       return true;
     });

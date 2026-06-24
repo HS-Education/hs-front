@@ -2,10 +2,11 @@ import {ChangeDetectionStrategy, Component, computed, input} from '@angular/core
 import {Card} from '../../../../shared/components/card/card';
 import {Classroom} from '../../data-access/models/responses/classroom.model';
 import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
+import {TranslocoPipe} from '@jsverse/transloco';
 
 @Component({
   selector: 'app-classroom-card',
-  imports: [Card, TranslateEnumPipe],
+  imports: [Card, TranslateEnumPipe, TranslocoPipe],
   host: {
     class: 'block h-full'
   },
@@ -23,9 +24,9 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
             </h3>
             <p class="text-[10px] text-[var(--text-secondary)] font-semibold uppercase tracking-wider">
               @if (c.section.gradeLevel && c.section.educationLevel) {
-                {{ c.section.gradeLevel | translateEnum }} de {{ c.section.educationLevel | translateEnum }}
+                {{ c.section.gradeLevel | translateEnum }} {{ 'CLASSROOMS.CARD.OF' | transloco }} {{ c.section.educationLevel | translateEnum }}
               } @else {
-                Curso Académico
+                {{ 'CLASSROOMS.CARD.ACADEMIC_COURSE' | transloco }}
               }
             </p>
           </div>
@@ -40,7 +41,7 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
             [class.border-[var(--brand-mustard)]/30]="statusColor() === 'yellow'"
             [class.bg-[var(--brand-inactive)]]="statusColor() === 'gray'"
             [class.border-[var(--brand-inactive)]/30]="statusColor() === 'gray'"
-            [title]="c.status === 'ACTIVE' || c.status === 'activo' ? 'Activo' : c.status === 'INACTIVE' || c.status === 'inactive' || c.status === 'inactivo' ? 'Inactivo' : 'Archivado'"
+            [title]="c.status === 'ACTIVE' || c.status === 'activo' ? ('CLASSROOMS.STATUS.ACTIVE' | transloco) : c.status === 'INACTIVE' || c.status === 'inactive' || c.status === 'inactivo' ? ('CLASSROOMS.STATUS.INACTIVE' | transloco) : ('CLASSROOMS.STATUS.ARCHIVED' | transloco)"
           ></span>
         </div>
 
@@ -52,7 +53,7 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               <div class="overflow-hidden">
-                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider truncate">Sección</span>
+                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider truncate">{{ 'CLASSROOMS.CARD.SECTION' | transloco }}</span>
                 <span class="font-bold text-[var(--text-primary)] text-[10px] truncate block">{{ sectionName() }}</span>
               </div>
             </div>
@@ -62,7 +63,7 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <div class="overflow-hidden">
-                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider truncate">Periodo</span>
+                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider truncate">{{ 'CLASSROOMS.CARD.PERIOD' | transloco }}</span>
                 <span class="font-bold text-[var(--text-primary)] text-[10px] truncate block">{{ academicYear() }}</span>
               </div>
             </div>
@@ -70,15 +71,15 @@ import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
 
           <!-- Subtle bottom identification meta info -->
           <div class="flex items-center justify-between text-[9px] text-[var(--text-secondary)]/70 font-medium pt-2.5 border-t border-[var(--border)]/70 mt-3.5">
-            <span>Clase: #{{ c.id }}</span>
-            <span>Curso: #{{ c.courseId }}</span>
+            <span>{{ 'CLASSROOMS.CARD.CLASS_ID' | transloco: { id: c.id } }}</span>
+            <span>{{ 'CLASSROOMS.CARD.COURSE_ID' | transloco: { id: c.courseId } }}</span>
           </div>
         </section>
 
       </app-card>
     } @else {
       <app-card>
-        <section class="text-xs text-[var(--text-secondary)] py-2 text-center">No hay información del aula.</section>
+        <section class="text-xs text-[var(--text-secondary)] py-2 text-center">{{ 'CLASSROOMS.CARD.NO_INFO' | transloco }}</section>
       </app-card>
     }
   `,

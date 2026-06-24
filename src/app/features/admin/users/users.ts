@@ -8,11 +8,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { NgClass } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [Modal, FormsModule, TranslateEnumPipe, NgClass],
+  imports: [Modal, FormsModule, TranslateEnumPipe, NgClass, TranslocoPipe],
   templateUrl: './users.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

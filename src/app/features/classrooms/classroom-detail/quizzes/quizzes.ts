@@ -11,6 +11,7 @@ import {MarkdownMathPipe} from '../../../../shared/pipes/markdown-math.pipe';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {ToastService} from '../../../../shared/services/toast.service';
 import {ConfirmModal} from '../../../../shared/components/modal/confirm-modal';
+import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 
 interface MockStudentGrade {
   name: string;
@@ -20,7 +21,7 @@ interface MockStudentGrade {
 
 @Component({
   selector: 'app-quizzes',
-  imports: [FormsModule, NgClass, DatePipe, MarkdownMathPipe, ConfirmModal],
+  imports: [FormsModule, NgClass, DatePipe, MarkdownMathPipe, ConfirmModal, TranslocoPipe],
   templateUrl: './quizzes.html',
   styleUrl: './quizzes.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +34,7 @@ export class Quizzes implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly translocoService = inject(TranslocoService);
 
   readonly courseId = input.required<number>();
   readonly classroomId = input.required<number>();
@@ -274,17 +276,7 @@ export class Quizzes implements OnInit {
   }
 
   getBimesterLabel(bimester: string): string {
-    const bimesterMap: Record<string, string> = {
-      'FIRST': '1er Bimestre',
-      'SECOND': '2do Bimestre',
-      'THIRD': '3er Bimestre',
-      'FOURTH': '4to Bimestre',
-      'BIMESTER_1': '1er Bimestre',
-      'BIMESTER_2': '2do Bimestre',
-      'BIMESTER_3': '3er Bimestre',
-      'BIMESTER_4': '4to Bimestre',
-    };
-    return bimesterMap[bimester.toUpperCase()] || bimester;
+    return this.translocoService.translate('BIMESTERS.' + bimester.toUpperCase());
   }
 
   startQuiz(questionnaireId: number, weekNumber: number): void {

@@ -1,8 +1,8 @@
-import {inject, Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {environment} from '../../../../environment/environment';
-import {ChatSession} from './models/chat-session.model';
-import {ChatMessage} from './models/chat-message.model';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../../../environment/environment';
+import { ChatSession } from './models/chat-session.model';
+import { ChatMessage } from './models/chat-message.model';
 
 @Injectable({
   providedIn: 'root',
@@ -75,15 +75,7 @@ export class ChatService {
         const { value, done } = await reader.read();
         if (done) break;
         if (value) {
-          const chunkText = decoder.decode(value, { stream: true });
-          
-          if (isFirstToken && chunkText.trim() !== '') {
-            const firstTokenTime = performance.now();
-            console.log(`[TTFT TIMER] Time To First Token: ${(firstTokenTime - startTime).toFixed(2)} ms`);
-            isFirstToken = false;
-          }
-          
-          onChunk(chunkText);
+          onChunk(decoder.decode(value, { stream: true }));
         }
       }
       // Flush any remaining bytes in the decoder

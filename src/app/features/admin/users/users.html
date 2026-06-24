@@ -4,10 +4,10 @@
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-3xl font-bold text-[var(--text-primary)]">
-          Gestión de Usuarios
+          {{ 'ADMIN.USERS.TITLE' | transloco }}
         </h1>
         <p class="mt-2 text-sm text-[var(--text-secondary)]">
-          Administra los usuarios del sistema, sus roles y contraseñas.
+          {{ 'ADMIN.USERS.SUBTITLE' | transloco }}
         </p>
       </div>
       <button (click)="openModal()"
@@ -15,7 +15,7 @@
         <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
-        <span>Nuevo Usuario</span>
+        <span>{{ 'ADMIN.USERS.NEW_USER' | transloco }}</span>
       </button>
     </div>
 
@@ -28,7 +28,7 @@
           </svg>
         </div>
         <input type="text" [ngModel]="filterName()" (ngModelChange)="filterName.set($event)"
-          placeholder="Buscar usuario..."
+          placeholder="{{ 'ADMIN.USERS.SEARCH_USER' | transloco }}"
           class="block w-full pl-9 pr-3 py-2 text-sm text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] transition-colors shadow-sm">
       </div>
 
@@ -36,15 +36,15 @@
         <select [ngModel]="filterRole()" (ngModelChange)="filterRole.set($event)"
           class="block w-full px-3 py-2 pr-8 text-sm text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] transition-colors shadow-sm bg-no-repeat bg-[right_0.5rem_center] bg-[length:1em_1em]"
           style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E');">
-          <option value="" disabled hidden>Rol</option>
-          <option value="COORDINATOR">Coordinador</option>
-          <option value="TEACHER">Profesor</option>
-          <option value="STUDENT">Estudiante</option>
+          <option value="" disabled hidden>{{ 'ADMIN.USERS.ROLE' | transloco }}</option>
+          <option value="COORDINATOR">{{ 'ADMIN.USERS.COORDINATOR' | transloco }}</option>
+          <option value="TEACHER">{{ 'ADMIN.USERS.TEACHER' | transloco }}</option>
+          <option value="STUDENT">{{ 'ADMIN.USERS.STUDENT' | transloco }}</option>
         </select>
       </div>
 
       @if (filterName() || filterRole()) {
-        <button (click)="clearFilters()" title="Quitar Filtros"
+        <button (click)="clearFilters()" title="{{ 'ADMIN.COMMON.REMOVE_FILTERS' | transloco }}"
           class="inline-flex items-center justify-center p-2 text-[var(--text-secondary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
           <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -61,19 +61,19 @@
             <tr>
               <th scope="col"
                 class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-                Nombre
+                {{ 'ADMIN.COMMON.NAME' | transloco }}
               </th>
               <th scope="col"
                 class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-                Roles
+                {{ 'ADMIN.USERS.ROLES' | transloco }}
               </th>
               <th scope="col"
                 class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-                Estado
+                {{ 'ADMIN.COMMON.STATUS' | transloco }}
               </th>
               <th scope="col"
                 class="px-6 py-4 text-right text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-                Acciones
+                {{ 'ADMIN.COMMON.ACTIONS' | transloco }}
               </th>
             </tr>
           </thead>
@@ -89,7 +89,7 @@
             } @else if (filteredUsers().length === 0) {
             <tr>
               <td colspan="4" class="px-6 py-12 text-center text-[var(--text-secondary)] text-sm">
-                No se encontraron usuarios que coincidan con la búsqueda.
+                {{ 'ADMIN.USERS.NO_USERS_MATCH' | transloco }}
               </td>
             </tr>
             } @else {
@@ -113,12 +113,12 @@
                 @if (user.isActive) {
                 <span
                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#f0fdf4] text-[#166534] border border-[#bbf7d0]">
-                  Activo
+                  {{ 'ADMIN.USERS.ACTIVE_USER' | transloco }}
                 </span>
                 } @else {
                 <span
                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#fef2f2] text-[#b91c1c] border border-[#fecaca]">
-                  Inactivo
+                  {{ 'ADMIN.USERS.INACTIVE_USER' | transloco }}
                 </span>
                 }
               </td>
@@ -145,41 +145,40 @@
 </div>
 
 <!-- Create User Modal -->
-<app-modal [isOpen]="isModalOpen()" [title]="editingUser() ? 'Editar Roles del Usuario' : 'Registrar Nuevo Usuario'"
+<app-modal [isOpen]="isModalOpen()" [title]="editingUser() ? ('ADMIN.USERS.EDIT_USER_ROLES' | transloco) : ('ADMIN.USERS.REGISTER_NEW_USER' | transloco)"
   [onClose]="closeModal">
   <div class="space-y-6">
 
     @if (!editingUser()) {
     <!-- Name Input -->
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Nombre Completo</label>
-      <input type="text" [ngModel]="newName()" (ngModelChange)="newName.set($event)" placeholder="Ej. Juan Pérez"
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.USERS.FULL_NAME' | transloco }}</label>
+      <input type="text" [ngModel]="newName()" (ngModelChange)="newName.set($event)" placeholder="{{ 'ADMIN.USERS.FULL_NAME_PH' | transloco }}"
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent transition" />
     </div>
 
     <!-- Password Input with Generator -->
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Contraseña</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.USERS.PASSWORD' | transloco }}</label>
       <div class="flex gap-2">
-        <input type="text" [ngModel]="newPassword()" placeholder="Haz clic en Generar" readonly
+        <input type="text" [ngModel]="newPassword()" placeholder="{{ 'ADMIN.USERS.PASSWORD_PH' | transloco }}" readonly
           class="flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-[var(--text-secondary)] focus:outline-none transition font-mono cursor-not-allowed opacity-80" />
-        <button type="button" (click)="generatePassword()" title="Generar contraseña segura"
+        <button type="button" (click)="generatePassword()" title="{{ 'ADMIN.USERS.GENERATE_SECURE_PASSWORD' | transloco }}"
           class="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] px-4 text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)]/50 hover:bg-[var(--brand-primary)]/5 transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
           </svg>
-          <span class="text-sm font-bold hidden sm:inline">Generar</span>
+          <span class="text-sm font-bold hidden sm:inline">{{ 'ADMIN.USERS.GENERATE' | transloco }}</span>
         </button>
       </div>
-      <p class="text-[10px] text-[var(--text-secondary)] mt-1.5 ml-1">Debe incluir min. 8 caracteres (mayúscula,
-        minúscula, número y símbolo).</p>
+      <p class="text-[10px] text-[var(--text-secondary)] mt-1.5 ml-1">{{ 'ADMIN.USERS.PASSWORD_REQ' | transloco }}</p>
     </div>
     }
 
     <!-- Roles Checkboxes -->
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-3">Roles del Usuario</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-3">{{ 'ADMIN.USERS.USER_ROLES' | transloco }}</label>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         @for (role of availableRoles; track role.id) {
         <label class="relative flex items-center p-3 rounded-xl border cursor-pointer transition-colors"
@@ -203,7 +202,7 @@
     <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
       <button type="button" (click)="closeModal()"
         class="rounded-xl px-4 py-2.5 font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition">
-        Cancelar
+        {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="submitUser()" [disabled]="!isFormValid() || isSubmitting()"
         class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed">
@@ -214,9 +213,9 @@
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
           </path>
         </svg>
-        Guardando...
+        {{ 'ADMIN.COMMON.SAVING' | transloco }}
         } @else {
-        {{ editingUser() ? 'Guardar Cambios' : 'Registrar Usuario' }}
+        {{ editingUser() ? ('ADMIN.USERS.SAVE_CHANGES' | transloco) : ('ADMIN.USERS.REGISTER_USER' | transloco) }}
         }
       </button>
     </div>

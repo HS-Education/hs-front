@@ -7,8 +7,8 @@
 <div class="space-y-6 select-none animate-fade-in">
   <div class="flex items-center justify-between border-b border-[var(--border)] pb-4">
     <div>
-      <h2 class="text-lg font-bold text-[var(--text-primary)]">Todos los cuestionarios</h2>
-      <p class="text-xs text-[var(--text-secondary)] mt-0.5">Pon a prueba tu conocimiento</p>
+      <h2 class="text-lg font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.STUDENT_TITLE' | transloco }}</h2>
+      <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'CLASSROOMS.QUIZZES.STUDENT_SUBTITLE' | transloco }}</p>
     </div>
     <button type="button" (click)="loadAvailableQuizzes()" title="Recargar cuestionarios"
       class="p-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] shadow-sm transition flex items-center justify-center">
@@ -22,7 +22,7 @@
   <!-- Summary Cards Grid -->
   <div class="grid gap-4 sm:grid-cols-3">
     <div class="rounded-lg border border-[#ca8a04]/20 bg-[#ca8a04]/5 p-5 shadow-sm">
-      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#ca8a04]">Cuestionario Pendiente</p>
+      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#ca8a04]">{{ 'CLASSROOMS.QUIZZES.PENDING_QUIZ' | transloco }}</p>
       <p class="text-3xl font-black text-[#ca8a04] mt-1.5">
         {{ pendingQuizzesCount() > 0 ? 'Sí' : 'No' }}
         @if (pendingQuizzesCount() > 0) {
@@ -31,11 +31,11 @@
       </p>
     </div>
     <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]/40 p-5 shadow-sm">
-      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Total Evaluaciones</p>
+      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TOTAL_EVALUATIONS' | transloco }}</p>
       <p class="text-3xl font-black text-[var(--text-primary)] mt-1.5">{{ totalQuizzesCount() }}</p>
     </div>
     <div class="rounded-lg border border-[var(--brand-forest)]/20 bg-[var(--brand-forest)]/5 p-5 shadow-sm">
-      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--brand-forest)]">Completadas</p>
+      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--brand-forest)]">{{ 'CLASSROOMS.QUIZZES.COMPLETED' | transloco }}</p>
       <p class="text-3xl font-black text-[var(--brand-forest)] mt-1.5">{{ completedQuizzesCount() }}</p>
     </div>
   </div>
@@ -47,7 +47,7 @@
       <div
         class="inline-flex h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]">
       </div>
-      <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">Cargando cuestionarios...</p>
+      <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">{{ 'CLASSROOMS.QUIZZES.LOADING' | transloco }}</p>
     </div>
   </div>
   } @else if (displayedQuizzes().length === 0) {
@@ -57,7 +57,7 @@
       <path stroke-linecap="round" stroke-linejoin="round"
         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
-    <h4 class="text-sm font-bold text-[var(--text-primary)]">No hay cuestionarios programados</h4>
+    <h4 class="text-sm font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.NO_SCHEDULED' | transloco }}</h4>
     <p class="text-xs text-[var(--text-secondary)] mt-1 max-w-xs mx-auto">Tu profesor generará cuestionarios automáticos
       utilizando la inteligencia artificial del sistema.</p>
   </div>
@@ -78,25 +78,25 @@
               </svg>
               <h4 class="text-xs font-bold text-[var(--text-primary)]">
                 @if (quiz.type === 'REMEDIAL') {
-                  Cuestionario Extra - Semana {{ quiz.weekNumber }}
+                  {{ 'CLASSROOMS.QUIZZES.REMEDIAL_QUIZ' | transloco }} {{ quiz.weekNumber }}
                 } @else {
-                  Cuestionario Semanal - Semana {{ quiz.weekNumber }}
+                  {{ 'CLASSROOMS.QUIZZES.WEEKLY_QUIZ' | transloco }} {{ quiz.weekNumber }}
                 }
               </h4>
             </div>
             <p class="text-[10px] text-[var(--text-secondary)] flex items-center gap-2">
               <span>{{ getBimesterNameForPeriod(quiz.gradingPeriodId) }}</span>
               <span class="text-[var(--border)]">•</span>
-              <span>Estado:</span>
+              <span>{{ 'CLASSROOMS.QUIZZES.STATUS' | transloco }}</span>
               <span class="font-bold" [class.text-[#ca8a04]]="quiz.status === 'PENDING'"
                 [class.text-[var(--brand-primary)]]="quiz.status === 'STARTED' || quiz.status === 'RETRY'"
                 [class.text-[#166534]]="quiz.status === 'COMPLETED'">
-                {{ quiz.status === 'PENDING' ? 'Pendiente' : quiz.status === 'STARTED' ? 'En Curso' : quiz.status === 'RETRY' ? 'Disponible' : 'Completado' }}
+                {{ quiz.status === 'PENDING' ? ('CLASSROOMS.QUIZZES.STATUS_PENDING' | transloco) : quiz.status === 'STARTED' ? ('CLASSROOMS.QUIZZES.STATUS_IN_PROGRESS' | transloco) : quiz.status === 'RETRY' ? ('CLASSROOMS.QUIZZES.STATUS_AVAILABLE' | transloco) : ('CLASSROOMS.QUIZZES.STATUS_COMPLETED' | transloco) }}
               </span>
               @if (quiz.maxAttempts > 0) {
               <span class="text-[var(--border)]">•</span>
-              <span class="text-[var(--text-secondary)]/80">Intentos disponibles: <strong
-                  class="text-[var(--text-primary)]">{{ quiz.attemptsLeft }}</strong> de {{ quiz.maxAttempts }}</span>
+              <span class="text-[var(--text-secondary)]/80">{{ 'CLASSROOMS.QUIZZES.ATTEMPTS_AVAILABLE' | transloco }} <strong
+                  class="text-[var(--text-primary)]">{{ quiz.attemptsLeft }}</strong> {{ 'CLASSROOMS.QUIZZES.OF' | transloco }} {{ quiz.maxAttempts }}</span>
               }
             </p>
           </div>
@@ -108,10 +108,10 @@
                 class="rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 text-xs shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2">
                 @if (startingQuizId() === quiz.id) {
                   <i class="bi bi-arrow-repeat animate-spin"></i>
-                  <span>Generando...</span>
+                  <span>{{ 'CLASSROOMS.QUIZZES.GENERATING' | transloco }}</span>
                 } @else {
                   <i class="bi bi-hand-index-thumb"></i>
-                  <span>{{ quiz.status === 'RETRY' ? 'Reintentar' : 'Iniciar' }}</span>
+                  <span>{{ quiz.status === 'RETRY' ? ('CLASSROOMS.QUIZZES.RETRY' | transloco) : ('CLASSROOMS.QUIZZES.START' | transloco) }}</span>
                 }
               </button>
             } @else if (quiz.status === 'STARTED' && quiz.activeInstanceId && quiz.activeInstanceId !== null) {
@@ -124,13 +124,13 @@
                   <span>Cargando...</span>
                 } @else {
                   <i class="bi bi-hand-index-thumb"></i>
-                  <span>Reanudar</span>
+                  <span>{{ 'CLASSROOMS.QUIZZES.RESUME' | transloco }}</span>
                 }
               </button>
             } @else if (quiz.status === 'COMPLETED') {
             <span
               class="inline-flex items-center rounded-lg border border-[#166534]/20 bg-[#166534]/10 px-3 py-1.5 text-xs font-bold text-[#166534]">
-              Terminado
+              {{ 'CLASSROOMS.QUIZZES.FINISHED' | transloco }}
             </span>
             }
           </div>
@@ -143,35 +143,31 @@
           <!-- Grid Info Card -->
           <div class="grid gap-3 sm:grid-cols-3 text-xs pt-1">
             <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 shadow-xs">
-              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">Periodo
-                Académico</span>
+              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">{{ 'CLASSROOMS.QUIZZES.ACADEMIC_PERIOD' | transloco }}</span>
               <span class="font-bold text-[var(--text-primary)] mt-0.5 block">{{
                 getBimesterNameForPeriod(quiz.gradingPeriodId) }}</span>
             </div>
             <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 shadow-xs">
-              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">Preguntas
-                por Intento</span>
+              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">{{ 'CLASSROOMS.QUIZZES.QUESTIONS_PER_ATTEMPT' | transloco }}</span>
               <span class="font-bold text-[var(--text-primary)] mt-0.5 block">{{ quiz.questionsPerAttempt }}
-                preguntas</span>
+                {{ 'CLASSROOMS.QUIZZES.QUESTIONS' | transloco }}</span>
             </div>
 
             <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 shadow-xs">
-              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">Intentos
-                Permitidos</span>
-              <span class="font-bold text-[var(--text-primary)] mt-0.5 block">{{ quiz.maxAttempts }} intentos</span>
+              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">{{ 'CLASSROOMS.QUIZZES.ALLOWED_ATTEMPTS' | transloco }}</span>
+              <span class="font-bold text-[var(--text-primary)] mt-0.5 block">{{ quiz.maxAttempts }} {{ 'CLASSROOMS.QUIZZES.ATTEMPTS' | transloco }}</span>
             </div>
           </div>
 
           <!-- Past Attempts Section -->
           @if (quiz.status !== 'STARTED') {
           <div class="space-y-2">
-            <h5 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">Historial de
-              Intentos</h5>
+            <h5 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.ATTEMPTS_HISTORY' | transloco }}</h5>
 
             @if (quiz.pastAttempts.length === 0) {
             <div
               class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] p-4 text-center text-xs text-[var(--text-secondary)]">
-              Aún no has completado ningún intento para este cuestionario.
+              {{ 'CLASSROOMS.QUIZZES.NO_ATTEMPTS' | transloco }}
             </div>
             } @else {
             <div class="grid gap-2">
@@ -184,15 +180,15 @@
                     <span class="text-xs font-bold">#{{ idx + 1 }}</span>
                   </div>
                   <div>
-                    <h6 class="text-xs font-bold text-[var(--text-primary)]">Intento {{ idx + 1 }}</h6>
-                    <p class="text-[9px] text-[var(--text-secondary)]">Entregado: {{ attempt.submittedAt |
+                    <h6 class="text-xs font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.ATTEMPT' | transloco }} {{ idx + 1 }}</h6>
+                    <p class="text-[9px] text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.SUBMITTED_AT' | transloco }} {{ attempt.submittedAt |
                       date:'dd/MM/yyyy, hh:mm a' }}</p>
                   </div>
                 </div>
 
                 <div class="flex items-center gap-4 text-right">
                   <div class="hidden sm:block">
-                    <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">Nota</span>
+                    <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">{{ 'CLASSROOMS.QUIZZES.GRADE' | transloco }}</span>
                     <span class="text-sm font-black text-[var(--brand-primary)] block mt-0.5">
                       {{ attempt.score }}
                     </span>
@@ -200,7 +196,7 @@
 
                   <button type="button" (click)="viewResults(attempt.instanceId)"
                     class="rounded-lg border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5 hover:bg-[var(--brand-primary)]/15 text-[var(--brand-primary)] font-bold px-3 py-1.5 text-[9px] transition active:scale-95 shadow-2xs">
-                    Revisar Nota
+                    {{ 'CLASSROOMS.QUIZZES.REVIEW_GRADE' | transloco }}
                   </button>
                 </div>
               </div>
@@ -210,7 +206,7 @@
           </div>
           } @else {
           <div class="rounded-lg bg-[#ca8a04]/10 border border-[#ca8a04]/20 p-4 mt-2">
-             <p class="text-[11px] text-[#ca8a04] font-bold text-center">Debes finalizar tu intento en curso para poder ver el historial y revisar tus notas anteriores.</p>
+             <p class="text-[11px] text-[#ca8a04] font-bold text-center">{{ 'CLASSROOMS.QUIZZES.FINISH_CURRENT_ATTEMPT' | transloco }}</p>
           </div>
           }
         </div>
@@ -230,11 +226,11 @@
   <div class="flex items-center justify-between border-b border-[var(--border)] pb-4">
     <div class="space-y-1">
       <h2 class="text-base font-extrabold text-[var(--text-primary)]">{{ quizName() }}</h2>
-      <p class="text-xs text-[var(--text-secondary)]">Lee atentamente y selecciona la alternativa correcta</p>
+      <p class="text-xs text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.INSTRUCTION' | transloco }}</p>
     </div>
     <button type="button" (click)="goBackToList()"
       class="rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] px-3.5 py-2 text-xs font-bold text-[var(--text-secondary)] transition shadow-sm">
-      Salir del Test
+      {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.EXIT' | transloco }}
     </button>
   </div>
 
@@ -250,8 +246,8 @@
       <div class="space-y-1.5">
         <div
           class="flex items-center justify-between text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-          <span>Avance del cuestionario</span>
-          <span>{{ answeredCount() }} de {{ questions.length }} marcadas</span>
+          <span>{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.PROGRESS' | transloco }}</span>
+          <span>{{ answeredCount() }} {{ 'CLASSROOMS.QUIZZES.OF' | transloco }} {{ questions.length }} {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.MARKED' | transloco }}</span>
         </div>
         <div class="w-full bg-[var(--bg-secondary)] rounded-full h-2.5 overflow-hidden">
           <div class="bg-[var(--brand-primary)] h-full transition-all duration-300 rounded-full"
@@ -265,7 +261,7 @@
     <div class="space-y-2">
       <span
         class="inline-flex items-center rounded bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 px-2.5 py-0.5 text-[9px] font-extrabold text-[var(--brand-primary)] uppercase tracking-wider">
-        Pregunta {{ currentIdx + 1 }}
+        {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.QUESTION' | transloco }} {{ currentIdx + 1 }}
       </span>
       <p class="text-sm font-bold text-[var(--text-primary)] leading-relaxed">{{ activeQ.text }}</p>
     </div>
@@ -300,13 +296,13 @@
       <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
       </svg>
-      Anterior
+      {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.PREV' | transloco }}
     </button>
 
     @if (currentIdx < questions.length - 1) { 
       <button type="button" (click)="nextQuestion()"
         class="flex items-center gap-2 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-[0.98]">
-        Siguiente
+        {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.NEXT' | transloco }}
         <svg class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
@@ -315,12 +311,12 @@
       <button type="button" (click)="submitQuiz()" [disabled]="submitting()"
         class="flex items-center gap-2 rounded-lg bg-gradient-to-r from-[var(--brand-forest)] to-[var(--brand-forest)]/90 hover:from-[var(--brand-forest)]/90 hover:to-[var(--brand-forest)]/80 disabled:from-[var(--brand-inactive)] disabled:to-[var(--brand-inactive)]/80 disabled:cursor-not-allowed px-6 py-2.5 text-xs font-bold text-white shadow-sm transition active:scale-[0.98]">
         @if (submitting()) {
-        Enviando...
+        {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.SUBMITTING' | transloco }}
         } @else {
         <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
-         Entregar Cuestionario
+         {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.SUBMIT' | transloco }}
         }
       </button>
     }
@@ -329,13 +325,13 @@
 
     <!-- Right Column: Info Panel -->
     <div class="space-y-6 hidden xl:block">
-      <!-- Navegación de Preguntas -->
+      <!-- {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.NAVIGATION' | transloco }} de Preguntas -->
       <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm">
         <h4 class="text-xs font-extrabold text-[var(--text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
           <svg class="h-4 w-4 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
           </svg>
-          Navegación
+          {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.NAVIGATION' | transloco }}
         </h4>
         <div class="grid grid-cols-5 gap-2.5">
           @for (q of questions; track q.id; let idx = $index) {
@@ -358,20 +354,20 @@
           <svg class="h-4 w-4 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          Detalles de Evaluación
+          {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.EVAL_DETAILS' | transloco }}
         </h4>
         
         <div class="space-y-4">
           <div class="flex justify-between items-center border-b border-[var(--border)]/50 pb-3">
-            <span class="text-[11px] font-bold text-[var(--text-secondary)]">Puntaje Máximo</span>
+            <span class="text-[11px] font-bold text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.MAX_SCORE' | transloco }}</span>
             <span class="text-[11px] font-black text-[var(--text-primary)]">20 pts</span>
           </div>
           <div class="flex justify-between items-center border-b border-[var(--border)]/50 pb-3">
-            <span class="text-[11px] font-bold text-[var(--text-secondary)]">Intentos Restantes</span>
+            <span class="text-[11px] font-bold text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.REMAINING_ATTEMPTS' | transloco }}</span>
             <span class="text-[11px] font-black text-[var(--text-primary)]">{{ activeQuiz()?.attemptsLeft ?? '-' }}</span>
           </div>
           <div class="flex justify-between items-center pb-1">
-            <span class="text-[11px] font-bold text-[var(--text-secondary)]">Preguntas Totales</span>
+            <span class="text-[11px] font-bold text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.TOTAL_QUESTIONS' | transloco }}</span>
             <span class="text-[11px] font-black text-[var(--text-primary)]">{{ questions.length }}</span>
           </div>
         </div>
@@ -383,10 +379,10 @@
           <span class="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-mustard)] text-white shadow-sm shrink-0">
             <i class="bi bi-info-circle-fill text-[14px]"></i>
           </span>
-          <h4 class="text-xs font-extrabold text-[var(--text-primary)] uppercase tracking-wider">Instrucciones</h4>
+          <h4 class="text-xs font-extrabold text-[var(--text-primary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.INSTRUCTIONS_TITLE' | transloco }}</h4>
         </div>
         <p class="text-[11px] text-[var(--text-secondary)] leading-relaxed">
-          Asegúrate de revisar bien todas las alternativas antes de continuar. Puedes navegar hacia atrás si necesitas cambiar una respuesta antes de enviar el cuestionario.
+          {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.INSTRUCTIONS_DESC' | transloco }}
         </p>
       </div>
     </div>
@@ -400,13 +396,13 @@
   <!-- Header -->
   <div class="flex items-center justify-between border-b border-[var(--border)] pb-4">
     <div class="space-y-1">
-      <h2 class="text-base font-extrabold text-[var(--text-primary)]">Resultados</h2>
+      <h2 class="text-base font-extrabold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.RESULTS.TITLE' | transloco }}</h2>
       <p class="text-xs text-[var(--text-secondary)]">Revisa tu calificación y las explicaciones personalizadas del
         tutor</p>
     </div>
     <button type="button" (click)="goBackToList()"
       class="rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] px-4 py-2.5 text-xs font-bold text-[var(--text-secondary)] transition shadow-sm">
-      Volver a Cuestionarios
+      {{ 'CLASSROOMS.QUIZZES.RESULTS.BACK_TO_LIST' | transloco }}
     </button>
   </div>
 
@@ -425,7 +421,7 @@
   <div
     class="rounded-lg border border-[var(--border)]/70 bg-[var(--bg-secondary)]/30 p-5 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6">
     <div class="space-y-2 text-center md:text-left">
-      <h3 class="text-lg font-black text-[var(--text-primary)]">¡Completado!</h3>
+      <h3 class="text-lg font-black text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.RESULTS.COMPLETED_TITLE' | transloco }}</h3>
       <p class="text-xs text-[var(--text-secondary)] leading-relaxed max-w-md">Si hubo respuestas incorrectas, más abajo
         encontrarás una explicación generada por Sery para ayudarte a comprenderlas mejor.</p>
     </div>
@@ -434,7 +430,7 @@
     <div class="flex items-center gap-4 bg-[var(--surface)] border border-[var(--border)] rounded-lg p-4 shadow-sm">
       <div class="text-center px-2">
         <span
-          class="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-wider block">Calificación</span>
+          class="text-[9px] font-black text-[var(--text-secondary)] uppercase tracking-wider block">{{ 'CLASSROOMS.QUIZZES.RESULTS.SCORE' | transloco }}</span>
         <span class="text-3xl font-black text-[var(--brand-primary)] block mt-0.5">{{ sub.score }}</span>
       </div>
     </div>
@@ -442,7 +438,7 @@
 
   <!-- Answers and AI Explanations List (2-column Grid) -->
   <div class="pt-2">
-    <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-6">Desglose de Preguntas y Feedback</h4>
+    <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-6">{{ 'CLASSROOMS.QUIZZES.RESULTS.BREAKDOWN' | transloco }}</h4>
     
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
       @for (ans of sub.answers; track ans.questionId; let idx = $index) {
@@ -459,7 +455,7 @@
                         'bg-[var(--brand-forest)]/10 text-[var(--brand-forest)] border-[var(--brand-forest)]/20': ans.isCorrect,
                         'bg-[var(--brand-error)]/10 text-[var(--brand-error)] border-[var(--brand-error)]/20': !ans.isCorrect
                       }" class="inline-flex shrink-0 items-center rounded-lg border px-2.5 py-1 text-xs font-bold gap-2">
-            <span>{{ ans.isCorrect ? 'Correcta' : 'Incorrecta' }}</span>
+            <span>{{ ans.isCorrect ? ('CLASSROOMS.QUIZZES.RESULTS.CORRECT' | transloco) : ('CLASSROOMS.QUIZZES.RESULTS.INCORRECT' | transloco) }}</span>
             @if (ans.isCorrect) {
             <span class="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[var(--brand-forest)] text-white shrink-0">
               <i class="bi bi-check-lg !text-white text-[10px]"></i>
@@ -498,9 +494,9 @@
             </span>
             <span class="leading-relaxed">{{ option }}</span>
             @if (optIdx === ans.correctOptionIndex) {
-            <span class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-forest)] ml-auto shrink-0">Correcta</span>
+            <span class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-forest)] ml-auto shrink-0">{{ 'CLASSROOMS.QUIZZES.RESULTS.CORRECT' | transloco }}</span>
             } @else if (optIdx === ans.selectedOptionIndex) {
-            <span class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-error)] ml-auto shrink-0">Tu elección</span>
+            <span class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--brand-error)] ml-auto shrink-0">{{ 'CLASSROOMS.QUIZZES.RESULTS.YOUR_CHOICE' | transloco }}</span>
             }
           </div>
           }
@@ -514,7 +510,7 @@
               <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brand-primary)] text-white font-extrabold text-[10px]">
                 <i class="bi bi-lightbulb !text-white"></i>
               </span>
-              <span class="text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wider">Explicación de Sery</span>
+              <span class="text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.RESULTS.SERY_EXPLANATION' | transloco }}</span>
             </div>
             <div [innerHTML]="cleanMessageContent(ans.aiFeedback) | markdownMath" class="text-xs font-medium text-[var(--text-secondary)] leading-relaxed"></div>
             
@@ -525,7 +521,7 @@
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
-                Documentos de Referencia
+                {{ 'CLASSROOMS.QUIZZES.RESULTS.REFERENCES' | transloco }}
               </div>
               <div class="grid gap-2">
                 @for (src of getSources(ans.aiFeedback); track src.documentId) {
@@ -542,10 +538,10 @@
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
                     <button type="button" (click)="previewDocument(src.courseId, src.documentId, src.name)" class="flex-1 xl:flex-none justify-center flex items-center gap-1 rounded-lg border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-2.5 py-1.5 text-[10px] font-bold text-[var(--text-primary)] transition active:scale-95">
-                      Previsualizar
+                      {{ 'CLASSROOMS.QUIZZES.RESULTS.PREVIEW' | transloco }}
                     </button>
                     <button type="button" (click)="downloadSource(src.courseId, src.documentId)" class="flex-1 xl:flex-none justify-center flex items-center gap-1 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] px-2.5 py-1.5 text-[10px] font-bold text-white transition active:scale-95">
-                      Descargar
+                      {{ 'CLASSROOMS.QUIZZES.RESULTS.DOWNLOAD' | transloco }}
                     </button>
                   </div>
                 </div>
@@ -563,7 +559,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p class="text-sm font-black text-[var(--brand-forest)] uppercase tracking-widest">¡Respuesta Correcta!</p>
+            <p class="text-sm font-black text-[var(--brand-forest)] uppercase tracking-widest">{{ 'CLASSROOMS.QUIZZES.RESULTS.CORRECT_ANSWER' | transloco }}</p>
           </div>
         </div>
         }
@@ -579,8 +575,8 @@
 <!-- ================= TEACHER / COORDINATOR VIEW ================= -->
 <div class="space-y-8 select-none animate-fade-in">
   <div class="border-b border-[var(--border)] pb-4">
-    <h2 class="text-lg font-bold text-[var(--text-primary)]">Gestión de Cuestionarios</h2>
-    <p class="text-xs text-[var(--text-secondary)] mt-0.5">Genera nuevos cuestionarios temáticos de IA y revisa notas
+    <h2 class="text-lg font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.TITLE' | transloco }}</h2>
+    <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'CLASSROOMS.QUIZZES.TEACHER.SUBTITLE' | transloco }}
     </p>
   </div>
 
@@ -594,16 +590,15 @@
           <path stroke-linecap="round" stroke-linejoin="round"
             d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L14 15l-4.187.904zM19.047 8.825L18 12l-1.047-3.175L14 8l3.175-1.047L18 3l1.047 3.953L22 8l-2.953.825z" />
         </svg>
-        Generar Cuestionario con IA
+        {{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATE_TITLE' | transloco }}
       </h3>
-      <p class="text-xs text-[var(--text-secondary)] leading-relaxed"><b>Sery</b> leerá automáticamente los documentos
-        vinculados a los temas del bimestre y creará preguntas variadas para evaluar el aprendizaje.</p>
+      <p class="text-xs text-[var(--text-secondary)] leading-relaxed" [innerHTML]="'CLASSROOMS.QUIZZES.TEACHER.GENERATE_DESC' | transloco"></p>
     </div>
 
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end pt-2">
       <div class="space-y-2">
         <label for="gen-bim"
-          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Bimestre</label>
+          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.BIMESTER' | transloco }}</label>
         <select id="gen-bim" [(ngModel)]="genGradingPeriodId"
           class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-xs font-bold text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--brand-primary)]">
           @for (p of availableGradingPeriods(); track p.id) {
@@ -614,18 +609,18 @@
 
       <div class="space-y-2">
         <label for="gen-week"
-          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Semana</label>
+          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.WEEK' | transloco }}</label>
         <select id="gen-week" [(ngModel)]="genWeek"
           class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-xs font-bold text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--brand-primary)]">
           @for (w of availableWeeks(); track w.id) {
-          <option [value]="w.orderIndex">Semana {{ w.orderIndex }}: {{ w.name }}</option>
+          <option [value]="w.orderIndex">{{ 'CLASSROOMS.QUIZZES.TEACHER.WEEK' | transloco }} {{ w.orderIndex }}: {{ w.name }}</option>
           }
         </select>
       </div>
 
       <div class="space-y-2">
         <label for="gen-attempts"
-          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Intentos Max</label>
+          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.MAX_ATTEMPTS' | transloco }}</label>
         <div class="relative">
           <input id="gen-attempts" type="number" min="1" max="3" [ngModel]="genAllowedAttempts()"
             (ngModelChange)="genAllowedAttempts.set($event)"
@@ -651,7 +646,7 @@
 
       <div class="space-y-2">
         <label for="gen-questions"
-          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Preguntas</label>
+          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.QUESTIONS' | transloco }}</label>
         <div class="relative">
           <input id="gen-questions" type="number" min="5" max="10" [ngModel]="genQuestionsPerAttempt()"
             (ngModelChange)="genQuestionsPerAttempt.set($event)"
@@ -685,7 +680,7 @@
           <path stroke-linecap="round" stroke-linejoin="round"
             d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L14 15l-4.187.904zM19.047 8.825L18 12l-1.047-3.175L14 8l3.175-1.047L18 3l1.047 3.953L22 8l-2.953.825z" />
         </svg>
-        Generar
+        {{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATE_BTN' | transloco }}
         }
       </button>
     </div>
@@ -694,13 +689,13 @@
   <!-- Recent Quizzes Section -->
   <div class="space-y-3 pt-4">
     <div class="flex items-center justify-between border-b border-[var(--border)] pb-2">
-      <h3 class="text-sm font-bold text-[var(--text-primary)]">Cuestionarios Generados Recientemente</h3>
+      <h3 class="text-sm font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.RECENT_QUIZZES' | transloco }}</h3>
     </div>
 
     @if (courseQuizzes().length === 0) {
     <div
       class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] p-6 text-center text-xs text-[var(--text-secondary)]">
-      No has generado ningún cuestionario aún en esta aula.
+      {{ 'CLASSROOMS.QUIZZES.TEACHER.NO_RECENT_QUIZZES' | transloco }}
     </div>
     } @else {
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
@@ -713,9 +708,9 @@
               class="inline-block px-2 py-1 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] text-[9px] font-black uppercase tracking-wider rounded-md mb-1">
               {{ getBimesterNameForPeriod(quiz.gradingPeriodId) }}
             </span>
-            <h4 class="text-sm font-bold text-[var(--text-primary)]">Semana {{ quiz.weekNumber }}</h4>
+            <h4 class="text-sm font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.WEEK' | transloco }} {{ quiz.weekNumber }}</h4>
             @if (quiz.createdAt) {
-            <p class="text-[9px] text-[var(--text-secondary)] mt-0.5 font-medium">Generado el {{ quiz.createdAt |
+            <p class="text-[9px] text-[var(--text-secondary)] mt-0.5 font-medium">{{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATED_ON' | transloco }} {{ quiz.createdAt |
               date:'dd MMM, yyyy - HH:mm' }}</p>
             }
           </div>
@@ -730,11 +725,11 @@
 
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div class="bg-[var(--bg-secondary)]/50 rounded-md p-2">
-            <p class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Preguntas</p>
+            <p class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.QUESTIONS' | transloco }}</p>
             <p class="font-bold text-[var(--text-primary)]">{{ quiz.questionsPerAttempt }}</p>
           </div>
           <div class="bg-[var(--bg-secondary)]/50 rounded-md p-2">
-            <p class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">Intentos max.</p>
+            <p class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.MAX_ATTEMPTS' | transloco }}</p>
             <p class="font-bold text-[var(--text-primary)]">{{ quiz.maxAttempts }}</p>
           </div>
         </div>

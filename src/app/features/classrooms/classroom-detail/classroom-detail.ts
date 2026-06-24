@@ -7,6 +7,7 @@ import {toSignal} from '@angular/core/rxjs-interop';
 import {filter, map, switchMap} from 'rxjs';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {ClassroomService} from '../data-access/classroom.service';
+import {TranslocoPipe} from '@jsverse/transloco';
 
 type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
 
@@ -17,26 +18,27 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
     Repo,
     Progress,
     Members,
-    RouterLink
+    RouterLink,
+    TranslocoPipe
   ],
   template: `
     <div class="p-4 sm:p-6 md:p-10 space-y-8 select-none">
       <!-- Breadcrumb / Header -->
       <div class="flex flex-col gap-1.5 relative">
         <div class="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
-          <a routerLink="/classrooms" class="hover:text-[var(--text-primary)] transition">Aulas</a>
+          <a routerLink="/classrooms" class="hover:text-[var(--text-primary)] transition">{{ 'CLASSROOMS.DETAIL.BREADCRUMB_LIST' | transloco }}</a>
           <span>/</span>
-          <span class="text-[var(--text-primary)]">Detalle de Aula</span>
+          <span class="text-[var(--text-primary)]">{{ 'CLASSROOMS.DETAIL.TITLE' | transloco }}</span>
         </div>
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h1 class="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">Detalle de Aula</h1>
+          <h1 class="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight">{{ 'CLASSROOMS.DETAIL.TITLE' | transloco }}</h1>
           
           @if (cameFromMetrics()) {
             <button routerLink="/metrics" class="inline-flex items-center gap-2 px-3 py-1.5 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] text-xs font-bold rounded-lg hover:bg-[var(--bg-secondary)] transition-colors shadow-sm w-fit">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Regresar a Métricas
+              {{ 'CLASSROOMS.DETAIL.BACK_TO_METRICS' | transloco }}
             </button>
           }
         </div>
@@ -56,7 +58,7 @@ type ClassroomTab = 'quizzes' | 'repo' | 'progress' | 'members';
                 [class.text-[var(--text-secondary)]]="activeTab() !== tab.id"
                 [class.hover:text-[var(--text-primary)]]="activeTab() !== tab.id"
               >
-                {{ tab.label }}
+                {{ tab.labelKey | transloco }}
               </button>
             }
           </div>
@@ -117,11 +119,11 @@ export class ClassroomDetail {
     { initialValue: 'quizzes' as ClassroomTab }
   );
 
-  readonly tabs: Array<{ id: ClassroomTab; label: string }> = [
-    { id: 'quizzes', label: 'Cuestionarios' },
-    { id: 'repo', label: 'Repositorio' },
-    { id: 'progress', label: 'Progreso' },
-    { id: 'members', label: 'Miembros' },
+  readonly tabs: Array<{ id: ClassroomTab; labelKey: string }> = [
+    { id: 'quizzes', labelKey: 'CLASSROOMS.TABS.QUIZZES' },
+    { id: 'repo', labelKey: 'CLASSROOMS.TABS.REPO' },
+    { id: 'progress', labelKey: 'CLASSROOMS.TABS.PROGRESS' },
+    { id: 'members', labelKey: 'CLASSROOMS.TABS.MEMBERS' },
   ];
 
   setTab(tab: ClassroomTab) {

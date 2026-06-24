@@ -12,6 +12,7 @@ import {MarkdownMathPipe} from '../../shared/pipes/markdown-math.pipe';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {DomSanitizer, SafeResourceUrl, SafeHtml} from '@angular/platform-browser';
 import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
+import {TranslocoService, TranslocoPipe} from '@jsverse/transloco';
 
 export interface ChatSource {
   name: string;
@@ -22,7 +23,7 @@ export interface ChatSource {
 
 @Component({
   selector: 'app-chat',
-  imports: [FormsModule, DatePipe, ConfirmModal, RouterLink],
+  imports: [FormsModule, DatePipe, ConfirmModal, RouterLink, TranslocoPipe],
   templateUrl: './chat.html',
   styleUrl: './chat.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +36,7 @@ export class Chat implements OnInit {
   private readonly router = inject(Router);
   protected readonly sanitizer = inject(DomSanitizer);
   private readonly questionnaireService = inject(QuestionnaireService);
+  private readonly translocoService = inject(TranslocoService);
 
   private readonly scrollContainer = viewChild<ElementRef<HTMLDivElement>>('scrollContainer');
 
@@ -224,8 +226,8 @@ export class Chat implements OnInit {
 
   deleteSession(sessionId: number, event: Event): void {
     event.stopPropagation();
-    this.confirmModalTitle.set('Eliminar Sesión');
-    this.confirmModalMessage.set('¿Estás seguro de que deseas eliminar esta sesión de chat?');
+    this.confirmModalTitle.set(this.translocoService.translate('CHAT.MODAL.DELETE_TITLE'));
+    this.confirmModalMessage.set(this.translocoService.translate('CHAT.MODAL.DELETE_MSG'));
     this.confirmAction.set(() => {
       this.chatService.deleteChatSession(sessionId).subscribe({
         next: () => {
@@ -244,7 +246,7 @@ export class Chat implements OnInit {
         error: (err: unknown) => {
           console.error('Error al eliminar sesión de chat:', err);
           this.confirmModalOpen.set(false);
-          alert('No se pudo eliminar la sesión.');
+          alert(this.translocoService.translate('CHAT.MODAL.DELETE_ERR'));
         }
       });
     });
@@ -252,9 +254,9 @@ export class Chat implements OnInit {
   }
 
   getCourseName(courseId: number | null): string {
-    if (!courseId) return 'Tutoría Global (General)';
+    if (!courseId) return this.translocoService.translate('CHAT.GLOBAL_TUTORING');
     const classroom = this.classrooms().find(c => c.courseId === courseId);
-    return classroom ? classroom.courseName : `Curso #${courseId}`;
+    return classroom ? classroom.courseName : this.translocoService.translate('CHAT.COURSE_ID', { id: courseId });
   }
 
   scrollToBottom(): void {
@@ -317,7 +319,7 @@ export class Chat implements OnInit {
       this.messages.update(prev => 
         prev.map(msg => 
           msg.id === assistantId 
-            ? { ...msg, content: (msg.content || '') + '\n\n**Error:** Lo siento, no pude procesar tu mensaje en este momento. Por favor, intenta de nuevo.' } 
+            ? { ...msg, content: (msg.content || '') + '\n\n**Error:** ' + this.translocoService.translate('CHAT.ERROR_RESPONSE') } 
             : msg
         )
       );
@@ -432,7 +434,7 @@ export class Chat implements OnInit {
       error: (err) => {
         console.error('Error al obtener URL de previsualización:', err);
         this.previewLoading.set(false);
-        alert('No se pudo cargar la previsualización del documento.');
+        alert(this.translocoService.translate('CHAT.PREVIEW_ERR'));
       }
     });
   }

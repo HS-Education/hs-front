@@ -7,17 +7,19 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '../../../shared/services/toast.service';
 import { Modal } from '../../../shared/components/modal/modal';
 import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-academic-years',
   standalone: true,
-  imports: [DatePipe, NgClass, FormsModule, Modal, TranslateEnumPipe],
+  imports: [DatePipe, NgClass, FormsModule, Modal, TranslateEnumPipe, TranslocoPipe],
   templateUrl: './academic-years.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AcademicYears implements OnInit {
   private readonly academicYearService = inject(AcademicYearService);
   private readonly toastService = inject(ToastService);
+  private readonly translocoService = inject(TranslocoService);
 
   readonly years = signal<AcademicYear[]>([]);
   readonly selectedYear = signal<AcademicYear | null>(null);
@@ -85,7 +87,7 @@ export class AcademicYears implements OnInit {
     this.academicYearService.generateAcademicYear().subscribe({
       next: (newYear) => {
         this.isGenerating.set(false);
-        this.toastService.success(`Año ${newYear.year} generado con éxito`);
+        this.toastService.success(this.translocoService.translate('ADMIN.TOAST.YEAR_GENERATED', { year: newYear.year }));
         this.loadYears();
         this.selectYear(newYear);
       },

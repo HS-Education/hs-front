@@ -3,17 +3,17 @@
     
     <div class="mb-8 shrink-0">
       <h1 class="text-3xl font-bold text-[var(--text-primary)]">
-        Gestión de Cursos
+        {{ 'ADMIN.COURSES.TITLE' | transloco }}
       </h1>
       <p class="mt-2 text-sm text-[var(--text-secondary)]">
-        Administra las áreas, cursos, secciones y planes de estudio.
+        {{ 'ADMIN.COURSES.SUBTITLE' | transloco }}
       </p>
     </div>
 
     <!-- Tabbed Navigation -->
     <div class="border-b border-[var(--border)] mb-6 shrink-0">
       <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-        <!-- Tab: Áreas y Cursos -->
+        <!-- Tab: {{ 'ADMIN.COURSES.TAB_AREAS_COURSES' | transloco }} -->
         <button
           (click)="setActiveTab('AREAS_COURSES')"
           [class.border-[var(--brand-primary)]]="activeTab() === 'AREAS_COURSES'"
@@ -23,7 +23,7 @@
           [class.hover:border-[var(--border)]]="activeTab() !== 'AREAS_COURSES'"
           [class.hover:text-[var(--text-primary)]]="activeTab() !== 'AREAS_COURSES'"
           class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-          Áreas y Cursos
+          {{ 'ADMIN.COURSES.TAB_AREAS_COURSES' | transloco }}
         </button>
 
         <!-- Tab: Secciones -->
@@ -36,7 +36,7 @@
           [class.hover:border-[var(--border)]]="activeTab() !== 'SECTIONS'"
           [class.hover:text-[var(--text-primary)]]="activeTab() !== 'SECTIONS'"
           class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-          Secciones
+          {{ 'ADMIN.COURSES.TAB_SECTIONS' | transloco }}
         </button>
 
         <!-- Tab: Planes de Estudio -->
@@ -49,7 +49,7 @@
           [class.hover:border-[var(--border)]]="activeTab() !== 'STUDY_PLANS'"
           [class.hover:text-[var(--text-primary)]]="activeTab() !== 'STUDY_PLANS'"
           class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-          Planes de Estudio
+          {{ 'ADMIN.COURSES.TAB_STUDY_PLANS' | transloco }}
         </button>
       </nav>
     </div>
@@ -62,13 +62,13 @@
           <!-- Master View: Areas -->
           <div class="w-full lg:w-1/3 flex flex-col border border-[var(--border)] rounded-xl bg-[var(--surface)] overflow-hidden h-full">
             <div class="p-4 border-b border-[var(--border)] bg-[var(--bg-secondary)] flex justify-between items-center">
-              <h2 class="font-bold text-[var(--text-primary)]">Áreas Académicas</h2>
+              <h2 class="font-bold text-[var(--text-primary)]">{{ 'ADMIN.COURSES.AREAS' | transloco }}</h2>
               <button type="button" (click)="openAreaModal()"
                 class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--brand-primary)] px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                Nueva
+                {{ 'ADMIN.COURSES.NEW' | transloco }}
               </button>
             </div>
             <div class="flex-1 overflow-y-auto p-2">
@@ -77,7 +77,7 @@
                   <div class="inline-flex h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]"></div>
                 </div>
               } @else if (areas().length === 0) {
-                <div class="text-center p-8 text-sm text-[var(--text-secondary)]">No hay áreas registradas.</div>
+                <div class="text-center p-8 text-sm text-[var(--text-secondary)]">{{ 'ADMIN.COURSES.NO_AREAS' | transloco }}</div>
               } @else {
                 <div class="flex flex-col gap-2">
                   @for (area of areas(); track area.id) {
@@ -99,7 +99,7 @@
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
-                            Coord: {{ area.coordinatorName }}
+                            {{ 'ADMIN.COURSES.COORD' | transloco }} {{ area.coordinatorName }}
                           </p>
                         </div>
                         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -135,21 +135,21 @@
             @if (selectedArea()) {
               <div class="p-4 border-b border-[var(--border)] bg-[var(--bg-secondary)] flex justify-between items-center">
                 <div>
-                  <h2 class="font-bold text-[var(--text-primary)]">Cursos en {{ selectedArea()?.name }}</h2>
+                  <h2 class="font-bold text-[var(--text-primary)]">{{ 'ADMIN.COURSES.COURSES_IN' | transloco }} {{ selectedArea()?.name }}</h2>
                 </div>
                 <button type="button" (click)="openCourseModal()"
                   class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[var(--brand-primary)] px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                  Nuevo Curso
+                  {{ 'ADMIN.COURSES.NEW_COURSE' | transloco }}
                 </button>
               </div>
               <div class="flex-1 overflow-y-auto p-4">
                 @if (courses().length === 0) {
                   <div class="text-center p-12 text-sm text-[var(--text-secondary)] border-2 border-dashed border-[var(--border)] rounded-xl">
-                    <p class="font-bold mb-1">Sin Cursos</p>
-                    <p>Esta área aún no tiene cursos registrados.</p>
+                    <p class="font-bold mb-1">{{ 'ADMIN.COURSES.NO_COURSES' | transloco }}</p>
+                    <p>{{ 'ADMIN.COURSES.NO_COURSES_DESC' | transloco }}</p>
                   </div>
                 } @else {
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -177,8 +177,8 @@
                 <svg class="h-16 w-16 mb-4 text-[var(--border)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
                 </svg>
-                <p class="font-medium text-lg">Selecciona un Área</p>
-                <p class="text-sm mt-1">Elige un área de la lista para gestionar sus cursos asociados.</p>
+                <p class="font-medium text-lg">{{ 'ADMIN.COURSES.SELECT_AREA' | transloco }}</p>
+                <p class="text-sm mt-1">{{ 'ADMIN.COURSES.SELECT_AREA_DESC' | transloco }}</p>
               </div>
             }
           </div>
@@ -188,13 +188,13 @@
       @if (activeTab() === 'SECTIONS') {
         <div class="h-full flex flex-col">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-[var(--text-primary)]">Secciones Registradas</h2>
+            <h2 class="text-xl font-bold text-[var(--text-primary)]">{{ 'ADMIN.COURSES.SECTIONS_REG' | transloco }}</h2>
             <button type="button" (click)="openSectionModal()"
               class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              Nueva Sección
+              {{ 'ADMIN.COURSES.NEW_SECTION' | transloco }}
             </button>
           </div>
 
@@ -202,10 +202,10 @@
             <table class="min-w-full divide-y divide-[var(--border)]">
               <thead class="bg-[var(--bg-secondary)] sticky top-0 z-10">
                 <tr>
-                  <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Nombre</th>
-                  <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Nivel Educativo</th>
-                  <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Grado</th>
-                  <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Acciones</th>
+                  <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'ADMIN.COMMON.NAME' | transloco }}</th>
+                  <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'ADMIN.COURSES.EDUCATION_LEVEL' | transloco }}</th>
+                  <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'ADMIN.CLASSROOMS.GRADE' | transloco }}</th>
+                  <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'ADMIN.COMMON.ACTIONS' | transloco }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[var(--border)] bg-[var(--surface)]">
@@ -217,7 +217,7 @@
                   </tr>
                 } @else if (sections().length === 0) {
                   <tr>
-                    <td colspan="4" class="px-6 py-12 text-center text-[var(--text-secondary)]">No hay secciones registradas.</td>
+                    <td colspan="4" class="px-6 py-12 text-center text-[var(--text-secondary)]">{{ 'ADMIN.COURSES.NO_SECTIONS' | transloco }}</td>
                   </tr>
                 } @else {
                   @for (section of sections(); track section.id) {
@@ -251,8 +251,8 @@
         <div class="h-full flex flex-col">
           <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-6">
             <div>
-              <h2 class="text-xl font-bold text-[var(--text-primary)]">Planes de Estudio</h2>
-              <p class="text-sm text-[var(--text-secondary)] mt-1">Filtra para ver los cursos asignados a cada nivel y grado.</p>
+              <h2 class="text-xl font-bold text-[var(--text-primary)]">{{ 'ADMIN.COURSES.TAB_STUDY_PLANS' | transloco }}</h2>
+              <p class="text-sm text-[var(--text-secondary)] mt-1">{{ 'ADMIN.COURSES.FILTER_STUDY_PLANS' | transloco }}</p>
             </div>
             
             <div class="flex flex-col sm:flex-row gap-3">
@@ -263,7 +263,7 @@
 
               <select [ngModel]="studyPlanEducationLevel()" (ngModelChange)="studyPlanEducationLevel.set($event); onStudyPlanFilterChange()"
                 class="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-sm font-semibold text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
-                <option value="SECONDARY">Secundaria</option>
+                <option value="SECONDARY">{{ 'ADMIN.CLASSROOMS.SECONDARY' | transloco }}</option>
               </select>
 
               <button type="button" (click)="openStudyPlanModal()"
@@ -271,7 +271,7 @@
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                Asignar Curso
+                {{ 'ADMIN.COURSES.ASSIGN_COURSE' | transloco }}
               </button>
             </div>
           </div>
@@ -280,8 +280,8 @@
             <table class="min-w-full divide-y divide-[var(--border)]">
               <thead class="bg-[var(--bg-secondary)] sticky top-0 z-10">
                 <tr>
-                  <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Curso</th>
-                  <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Acciones</th>
+                  <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'ADMIN.CLASSROOMS.COURSE' | transloco }}</th>
+                  <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'ADMIN.COMMON.ACTIONS' | transloco }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[var(--border)] bg-[var(--surface)]">
@@ -293,7 +293,7 @@
                   </tr>
                 } @else if (studyPlans().length === 0) {
                   <tr>
-                    <td colspan="2" class="px-6 py-12 text-center text-[var(--text-secondary)]">No hay cursos asignados a este nivel y grado.</td>
+                    <td colspan="2" class="px-6 py-12 text-center text-[var(--text-secondary)]">{{ 'ADMIN.COURSES.NO_COURSES_ASSIGNED' | transloco }}</td>
                   </tr>
                 } @else {
                   @for (plan of studyPlans(); track plan.id) {
@@ -303,7 +303,7 @@
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button (click)="removeCourseFromStudyPlan(plan.id)" class="text-red-500 hover:text-red-700 transition-colors p-2 rounded-lg hover:bg-red-50">
-                          Remover
+                          {{ 'ADMIN.COMMON.REMOVE' | transloco }}
                         </button>
                       </td>
                     </tr>
@@ -321,40 +321,40 @@
 </div>
 
 <!-- Area Modal -->
-<app-modal [isOpen]="isAreaModalOpen()" [title]="editingArea() ? 'Editar Área' : 'Crear Nueva Área'" [onClose]="closeAreaModal">
+<app-modal [isOpen]="isAreaModalOpen()" [title]="editingArea() ? ('ADMIN.COURSES.EDIT_AREA' | transloco) : ('ADMIN.COURSES.NEW_AREA' | transloco)" [onClose]="closeAreaModal">
   <div class="space-y-6">
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Nombre del Área</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.COURSES.AREA_NAME' | transloco }}</label>
       <input type="text" [ngModel]="areaName()" (ngModelChange)="areaName.set($event)"
-        placeholder="Ej. Ciencias Naturales"
+        placeholder="{{ 'ADMIN.COURSES.AREA_NAME_PH' | transloco }}"
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent transition" />
     </div>
 
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Coordinador Asignado</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.COURSES.ASSIGNED_COORD' | transloco }}</label>
       <select [ngModel]="areaCoordinatorId()" (ngModelChange)="areaCoordinatorId.set(+$event)"
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent transition appearance-none">
-        <option [ngValue]="null" disabled selected>Selecciona un coordinador</option>
+        <option [ngValue]="null" disabled selected>{{ 'ADMIN.COURSES.SELECT_COORD' | transloco }}</option>
         @for (coord of coordinators(); track coord.id) {
           <option [value]="coord.id">{{ coord.name }}</option>
         }
       </select>
       @if (coordinators().length === 0) {
-        <p class="text-[10px] text-orange-500 mt-1 ml-1">No hay coordinadores disponibles. Crea un usuario con rol COORDINATOR primero.</p>
+        <p class="text-[10px] text-orange-500 mt-1 ml-1">{{ 'ADMIN.COURSES.NO_COORDS' | transloco }}</p>
       }
     </div>
 
     <div class="flex justify-end pt-4 border-t border-[var(--border)] gap-3 mt-8">
       <button type="button" (click)="closeAreaModal()"
         class="rounded-xl px-5 py-2.5 text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition focus:outline-none">
-        Cancelar
+        {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="submitArea()" [disabled]="!areaName().trim() || !areaCoordinatorId() || isSubmitting()"
         class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed">
         @if (isSubmitting()) {
-          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Guardando...
+          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> {{ 'ADMIN.COMMON.SAVING' | transloco }}
         } @else {
-          Guardar Área
+          {{ 'ADMIN.COURSES.SAVE_AREA' | transloco }}
         }
       </button>
     </div>
@@ -362,33 +362,33 @@
 </app-modal>
 
 <!-- Course Modal -->
-<app-modal [isOpen]="isCourseModalOpen()" [title]="editingCourse() ? 'Editar Curso' : 'Crear Nuevo Curso'" [onClose]="closeCourseModal">
+<app-modal [isOpen]="isCourseModalOpen()" [title]="editingCourse() ? ('ADMIN.COURSES.EDIT_COURSE' | transloco) : ('ADMIN.COURSES.CREATE_COURSE' | transloco)" [onClose]="closeCourseModal">
   <div class="space-y-6">
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Nombre del Curso</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.COURSES.COURSE_NAME' | transloco }}</label>
       <input type="text" [ngModel]="courseName()" (ngModelChange)="courseName.set($event)"
-        placeholder="Ej. Física Fundamental"
+        placeholder="{{ 'ADMIN.COURSES.COURSE_NAME_PH' | transloco }}"
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent transition" />
     </div>
 
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Área</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.COURSES.AREA' | transloco }}</label>
       <input type="text" [value]="selectedArea()?.name" readonly disabled
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-[var(--text-secondary)] cursor-not-allowed opacity-80" />
-      <p class="text-[10px] text-[var(--text-secondary)] mt-1 ml-1">El curso se agregará al área seleccionada.</p>
+      <p class="text-[10px] text-[var(--text-secondary)] mt-1 ml-1">{{ 'ADMIN.COURSES.AREA_NOTE' | transloco }}</p>
     </div>
 
     <div class="flex justify-end pt-4 border-t border-[var(--border)] gap-3 mt-8">
       <button type="button" (click)="closeCourseModal()"
         class="rounded-xl px-5 py-2.5 text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition focus:outline-none">
-        Cancelar
+        {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="submitCourse()" [disabled]="!courseName().trim() || isSubmitting()"
         class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed">
         @if (isSubmitting()) {
-          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Guardando...
+          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> {{ 'ADMIN.COMMON.SAVING' | transloco }}
         } @else {
-          Guardar Curso
+          {{ 'ADMIN.COURSES.SAVE_COURSE' | transloco }}
         }
       </button>
     </div>
@@ -396,25 +396,25 @@
 </app-modal>
 
 <!-- Section Modal -->
-<app-modal [isOpen]="isSectionModalOpen()" title="Crear Nueva Sección" [onClose]="closeSectionModal">
+<app-modal [isOpen]="isSectionModalOpen()" title="{{ 'ADMIN.COURSES.CREATE_SECTION' | transloco }}" [onClose]="closeSectionModal">
   <div class="space-y-6">
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Nombre de la Sección</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.COURSES.SECTION_NAME' | transloco }}</label>
       <input type="text" [ngModel]="sectionName()" (ngModelChange)="sectionName.set($event)"
-        placeholder="Ej. A, B, C, Única"
+        placeholder="{{ 'ADMIN.COURSES.SECTION_NAME_PH' | transloco }}"
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent transition" />
     </div>
 
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Nivel Educativo</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.COURSES.EDUCATION_LEVEL' | transloco }}</label>
       <select [ngModel]="sectionEducationLevel()" (ngModelChange)="sectionEducationLevel.set($event)"
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent transition appearance-none">
-        <option value="SECONDARY">Secundaria</option>
+        <option value="SECONDARY">{{ 'ADMIN.CLASSROOMS.SECONDARY' | transloco }}</option>
       </select>
     </div>
 
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Grado</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.CLASSROOMS.GRADE' | transloco }}</label>
       <select [ngModel]="sectionGradeLevel()" (ngModelChange)="sectionGradeLevel.set($event)"
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent transition appearance-none">
         <option value="SECOND">2do</option>
@@ -424,14 +424,14 @@
     <div class="flex justify-end pt-4 border-t border-[var(--border)] gap-3 mt-8">
       <button type="button" (click)="closeSectionModal()"
         class="rounded-xl px-5 py-2.5 text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition focus:outline-none">
-        Cancelar
+        {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="submitSection()" [disabled]="!sectionName().trim() || isSubmitting()"
         class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed">
         @if (isSubmitting()) {
-          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Guardando...
+          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> {{ 'ADMIN.COMMON.SAVING' | transloco }}
         } @else {
-          Guardar Sección
+          {{ 'ADMIN.COURSES.SAVE_SECTION' | transloco }}
         }
       </button>
     </div>
@@ -439,40 +439,40 @@
 </app-modal>
 
 <!-- Study Plan Modal -->
-<app-modal [isOpen]="isStudyPlanModalOpen()" title="Asignar Curso a Plan de Estudios" [onClose]="closeStudyPlanModal">
+<app-modal [isOpen]="isStudyPlanModalOpen()" title="{{ 'ADMIN.COURSES.ASSIGN_TO_STUDY_PLAN' | transloco }}" [onClose]="closeStudyPlanModal">
   <div class="space-y-6">
     <div class="bg-[var(--brand-primary)]/10 p-4 rounded-xl border border-[var(--brand-primary)]/20 mb-6">
-      <p class="text-sm font-semibold text-[var(--text-primary)]">Agregando a:</p>
+      <p class="text-sm font-semibold text-[var(--text-primary)]">{{ 'ADMIN.COURSES.ADDING_TO' | transloco }}</p>
       <p class="text-xs text-[var(--text-secondary)] mt-1">
         {{ studyPlanEducationLevel() | translateEnum }} - {{ studyPlanGradeLevel() | translateEnum }}
       </p>
     </div>
 
     <div>
-      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">Seleccionar Curso</label>
+      <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.COURSES.SELECT_COURSE' | transloco }}</label>
       <select [ngModel]="studyPlanCourseId()" (ngModelChange)="studyPlanCourseId.set(+$event)"
         class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent transition appearance-none">
-        <option [ngValue]="null" disabled selected>Elige un curso...</option>
+        <option [ngValue]="null" disabled selected>{{ 'ADMIN.COURSES.CHOOSE_COURSE' | transloco }}</option>
         @for (course of allCourses(); track course.id) {
           <option [value]="course.id">{{ course.name }} ({{ course.areaName }})</option>
         }
       </select>
       @if (allCourses().length === 0) {
-        <p class="text-[10px] text-orange-500 mt-1 ml-1">No hay cursos disponibles para asignar. Crea uno primero.</p>
+        <p class="text-[10px] text-orange-500 mt-1 ml-1">{{ 'ADMIN.COURSES.NO_COURSES_AVAILABLE' | transloco }}</p>
       }
     </div>
 
     <div class="flex justify-end pt-4 border-t border-[var(--border)] gap-3 mt-8">
       <button type="button" (click)="closeStudyPlanModal()"
         class="rounded-xl px-5 py-2.5 text-sm font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition focus:outline-none">
-        Cancelar
+        {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="submitStudyPlanCourse()" [disabled]="!studyPlanCourseId() || isSubmitting()"
         class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed">
         @if (isSubmitting()) {
-          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Guardando...
+          <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> {{ 'ADMIN.COMMON.SAVING' | transloco }}
         } @else {
-          Asignar Curso
+          {{ 'ADMIN.COURSES.ASSIGN_COURSE' | transloco }}
         }
       </button>
     </div>

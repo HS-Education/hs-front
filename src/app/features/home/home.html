@@ -6,7 +6,7 @@
       <div
         class="inline-flex h-9 w-9 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]">
       </div>
-      <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">Cargando tu dashboard...</p>
+      <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">{{ 'HOME.LOADING' | transloco }}</p>
     </div>
   </div>
   } @else if (userProfile(); as user) {
@@ -16,21 +16,22 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
     <!-- Welcome Banner -->
-    <div
-      class="lg:col-span-2 relative overflow-hidden rounded-3xl bg-[var(--surface)] border border-[var(--border)] p-8 shadow-sm flex flex-col justify-center">
+    <div class="lg:col-span-2 relative overflow-hidden rounded-3xl bg-[var(--surface)] border border-[var(--border)] p-8 shadow-sm flex flex-col justify-center">
       <div class="relative z-10">
-        <h1
-          class="text-2xl md:text-3xl font-black tracking-tight text-[var(--text-primary)] font-['Plus_Jakarta_Sans']">
-          ¡Hola, {{ user.name }}! 👋
+        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-[var(--text-primary)] font-['Plus_Jakarta_Sans']">
+          @if (activeDashboard() === 'STUDENT' && (userDataService.isTeacher() || userDataService.isCoordinator())) {
+            {{ 'HOME.WELCOME_STUDENT' | transloco }}
+          } @else {
+            {{ 'HOME.WELCOME_USER' | transloco: {name: user.name} }}
+          }
         </h1>
         <p class="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed max-w-lg font-medium">
-          Bienvenido de nuevo a tu panel de control.
-          @if (user.roles.includes('TEACHER')) {
-          Aquí tienes un resumen del estado de tus aulas y acceso rápido a tus materiales.
-          } @else if (user.roles.includes('COORDINATOR')) {
-          Aquí puedes supervisar las áreas a tu cargo y revisar métricas de rendimiento.
+          @if (activeDashboard() === 'STUDENT') {
+            {{ 'HOME.DESC_STUDENT' | transloco }}
+          } @else if (activeDashboard() === 'TEACHER') {
+            {{ 'HOME.DESC_TEACHER' | transloco }}
           } @else {
-          Aquí puedes ver un resumen de tu actividad en la plataforma.
+            {{ 'HOME.DESC_COORDINATOR' | transloco }}
           }
         </p>
 
@@ -42,16 +43,17 @@
             {{ role | translateEnum }}
           </span>
           }
+          @if (activeDashboard() === 'STUDENT' && (userDataService.isTeacher() || userDataService.isCoordinator())) {
+            <span class="inline-flex items-center gap-1.5 rounded-lg bg-[var(--brand-forest)]/10 border border-[var(--brand-forest)]/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[var(--brand-forest)]">
+              {{ 'HOME.SIMULATING_STUDENT' | transloco }}
+            </span>
+          }
         </div>
       </div>
 
       <!-- Abstract Background Graphics -->
-      <div
-        class="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[var(--brand-primary)]/5 blur-3xl pointer-events-none">
-      </div>
-      <div
-        class="absolute right-20 -bottom-10 h-40 w-40 rounded-full bg-[var(--brand-mustard)]/10 blur-3xl pointer-events-none">
-      </div>
+      <div class="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-[var(--brand-primary)]/5 blur-3xl pointer-events-none"></div>
+      <div class="absolute right-20 -bottom-10 h-40 w-40 rounded-full bg-[var(--brand-mustard)]/10 blur-3xl pointer-events-none"></div>
     </div>
 
     <!-- Sery Tip -->
@@ -68,30 +70,27 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
         </div>
-        <h3 class="font-extrabold text-sm tracking-wide">Consejo de Sery</h3>
+        <h3 class="font-extrabold text-sm tracking-wide">{{ 'HOME.SERY_TIP.TITLE' | transloco }}</h3>
       </div>
 
       <div class="relative z-10 mt-auto">
-        @if (user.roles.includes('COORDINATOR') || user.roles.includes('ADMIN')) {
-          <p class="text-xs text-white/90 leading-relaxed font-medium">
-            Recuerda que puedes solicitar insights automatizados en el área de <strong>Métricas</strong> para identificar rápidamente fortalezas y debilidades de las aulas.
+        @if (activeDashboard() === 'COORDINATOR') {
+          <p class="text-xs text-white/90 leading-relaxed font-medium" [innerHTML]="'HOME.SERY_TIP.COORD_DESC' | transloco">
           </p>
           <a routerLink="/metrics" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
-            Ir a Métricas
+            {{ 'HOME.SERY_TIP.COORD_BTN' | transloco }}
           </a>
-        } @else if (user.roles.includes('TEACHER')) {
-          <p class="text-xs text-white/90 leading-relaxed font-medium">
-            Sery puede ayudarte a entender el rendimiento de tus estudiantes. Visita la sección de <strong>Progreso</strong> dentro de tus aulas para obtener insights personalizados.
+        } @else if (activeDashboard() === 'TEACHER') {
+          <p class="text-xs text-white/90 leading-relaxed font-medium" [innerHTML]="'HOME.SERY_TIP.TEACHER_DESC' | transloco">
           </p>
           <a routerLink="/classrooms" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
-            Ver mis aulas
+            {{ 'HOME.SERY_TIP.TEACHER_BTN' | transloco }}
           </a>
         } @else {
-          <p class="text-xs text-white/90 leading-relaxed font-medium">
-            ¿Tienes dudas sobre cómo usar la plataforma? Sery y el Centro de Ayuda están disponibles para guiarte en cada paso.
+          <p class="text-xs text-white/90 leading-relaxed font-medium" [innerHTML]="'HOME.SERY_TIP.STUDENT_DESC' | transloco">
           </p>
-          <a routerLink="/help" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
-            Centro de Ayuda
+          <a routerLink="/chat" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
+            {{ 'HOME.SERY_TIP.STUDENT_BTN' | transloco }}
           </a>
         }
       </div>
@@ -108,97 +107,125 @@
       <!-- KPIs Row -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
-        <!-- Classrooms KPI -->
-        <div
-          class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-primary)]/30 transition-colors">
-          <div
-            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+        @if (activeDashboard() === 'STUDENT') {
+          <!-- Classrooms KPI -->
+          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-primary)]/30 transition-colors">
+            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">{{ 'HOME.KPI.CLASSROOMS_STUDENT' | transloco }}</p>
+              <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">{{ totalClassrooms() }}</h2>
+            </div>
           </div>
-          <div>
-            <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Total Aulas</p>
-            <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">
-              {{ totalClassrooms() }}
-            </h2>
+          <!-- Chat KPI -->
+          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-sery)]/30 transition-colors">
+            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-sery)]/10 text-[var(--brand-sery)]">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">{{ 'HOME.KPI.SERY_QUERIES' | transloco }}</p>
+              <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">15</h2>
+            </div>
           </div>
-        </div>
-
-        <!-- Courses KPI -->
-        <div
-          class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-mustard)]/30 transition-colors">
-          <div
-            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-mustard)]/10 text-[var(--brand-mustard)]">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
+        } @else {
+          <!-- Classrooms KPI (Teacher/Coord) -->
+          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-primary)]/30 transition-colors">
+            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                {{ activeDashboard() === 'TEACHER' ? ('HOME.KPI.CLASSROOMS_TEACHER' | transloco) : ('HOME.KPI.CLASSROOMS_TOTAL' | transloco) }}
+              </p>
+              <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">{{ totalClassrooms() }}</h2>
+            </div>
           </div>
-          <div>
-            <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Cursos Únicos
-            </p>
-            <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">
-              {{ totalCourses() }}
-            </h2>
+          <!-- Courses KPI -->
+          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-mustard)]/30 transition-colors">
+            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-mustard)]/10 text-[var(--brand-mustard)]">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">{{ 'HOME.KPI.COURSES_UNIQUE' | transloco }}</p>
+              <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">{{ totalCourses() }}</h2>
+            </div>
           </div>
-        </div>
+        }
 
       </div>
 
       <!-- Quick Actions Grid -->
       <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-        <h3 class="font-bold text-[var(--text-primary)] text-sm mb-4">Accesos Rápidos</h3>
+        <h3 class="font-bold text-[var(--text-primary)] text-sm mb-4">{{ 'HOME.ACTIONS.TITLE' | transloco }}</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
 
-          <a routerLink="/classrooms"
-            class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-            <div
-              class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <span class="text-xs font-bold text-[var(--text-primary)]">Mis Aulas</span>
-          </a>
-
-          @if (user.roles.includes('COORDINATOR') || user.roles.includes('ADMIN')) {
-            <a routerLink="/repository"
-              class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-              <div
-                class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
+          @if (activeDashboard() === 'STUDENT' || activeDashboard() === 'TEACHER') {
+            <a routerLink="/classrooms" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <span class="text-xs font-bold text-[var(--text-primary)]">Repositorio</span>
+              <span class="text-xs font-bold text-[var(--text-primary)]">
+                {{ activeDashboard() === 'STUDENT' ? ('HOME.ACTIONS.MY_COURSES' | transloco) : ('HOME.ACTIONS.MY_CLASSROOMS' | transloco) }}
+              </span>
             </a>
 
-            <a routerLink="/metrics"
-              class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-              <div
-                class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
+            <a routerLink="/chat" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-sery)]/50 hover:shadow-sm transition-all group text-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-sery)] text-[var(--text-secondary)] group-hover:text-[var(--brand-sery)] transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.SERY_TUTOR' | transloco }}</span>
+            </a>
+          }
+
+          @if (activeDashboard() === 'COORDINATOR') {
+            <a routerLink="/classrooms" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.ALL_CLASSROOMS' | transloco }}</span>
+            </a>
+
+            <a routerLink="/repository" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </div>
+              <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.REPOSITORY' | transloco }}</span>
+            </a>
+
+            <a routerLink="/metrics" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <span class="text-xs font-bold text-[var(--text-primary)]">Métricas</span>
+              <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.METRICS' | transloco }}</span>
             </a>
           }
 
-          <a routerLink="/help"
-            class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-            <div
-              class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
+          <a routerLink="/help" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <span class="text-xs font-bold text-[var(--text-primary)]">Ayuda</span>
+            <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.HELP' | transloco }}</span>
           </a>
 
         </div>
@@ -209,8 +236,8 @@
     <!-- Right Column: Recent Activity Timeline -->
     <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex flex-col h-full">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="font-bold text-[var(--text-primary)] text-sm">Actividad Reciente</h3>
-        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Últimos eventos</span>
+        <h3 class="font-bold text-[var(--text-primary)] text-sm">{{ 'HOME.ACTIVITY.TITLE' | transloco }}</h3>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'HOME.ACTIVITY.SUBTITLE' | transloco }}</span>
       </div>
 
       <div class="flex-1 relative pl-3">
@@ -218,31 +245,35 @@
         <div class="absolute left-6 top-2 bottom-4 w-px bg-[var(--border)]"></div>
 
         <div class="space-y-6">
-          @for (activity of recentActivity(); track activity.id) {
-          <div class="relative flex items-start gap-4">
-            <!-- Icon Badge -->
-            <div
-              class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--surface)] ring-4 ring-[var(--surface)]"
-              [class.bg-[var(--brand-forest)]]="activity.type === 'INSIGHT'"
-              [class.bg-[var(--brand-mustard)]]="activity.type === 'DOCUMENT'"
-              [class.bg-[var(--text-secondary)]]="activity.type === 'SYSTEM'">
-              <svg class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="activity.icon" />
-              </svg>
-            </div>
-
-            <!-- Content -->
-            <div class="flex-1 pb-1">
-              <div class="flex flex-wrap items-baseline justify-between gap-1 mb-1">
-                <h4 class="text-xs font-bold text-[var(--text-primary)]">{{ activity.title }}</h4>
-                <span class="text-[9px] font-semibold text-[var(--text-secondary)] whitespace-nowrap">
-                  {{ activity.timestamp | date:'shortTime' }}
-                </span>
+          @if (recentActivity().length === 0) {
+            <p class="text-xs text-[var(--text-secondary)] pl-8">{{ 'HOME.ACTIVITY.EMPTY' | transloco }}</p>
+          } @else {
+            @for (activity of recentActivity(); track activity.id) {
+            <div class="relative flex items-start gap-4">
+              <!-- Icon Badge -->
+              <div
+                class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--surface)] ring-4 ring-[var(--surface)]"
+                [class.bg-[var(--brand-forest)]]="activity.type === 'INSIGHT' || activity.type === 'STUDENT_COURSE'"
+                [class.bg-[var(--brand-mustard)]]="activity.type === 'DOCUMENT'"
+                [class.bg-[var(--brand-sery)]]="activity.type === 'STUDENT_CHAT'"
+                [class.bg-[var(--text-secondary)]]="activity.type === 'SYSTEM'">
+                <svg class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="activity.icon" />
+                </svg>
               </div>
-              <p class="text-[11px] text-[var(--text-secondary)] leading-relaxed">{{ activity.description }}</p>
+
+              <!-- Content -->
+              <div class="flex-1 pb-1">
+                <div class="flex flex-wrap items-baseline justify-between gap-1 mb-1">
+                  <h4 class="text-xs font-bold text-[var(--text-primary)]">{{ activity.titleKey | transloco }}</h4>
+                  <span class="text-[9px] font-semibold text-[var(--text-secondary)] whitespace-nowrap">
+                    {{ activity.timestamp | date:'shortTime' }}
+                  </span>
+                </div>
+                <p class="text-[11px] text-[var(--text-secondary)] leading-relaxed">{{ activity.descriptionKey | transloco }}</p>
+              </div>
             </div>
-          </div>
+            }
           }
         </div>
       </div>

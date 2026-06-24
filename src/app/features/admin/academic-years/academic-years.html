@@ -4,10 +4,10 @@
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-3xl font-bold text-[var(--text-primary)]">
-          Gestión de Año Académico
+          {{ 'ADMIN.ACADEMIC_YEARS.TITLE' | transloco }}
         </h1>
         <p class="mt-2 text-sm text-[var(--text-secondary)]">
-          Administra los años académicos y sus periodos de calificación (Bimestres).
+          {{ 'ADMIN.ACADEMIC_YEARS.SUBTITLE' | transloco }}
         </p>
       </div>
       <button
@@ -19,12 +19,12 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span>Generando...</span>
+          <span>{{ 'ADMIN.ACADEMIC_YEARS.GENERATING' | transloco }}</span>
         } @else {
           <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          <span>Generar Próximo Año</span>
+          <span>{{ 'ADMIN.ACADEMIC_YEARS.GENERATE_NEXT' | transloco }}</span>
         }
       </button>
     </div>
@@ -34,7 +34,7 @@
       <!-- Left Column: Academic Years List -->
       <div class="lg:col-span-1 bg-[var(--surface)] rounded-2xl shadow-sm border border-[var(--border)] overflow-hidden flex flex-col">
         <div class="p-4 border-b border-[var(--border)] bg-[var(--bg-secondary)]">
-          <h2 class="font-bold text-[var(--text-primary)]">Años Académicos</h2>
+          <h2 class="font-bold text-[var(--text-primary)]">{{ 'ADMIN.ACADEMIC_YEARS.ACADEMIC_YEARS' | transloco }}</h2>
         </div>
         
         <div class="flex-1 overflow-y-auto max-h-[600px] p-2 space-y-2">
@@ -47,7 +47,7 @@
             </div>
           } @else if (years().length === 0) {
             <div class="p-8 text-center text-sm text-[var(--text-secondary)]">
-              No hay años académicos creados.
+              {{ 'ADMIN.ACADEMIC_YEARS.NO_YEARS' | transloco }}
             </div>
           } @else {
             @for (year of years(); track year.id) {
@@ -79,10 +79,10 @@
           <div class="p-4 sm:p-6 border-b border-[var(--border)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--bg-secondary)]/50">
             <div>
               <h2 class="text-xl font-bold text-[var(--text-primary)]">
-                Bimestres del Año {{ currentYear.year }}
+                {{ 'ADMIN.ACADEMIC_YEARS.BIMESTERS_OF' | transloco }} {{ currentYear.year }}
               </h2>
               <p class="text-sm text-[var(--text-secondary)] mt-1">
-                Configura las fechas de inicio y fin para cada bimestre.
+                {{ 'ADMIN.ACADEMIC_YEARS.BIMESTERS_DESC' | transloco }}
               </p>
             </div>
           </div>
@@ -111,25 +111,25 @@
                     <!-- Inline Edit Mode -->
                     <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full xl:w-auto mt-4 xl:mt-0 bg-[var(--bg-secondary)] p-3 rounded-lg border border-[var(--brand-primary)] shadow-sm">
                       <div class="flex flex-col gap-1 w-full sm:w-36">
-                        <label class="text-[10px] font-bold text-[var(--brand-primary)] uppercase tracking-wider">Inicio</label>
+                        <label class="text-[10px] font-bold text-[var(--brand-primary)] uppercase tracking-wider">{{ 'ADMIN.COMMON.START' | transloco }}</label>
                         <input type="date" [ngModel]="editStartDate()" (ngModelChange)="editStartDate.set($event)"
                           class="block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] shadow-inner" />
                       </div>
                       
                       <div class="flex flex-col gap-1 w-full sm:w-36">
-                        <label class="text-[10px] font-bold text-[var(--brand-primary)] uppercase tracking-wider">Fin</label>
+                        <label class="text-[10px] font-bold text-[var(--brand-primary)] uppercase tracking-wider">{{ 'ADMIN.COMMON.END' | transloco }}</label>
                         <input type="date" [ngModel]="editEndDate()" (ngModelChange)="editEndDate.set($event)"
                           class="block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] shadow-inner" />
                       </div>
 
                       <div class="flex items-end gap-2 w-full sm:w-auto mt-2 sm:mt-0 pt-5">
-                        <button (click)="saveEdit(period)" [disabled]="!editStartDate() || !editEndDate()" title="Guardar Fechas"
+                        <button (click)="saveEdit(period)" [disabled]="!editStartDate() || !editEndDate()" title="{{ 'ADMIN.ACADEMIC_YEARS.SAVE_DATES' | transloco }}"
                           class="flex-1 sm:flex-none inline-flex items-center justify-center p-2 rounded-md bg-[#166534] text-white hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors disabled:opacity-50 shadow-sm">
                           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
-                        <button (click)="cancelEdit()" title="Cancelar"
+                        <button (click)="cancelEdit()" title="{{ 'ADMIN.COMMON.CANCEL' | transloco }}"
                           class="flex-1 sm:flex-none inline-flex items-center justify-center p-2 rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border)] transition-colors shadow-sm">
                           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -143,20 +143,20 @@
                       
                       <div class="flex gap-6 sm:gap-8 flex-1">
                         <div>
-                          <p class="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Fecha de Inicio</p>
+                          <p class="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Fecha de {{ 'ADMIN.COMMON.START_DATE' | transloco }}</p>
                           <p class="text-sm font-semibold text-[var(--text-primary)] mt-0.5">
-                            {{ period.startDate ? (period.startDate | date:'dd/MM/yyyy') : 'No asignada' }}
+                            {{ period.startDate ? (period.startDate | date:'dd/MM/yyyy') : ('ADMIN.COMMON.NOT_ASSIGNED' | transloco) }}
                           </p>
                         </div>
                         <div>
-                          <p class="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Fecha de Fin</p>
+                          <p class="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Fecha de {{ 'ADMIN.COMMON.END_DATE' | transloco }}</p>
                           <p class="text-sm font-semibold text-[var(--text-primary)] mt-0.5">
-                            {{ period.endDate ? (period.endDate | date:'dd/MM/yyyy') : 'No asignada' }}
+                            {{ period.endDate ? (period.endDate | date:'dd/MM/yyyy') : ('ADMIN.COMMON.NOT_ASSIGNED' | transloco) }}
                           </p>
                         </div>
                       </div>
 
-                      <button (click)="startEdit(period)" title="Configurar Fechas"
+                      <button (click)="startEdit(period)" title="{{ 'ADMIN.ACADEMIC_YEARS.CONFIG_DATES' | transloco }}"
                         class="shrink-0 inline-flex items-center justify-center p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--brand-primary)]/10 hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition-all shadow-sm">
                         <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -177,9 +177,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-[var(--text-primary)]">Ningún año seleccionado</h3>
+            <h3 class="text-lg font-bold text-[var(--text-primary)]">{{ 'ADMIN.ACADEMIC_YEARS.NO_YEAR_SELECTED' | transloco }}</h3>
             <p class="text-sm text-[var(--text-secondary)] mt-1 max-w-sm mx-auto">
-              Selecciona un año académico de la lista de la izquierda para ver y configurar sus bimestres.
+              {{ 'ADMIN.ACADEMIC_YEARS.NO_YEAR_DESC' | transloco }}
             </p>
           </div>
         }
@@ -190,18 +190,18 @@
   </div>
 </div>
 
-<app-modal [isOpen]="showConfirmGenerate()" [title]="'Confirmar Generación'" [onClose]="cancelGenerateYear">
+<app-modal [isOpen]="showConfirmGenerate()" [title]="'ADMIN.ACADEMIC_YEARS.CONFIRM_GENERATE' | transloco" [onClose]="cancelGenerateYear">
   <div class="space-y-4 text-sm text-[var(--text-secondary)]">
-    <p>¿Estás seguro de que deseas generar el siguiente año académico? Esta acción creará un nuevo año con 4 bimestres planificados y no se puede deshacer.</p>
+    <p>{{ 'ADMIN.ACADEMIC_YEARS.CONFIRM_GENERATE_DESC' | transloco }}</p>
     
     <div class="flex justify-end gap-3 mt-6">
       <button type="button" (click)="cancelGenerateYear()"
         class="rounded-xl px-4 py-2 font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition">
-        Cancelar
+        {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="confirmGenerateYear()"
         class="rounded-xl bg-[var(--brand-primary)] px-4 py-2 font-medium text-white hover:bg-[var(--brand-primary-hover)] transition">
-        Sí, generar año
+        {{ 'ADMIN.ACADEMIC_YEARS.YES_GENERATE' | transloco }}
       </button>
     </div>
   </div>

@@ -4,6 +4,7 @@ import {interval} from 'rxjs';
 import {UserDataService} from '../../services/user-data.service';
 import {AuthService} from '../../../auth/services/auth.service';
 import {Router, RouterLink, RouterLinkActive} from '@angular/router';
+import {TranslocoService, TranslocoPipe} from '@jsverse/transloco';
 import {ThemeService} from '../../services/theme.service';
 import {NotificationService} from '../../services/notification.service';
 import {Notification} from '../../models/notification.model';
@@ -14,7 +15,9 @@ import {DatePipe} from '@angular/common';
   imports: [
     RouterLink,
     RouterLinkActive,
-    DatePipe
+    RouterLinkActive,
+    DatePipe,
+    TranslocoPipe
   ],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
@@ -23,6 +26,7 @@ import {DatePipe} from '@angular/common';
 export class Navbar implements OnInit {
   protected readonly userDataService = inject(UserDataService);
   protected readonly themeService = inject(ThemeService);
+  protected readonly translocoService = inject(TranslocoService);
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
@@ -38,7 +42,7 @@ export class Navbar implements OnInit {
 
   ngOnInit() {
     this.fetchNotifications();
-    interval(60000)
+    interval(300000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.fetchNotifications());
   }
@@ -93,6 +97,15 @@ export class Navbar implements OnInit {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  get activeLang(): string {
+    return this.translocoService.getActiveLang();
+  }
+
+  setLanguage(lang: string): void {
+    this.translocoService.setActiveLang(lang);
+    localStorage.setItem('appLang', lang);
   }
 
   onLogOut(): void {

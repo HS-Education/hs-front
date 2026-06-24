@@ -9,9 +9,11 @@ export interface RepoDocument extends Document {
   topicOrder: number;
 }
 
+import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
+
 @Component({
   selector: 'app-repo',
-  imports: [],
+  imports: [TranslocoPipe],
   templateUrl: './repo.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,6 +21,7 @@ export interface RepoDocument extends Document {
 export class Repo {
   private readonly classroomService = inject(ClassroomService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly translocoService = inject(TranslocoService);
 
   readonly courseId = input.required<number>();
   readonly documents = signal<RepoDocument[]>([]);
@@ -94,12 +97,12 @@ export class Repo {
         });
 
         // Set topics list for dropdown
-        this.topicsList.set(topics.map(t => ({ id: t.id, title: `Semana ${t.orderIndex}: ${t.name}` })));
+        this.topicsList.set(topics.map(t => ({ id: t.id, title: `${this.translocoService.translate('CLASSROOMS.REPO.WEEK')} ${t.orderIndex}: ${t.name}` })));
 
         // Sort documents by topic orderIndex, putting unknown topics at the end
         const mappedDocs: RepoDocument[] = documents.map(doc => ({
           ...doc,
-          topicName: topicMap.get(doc.topicId)?.name ?? 'Sin Tema',
+          topicName: topicMap.get(doc.topicId)?.name ?? this.translocoService.translate('CLASSROOMS.REPO.NO_TOPIC'),
           topicOrder: topicMap.get(doc.topicId)?.orderIndex ?? 9999
         }));
 
@@ -109,7 +112,7 @@ export class Repo {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Error al cargar documentos');
+        this.error.set(this.translocoService.translate('CLASSROOMS.REPO.ERROR_FETCH'));
         this.loading.set(false);
         console.error(err);
       },
@@ -125,7 +128,7 @@ export class Repo {
         this.downloadingId.set(null);
       },
       error: (err) => {
-        console.error('Error al descargar:', err);
+        console.error(this.translocoService.translate('CLASSROOMS.REPO.ERROR_DOWNLOAD'), err);
         this.downloadingId.set(null);
       },
     });
@@ -145,7 +148,7 @@ export class Repo {
       error: (err) => {
         console.error('Error al obtener URL de previsualización:', err);
         this.previewLoading.set(false);
-        alert('No se pudo cargar la previsualización del documento.');
+        alert(this.translocoService.translate('CLASSROOMS.REPO.PREVIEW_ERROR'));
       }
     });
   }

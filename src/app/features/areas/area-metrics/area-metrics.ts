@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { UserDataService } from '../../../shared/services/user-data.service';
 import { ClassroomService } from '../../classrooms/data-access/classroom.service';
 import { AchievementService, AreaAchievementResource, AreaPerformanceResource } from '../../classrooms/classroom-detail/progress/services/achievement.service';
@@ -10,7 +11,7 @@ import { MarkdownMathPipe } from '../../../shared/pipes/markdown-math.pipe';
 @Component({
   selector: 'app-area-metrics',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslocoPipe],
   templateUrl: './area-metrics.html',
   styleUrls: []
 })
@@ -20,6 +21,7 @@ export class AreaMetrics implements OnInit {
   private readonly achievementService = inject(AchievementService);
   private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly translocoService = inject(TranslocoService);
 
   readonly isLoading = signal(true);
   readonly coordinatorAreaId = signal<number | null>(null);
@@ -213,9 +215,9 @@ export class AreaMetrics implements OnInit {
   }
 
   getGradeCategory(score: number): string {
-    if (score >= 80) return 'Sobresaliente';
-    if (score >= 50) return 'En proceso';
-    return 'Requiere atención';
+    if (score >= 80) return this.translocoService.translate('AREAS.GRADE_EXCELLENT');
+    if (score >= 50) return this.translocoService.translate('AREAS.GRADE_IN_PROGRESS');
+    return this.translocoService.translate('AREAS.GRADE_NEEDS_ATTENTION');
   }
 
   navigateToClassroom(classroomId: number) {

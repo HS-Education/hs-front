@@ -100,6 +100,16 @@ export const routes: Routes = [
     canActivate: [adminGuard],
   },
   {
+    path: 'unauthorized',
+    loadComponent: () =>
+      import('./shared/pages/unauthorized/unauthorized').then((m) => m.Unauthorized),
+  },
+  {
+    path: 'server-error',
+    loadComponent: () =>
+      import('./shared/pages/server-error/server-error').then((m) => m.ServerError),
+  },
+  {
     path: 'not-found',
     loadComponent: () =>
       import('./shared/pages/not-found/not-found').then((m) => m.NotFound),

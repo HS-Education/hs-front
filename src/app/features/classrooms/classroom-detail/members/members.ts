@@ -1,16 +1,18 @@
 import {ChangeDetectionStrategy, Component, effect, inject, input, signal} from '@angular/core';
 import { ClassroomService } from "../../data-access/classroom.service";
 import {Member} from '../../data-access/models/responses/member.model';
+import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 
 @Component({
   selector: 'app-members',
-  imports: [],
+  imports: [TranslocoPipe],
   templateUrl: './members.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Members {
   private readonly classroomService = inject(ClassroomService);
+  private readonly translocoService = inject(TranslocoService);
 
   readonly classroomId = input.required<number>();
   readonly members = signal<Member[]>([]);
@@ -37,7 +39,7 @@ export class Members {
           this.loading.set(false);
         },
         error: (err) => {
-          this.error.set('Error al cargar miembros');
+          this.error.set(this.translocoService.translate('CLASSROOMS.MEMBERS.ERROR_FETCH'));
           this.loading.set(false);
           console.error(err);
         },

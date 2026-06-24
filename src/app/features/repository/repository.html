@@ -3,19 +3,19 @@
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-[var(--border)] pb-6">
     <div>
       <div class="flex items-center gap-3 flex-wrap">
-        <h1 class="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">Administración de Repositorio</h1>
+        <h1 class="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">{{ 'CLASSROOMS.REPO.TITLE' | transloco }}</h1>
         @if (coordinatorArea()) {
           <span class="inline-flex items-center rounded-lg bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 px-2.5 py-1 text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wide">
-            Área: {{ coordinatorArea() }}
+            {{ 'CLASSROOMS.REPO.AREA' | transloco }}: {{ coordinatorArea() }}
           </span>
         }
       </div>
-      <p class="text-sm text-[var(--text-secondary)] mt-1">Sube, elimina y organiza el material de estudio en tu área de coordinación</p>
+      <p class="text-sm text-[var(--text-secondary)] mt-1">{{ 'CLASSROOMS.REPO.SUBTITLE' | transloco }}</p>
     </div>
  
     <!-- Course Selector Dropdown -->
     <div class="flex items-center gap-3">
-      <label for="course-select" class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Curso:</label>
+      <label for="course-select" class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.REPO.COURSE' | transloco }}</label>
       @if (loadingClassrooms()) {
         <div class="h-10 w-44 rounded-xl bg-[var(--bg-secondary)] animate-pulse border border-[var(--border)]"></div>
       } @else if (courses().length > 0) {
@@ -30,7 +30,7 @@
           }
         </select>
       } @else {
-        <span class="text-xs text-[var(--text-secondary)] font-semibold bg-[var(--bg-secondary)] border border-[var(--border)] px-3 py-1.5 rounded-lg">No hay cursos disponibles</span>
+        <span class="text-xs text-[var(--text-secondary)] font-semibold bg-[var(--bg-secondary)] border border-[var(--border)] px-3 py-1.5 rounded-lg">{{ 'CLASSROOMS.REPO.NO_COURSES' | transloco }}</span>
       }
     </div>
   </div>
@@ -40,7 +40,7 @@
       <div class="flex items-center justify-center py-24 rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
         <div class="space-y-3 text-center">
           <div class="inline-flex h-9 w-9 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]"></div>
-          <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">Cargando material académico...</p>
+          <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">{{ 'CLASSROOMS.REPO.LOADING' | transloco }}</p>
         </div>
       </div>
     } @else if (selectedCourseId() !== null) {
@@ -51,10 +51,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
         <div>
-          <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">Periodo de solo lectura</h4>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">{{ 'CLASSROOMS.REPO.READ_ONLY' | transloco }}</h4>
           <p class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed">
-            El año académico actual no se encuentra en fase de planificación (<strong>PLANNED</strong>). 
-            Todas las acciones de creación, edición, reordenación o eliminación de temas y documentos están deshabilitadas.
+            <span [innerHTML]="'CLASSROOMS.REPO.NOT_PLANNED_MSG' | transloco"></span>
           </p>
         </div>
       </div>
@@ -72,7 +71,7 @@
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
-        Agregar Tema
+        {{ 'CLASSROOMS.REPO.ADD_TOPIC' | transloco }}
       </button>
  
       <!-- Upload Document Button -->
@@ -85,7 +84,7 @@
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
         </svg>
-        Subir Documento (Múltiple)
+        {{ 'CLASSROOMS.REPO.UPLOAD_MULTI' | transloco }}
       </button>
     </div>
  
@@ -95,8 +94,8 @@
         <svg class="mx-auto h-12 w-12 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h4 class="mt-4 text-sm font-bold text-[var(--text-primary)]">Sin Temas Registrados</h4>
-        <p class="mt-1 text-xs text-[var(--text-secondary)] max-w-xs mx-auto">Este curso no cuenta con temas configurados aún.</p>
+        <h4 class="mt-4 text-sm font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.REPO.NO_TOPICS' | transloco }}</h4>
+        <p class="mt-1 text-xs text-[var(--text-secondary)] max-w-xs mx-auto">{{ 'CLASSROOMS.REPO.NO_TOPICS_DESC' | transloco }}</p>
       </div>
     } @else {
       <div class="space-y-6">
@@ -116,7 +115,7 @@
                       <svg class="h-3 w-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
                       </svg>
-                      Orden {{ topic.orderIndex }}
+                      {{ 'CLASSROOMS.REPO.ORDER' | transloco }} {{ topic.orderIndex }}
                     </span>
                     <span class="inline-flex items-center gap-1 rounded-md bg-[var(--brand-primary)]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
                       <svg class="h-3 w-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -134,7 +133,7 @@
                   type="button"
                   (click)="reorderTopic(idx, 'up')"
                   [disabled]="idx === 0 || !isAcademicYearPlanned()"
-                  title="Subir Tema"
+                  title="{{ 'CLASSROOMS.REPO.UPLOAD_TOPIC' | transloco }}"
                   class="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed transition duration-150"
                 >
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -145,7 +144,7 @@
                   type="button"
                   (click)="reorderTopic(idx, 'down')"
                   [disabled]="idx === topics().length - 1 || !isAcademicYearPlanned()"
-                  title="Bajar Tema"
+                  title="{{ 'CLASSROOMS.REPO.MOVE_TOPIC_DOWN' | transloco }}"
                   class="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed transition duration-150"
                 >
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -158,7 +157,7 @@
                   type="button"
                   (click)="deleteTopic(topic.id)"
                   [disabled]="!isAcademicYearPlanned()"
-                  title="Eliminar Tema"
+                  title="{{ 'CLASSROOMS.REPO.DELETE_TOPIC' | transloco }}"
                   class="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--brand-error)]/25 bg-[var(--brand-error)]/10 hover:bg-[var(--brand-error)]/20 text-[var(--brand-error)] disabled:opacity-40 disabled:cursor-not-allowed transition duration-150"
                 >
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -172,17 +171,17 @@
             @let docs = getDocsForTopic(topic.id);
             @if (docs.length === 0) {
               <div class="py-6 text-center text-xs text-[var(--text-secondary)] font-medium italic">
-                No hay documentos vinculados a este tema.
+                {{ 'CLASSROOMS.REPO.NO_DOCS' | transloco }}
               </div>
             } @else {
               <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs text-[var(--text-primary)]">
                   <thead>
                     <tr class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">
-                      <th class="py-2.5">Título</th>
-                      <th class="py-2.5 w-24">Formato</th>
-                      <th class="py-2.5">Archivo</th>
-                      <th class="py-2.5 w-32 text-right">Acciones</th>
+                      <th class="py-2.5">{{ 'CLASSROOMS.REPO.DOC_TITLE' | transloco }}</th>
+                      <th class="py-2.5 w-24">{{ 'CLASSROOMS.REPO.DOC_FORMAT' | transloco }}</th>
+                      <th class="py-2.5">{{ 'CLASSROOMS.REPO.DOC_FILE' | transloco }}</th>
+                      <th class="py-2.5 w-32 text-right">{{ 'CLASSROOMS.REPO.ACTIONS' | transloco }}</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-[var(--border)] font-medium text-[var(--text-primary)]">
@@ -203,7 +202,7 @@
                                 type="button"
                                 (click)="previewDocument(doc.id, doc.originalFileName || doc.title)"
                                 [disabled]="downloadingId() === doc.id"
-                                title="Previsualizar PDF"
+                                title="{{ 'CLASSROOMS.REPO.PREVIEW_PDF' | transloco }}"
                                 class="text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] transition disabled:opacity-50"
                               >
                                 <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -217,7 +216,7 @@
                               type="button"
                               (click)="downloadDocument(doc.id, doc.originalFileName || doc.title)"
                               [disabled]="downloadingId() === doc.id"
-                              title="Descargar Documento"
+                              title="{{ 'CLASSROOMS.REPO.DOWNLOAD_DOC' | transloco }}"
                               class="text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] transition disabled:opacity-50"
                             >
                               <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -230,7 +229,7 @@
                               type="button"
                               (click)="openEditModal(doc)"
                               [disabled]="!isAcademicYearPlanned()"
-                              title="Editar Documento"
+                              title="{{ 'CLASSROOMS.REPO.EDIT_DOCUMENT' | transloco }}"
                               class="text-[var(--brand-mustard)] hover:text-[var(--brand-mustard)] disabled:opacity-40 disabled:cursor-not-allowed transition"
                             >
                               <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -243,7 +242,7 @@
                               type="button"
                               (click)="deleteDoc(doc.id)"
                               [disabled]="!isAcademicYearPlanned()"
-                              title="Eliminar Documento"
+                              title="{{ 'CLASSROOMS.REPO.DELETE_DOCUMENT' | transloco }}"
                               class="text-[var(--brand-error)] hover:text-[var(--brand-error)] disabled:opacity-40 disabled:cursor-not-allowed transition"
                             >
                               <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -263,11 +262,11 @@
       </div>
     }
     }
-  <!-- Modal: Agregar Tema (Topic) -->
-  <app-modal [isOpen]="isTopicModalOpen()" [title]="'Agregar nuevo tema'" [onClose]="closeTopicModal">
+  <!-- Modal: {{ 'CLASSROOMS.REPO.ADD_TOPIC' | transloco }} (Topic) -->
+  <app-modal [isOpen]="isTopicModalOpen()" [title]="'CLASSROOMS.REPO.ADD_TOPIC' | transloco" [onClose]="closeTopicModal">
     <div class="space-y-4">
       <div>
-        <label for="topic-name" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Nombre del tema</label>
+        <label for="topic-name" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.TOPIC_NAME' | transloco }}</label>
         <input
           id="topic-name"
           type="text"
@@ -278,7 +277,7 @@
       </div>
  
       <div>
-        <label for="topic-period" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Bimestre</label>
+        <label for="topic-period" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.BIMESTER' | transloco }}</label>
         <select
           id="topic-period"
           [(ngModel)]="newTopicGradingPeriodId"
@@ -296,7 +295,7 @@
           (click)="closeTopicModal()"
           class="rounded-xl border border-[var(--border)] px-4 py-2.5 text-xs font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition"
         >
-          Cancelar
+          {{ 'CLASSROOMS.REPO.CANCEL' | transloco }}
         </button>
         <button
           type="button"
@@ -304,18 +303,18 @@
           [disabled]="!newTopicName().trim()"
           class="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
         >
-          Guardar Tema
+          {{ 'CLASSROOMS.REPO.SAVE_TOPIC' | transloco }}
         </button>
       </div>
     </div>
   </app-modal>
  
   <!-- Modal: Subir Documentos (Múltiple) -->
-  <app-modal [isOpen]="isUploadModalOpen()" [title]="'Subir materiales al repositorio'" [onClose]="closeUploadModal">
+  <app-modal [isOpen]="isUploadModalOpen()" [title]="'CLASSROOMS.REPO.UPLOAD_MATERIALS' | transloco" [onClose]="closeUploadModal">
     <div class="space-y-5">
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label for="upload-bim" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Bimestre de Destino</label>
+          <label for="upload-bim" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.BIMESTER_TARGET' | transloco }}</label>
           <select
             id="upload-bim"
             [(ngModel)]="uploadBimester"
@@ -328,7 +327,7 @@
         </div>
  
         <div>
-          <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Archivos PDF</label>
+          <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.DOC_FILE' | transloco }}s PDF</label>
           <input
             type="file"
             accept="application/pdf"
@@ -342,7 +341,7 @@
       <!-- Selected files configuration -->
       @if (selectedFiles().length > 0) {
         <div class="space-y-3 pt-3 border-t border-[var(--border)] max-h-80 overflow-y-auto pr-1">
-          <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Configurar y Ordenar Materiales</h4>
+          <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.REPO.CONFIG_MATS' | transloco }}</h4>
           
           @for (item of selectedFiles(); track $index; let idx = $index) {
             <div class="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/50 p-3.5 space-y-3">
@@ -363,7 +362,7 @@
                     (click)="moveFile(idx, 'up')"
                     [disabled]="idx === 0"
                     class="text-xs text-[var(--text-secondary)] hover:text-[var(--brand-primary)] disabled:opacity-40"
-                    title="Mover arriba"
+                    title="{{ 'CLASSROOMS.REPO.MOVE_UP' | transloco }}"
                   >
                     ▲
                   </button>
@@ -372,7 +371,7 @@
                     (click)="moveFile(idx, 'down')"
                     [disabled]="idx === selectedFiles().length - 1"
                     class="text-xs text-[var(--text-secondary)] hover:text-[var(--brand-primary)] disabled:opacity-40"
-                    title="Mover abajo"
+                    title="{{ 'CLASSROOMS.REPO.MOVE_DOWN' | transloco }}"
                   >
                     ▼
                   </button>
@@ -381,32 +380,32 @@
                     (click)="removeSelectedFile(idx)"
                     class="text-xs font-bold text-[var(--brand-error)] hover:text-[var(--brand-error)] ml-2"
                   >
-                    Quitar
+                    {{ 'CLASSROOMS.REPO.REMOVE' | transloco }}
                   </button>
                 </div>
               </div>
  
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">Título del documento</label>
+                  <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">{{ 'CLASSROOMS.REPO.DOC_TITLE_INPUT' | transloco }}</label>
                   <input
                     type="text"
                     [value]="item.title"
                     (input)="updateFileMetadata(idx, 'title', $any($event.target).value)"
-                    placeholder="Título del documento"
+                    placeholder="{{ 'CLASSROOMS.REPO.DOC_TITLE_INPUT' | transloco }}"
                     class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-primary)]"
                   />
                 </div>
  
                 <div>
-                  <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">Tema Asociado</label>
+                  <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">{{ 'CLASSROOMS.REPO.TOPIC_ASSOC' | transloco }}</label>
                   <select
                     [value]="item.topicId"
                     (change)="updateFileMetadata(idx, 'topicId', +$any($event.target).value)"
                     class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-primary)]"
                   >
                     @if (topicsForBimester().length === 0) {
-                      <option value="0" disabled>Sin temas en este bimestre</option>
+                      <option value="0" disabled>{{ 'CLASSROOMS.REPO.NO_TOPICS_BIM' | transloco }}</option>
                     }
                     @for (t of topicsForBimester(); track t.id) {
                       <option [value]="t.id">{{ t.name }}</option>
@@ -418,7 +417,7 @@
               <!-- Education Level and Grades Configuration -->
               <div class="grid grid-cols-2 gap-3 pt-1 border-t border-[var(--border)]/60">
                 <div>
-                  <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">Nivel Educativo</label>
+                  <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">{{ 'CLASSROOMS.REPO.EDU_LEVEL' | transloco }}</label>
                   <select
                     [value]="item.educationLevel"
                     (change)="updateFileMetadata(idx, 'educationLevel', $any($event.target).value)"
@@ -431,7 +430,7 @@
                 </div>
  
                 <div>
-                  <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">Grados Permitidos</label>
+                  <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">{{ 'CLASSROOMS.REPO.ALLOWED_GRADES' | transloco }}</label>
                   <div class="flex gap-2 mt-1">
                     @for (grade of gradeLevelOptions; track grade) {
                       <label class="inline-flex items-center gap-1 cursor-pointer">
@@ -458,7 +457,7 @@
           (click)="closeUploadModal()"
           class="rounded-xl border border-[var(--border)] px-4 py-2.5 text-xs font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition"
         >
-          Cancelar
+          {{ 'CLASSROOMS.REPO.CANCEL' | transloco }}
         </button>
         <button
           type="button"
@@ -467,9 +466,9 @@
           class="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
         >
           @if (isUploading()) {
-            Subiendo...
+            {{ 'CLASSROOMS.REPO.UPLOADING' | transloco }}
           } @else {
-            Subir Materiales
+            {{ 'CLASSROOMS.REPO.UPLOAD_BTN' | transloco }}
           }
         </button>
       </div>
@@ -477,10 +476,10 @@
   </app-modal>
  
   <!-- Modal: Editar Documento -->
-  <app-modal [isOpen]="isEditModalOpen()" [title]="'Editar Documento'" [onClose]="closeEditModal">
+  <app-modal [isOpen]="isEditModalOpen()" [title]="'CLASSROOMS.REPO.EDIT_DOCUMENT' | transloco" [onClose]="closeEditModal">
     <div class="space-y-4">
       <div>
-        <label for="edit-title" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Título del documento</label>
+        <label for="edit-title" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.DOC_TITLE_INPUT' | transloco }}</label>
         <input
           id="edit-title"
           type="text"
@@ -490,7 +489,7 @@
       </div>
  
       <div>
-        <label for="edit-topic" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Tema Asociado</label>
+        <label for="edit-topic" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.TOPIC_ASSOC' | transloco }}</label>
         <select
           id="edit-topic"
           [(ngModel)]="editTopicId"
@@ -504,7 +503,7 @@
  
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label for="edit-level" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Nivel Educativo</label>
+          <label for="edit-level" class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.EDU_LEVEL' | transloco }}</label>
           <select
             id="edit-level"
             [(ngModel)]="editEducationLevel"
@@ -517,7 +516,7 @@
         </div>
  
         <div>
-          <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Grados Permitidos</label>
+          <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.ALLOWED_GRADES' | transloco }}</label>
           <div class="flex gap-2 mt-2">
             @for (grade of gradeLevelOptions; track grade) {
               <label class="inline-flex items-center gap-1 cursor-pointer">
@@ -535,7 +534,7 @@
       </div>
  
       <div>
-        <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Reemplazar Archivo PDF (Opcional)</label>
+        <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Reemplazar {{ 'CLASSROOMS.REPO.DOC_FILE' | transloco }} PDF (Opcional)</label>
         <input
           type="file"
           accept="application/pdf"
@@ -550,7 +549,7 @@
           (click)="closeEditModal()"
           class="rounded-xl border border-[var(--border)] px-4 py-2.5 text-xs font-bold text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition"
         >
-          Cancelar
+          {{ 'CLASSROOMS.REPO.CANCEL' | transloco }}
         </button>
         <button
           type="button"
@@ -559,9 +558,9 @@
           class="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
         >
           @if (isSavingEdit()) {
-            Guardando...
+            {{ 'CLASSROOMS.REPO.SAVING' | transloco }}
           } @else {
-            Guardar Cambios
+            {{ 'CLASSROOMS.REPO.SAVE_CHANGES' | transloco }}
           }
         </button>
       </div>
@@ -601,8 +600,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
-            <h3 class="text-sm font-extrabold text-[var(--text-primary)] truncate" title="Previsualizando: {{ previewDocumentTitle() }}">
-              Previsualización: {{ previewDocumentTitle() }}
+            <h3 class="text-sm font-extrabold text-[var(--text-primary)] truncate" title="{{ 'CLASSROOMS.REPO.PREVIEW_TITLE' | transloco }} {{ previewDocumentTitle() }}">
+              {{ 'CLASSROOMS.REPO.PREVIEW_TITLE_LABEL' | transloco }} {{ previewDocumentTitle() }}
             </h3>
           </div>
           <button
@@ -611,7 +610,7 @@
             (click)="closePreview()"
             aria-label="Cerrar Previsualización"
           >
-            ✕ Cerrar
+            ✕ {{ 'CLASSROOMS.REPO.CLOSE' | transloco }}
           </button>
         </header>
 
@@ -620,7 +619,7 @@
           @if (previewLoading()) {
             <div class="space-y-3 text-center z-20 absolute inset-0 flex flex-col items-center justify-center bg-[var(--surface)]/80">
               <div class="inline-flex h-9 w-9 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]"></div>
-              <p class="text-xs font-bold text-[var(--text-secondary)]">Obteniendo enlace de lectura seguro...</p>
+              <p class="text-xs font-bold text-[var(--text-secondary)]">{{ 'CLASSROOMS.REPO.GET_LINK' | transloco }}</p>
             </div>
           }
 
