@@ -31,3 +31,8 @@
   </main>
 </div>
 <app-toast></app-toast>
+
+<!-- Onboarding Modal -->
+@if (showOnboarding()) {
+  <app-onboarding-modal (completed)="onOnboardingComplete()"></app-onboarding-modal>
+}

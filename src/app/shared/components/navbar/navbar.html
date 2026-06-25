@@ -63,7 +63,7 @@
     <!-- Navigation Links -->
     <div class="flex-1 overflow-y-auto py-6 space-y-1.5 px-3">
       @if (!userDataService.isAdmin()) {
-      <a routerLink="/home" (click)="closeMobileMenu()"
+      <a id="nav-home" routerLink="/home" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
         [routerLinkActiveOptions]="{exact: true}"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
@@ -74,7 +74,7 @@
         <span>{{ 'SIDEBAR.HOME' | transloco }}</span>
       </a>
 
-      <a routerLink="/classrooms" (click)="closeMobileMenu()"
+      <a id="nav-classrooms" routerLink="/classrooms" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
         <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -85,7 +85,7 @@
       </a>
 
       @if (userDataService.isCoordinator() && !userDataService.isStudentView()) {
-      <a routerLink="/repository" (click)="closeMobileMenu()"
+      <a id="nav-repository" routerLink="/repository" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200">
         <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -106,7 +106,7 @@
       </a>
       }
 
-      <a routerLink="/chat" (click)="!userDataService.isTakingQuiz() && closeMobileMenu()"
+      <a id="nav-chat" routerLink="/chat" (click)="!userDataService.isTakingQuiz() && closeMobileMenu()"
         [class.pointer-events-none]="userDataService.isTakingQuiz()" [class.opacity-50]="userDataService.isTakingQuiz()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)]/50 transition duration-200"

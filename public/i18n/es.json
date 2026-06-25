@@ -715,5 +715,30 @@
     "BIMESTER_2": "2do Bimestre",
     "BIMESTER_3": "3er Bimestre",
     "BIMESTER_4": "4to Bimestre"
+  },
+  "ONBOARDING": {
+    "PREV": "Anterior",
+    "NEXT": "Siguiente",
+    "FINISH": "Comenzar",
+    "WELCOME": {
+      "TITLE": "¡Bienvenido a HS Education!",
+      "DESC": "Esta es tu plataforma de aprendizaje. Te mostramos rápidamente las secciones que tienes disponibles."
+    },
+    "HOME": {
+      "TITLE": "Inicio",
+      "DESC": "Aquí encontrarás un resumen de tu actividad: cuestionarios pendientes, progreso reciente y estadísticas generales."
+    },
+    "CLASSROOMS": {
+      "TITLE": "Mis Aulas",
+      "DESC": "Accede a tus aulas activas. Dentro de cada una encontrarás el material de estudio, cuestionarios y tu progreso."
+    },
+    "REPOSITORY": {
+      "TITLE": "Repositorio",
+      "DESC": "Gestiona y organiza el material académico de los cursos que coordinas. Sube documentos y asígnalos a temas."
+    },
+    "SERY": {
+      "TITLE": "Chat con Sery",
+      "DESC": "Sery es tu asistente de IA. Puedes consultarle dudas académicas y obtener explicaciones personalizadas en cualquier momento."
+    }
   }
 }

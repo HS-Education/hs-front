@@ -1,13 +1,15 @@
-import {Component, computed, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, effect, inject, OnInit, signal} from '@angular/core';
 import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import {Navbar} from './shared/components/navbar/navbar';
 import {Toast} from './shared/components/toast/toast';
 import {UserDataService} from './shared/services/user-data.service';
 import {ThemeService} from './shared/services/theme.service';
+import {OnboardingService} from './features/onboarding/data-access/onboarding.service';
+import {OnboardingModal} from './features/onboarding/onboarding-modal/onboarding-modal';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, Toast],
+  imports: [RouterOutlet, Navbar, Toast, OnboardingModal],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -15,10 +17,12 @@ export class App implements OnInit {
   protected readonly userDataService = inject(UserDataService);
   protected readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
+  private readonly onboardingService = inject(OnboardingService);
   protected readonly title = signal('HS');
 
   readonly isRouting = signal(false);
   readonly currentUrl = signal(this.router.url);
+  readonly showOnboarding = signal(false);
 
   readonly showNavbar = computed(() => {
     return this.userDataService.isAuthenticated() && !this.currentUrl().includes('/sign-in') && !this.currentUrl().includes('/update-password');
@@ -31,6 +35,34 @@ export class App implements OnInit {
     const isSignInOrUpdate = this.currentUrl().includes('/sign-in') || window.location.href.includes('sign-in') || this.currentUrl().includes('/update-password') || window.location.href.includes('update-password');
     return !isSignInOrUpdate;
   });
+
+  constructor() {
+    // When session finishes loading and user is authenticated (and not admin), check onboarding
+    effect(() => {
+      const loaded = this.userDataService.isSessionLoaded();
+      const authenticated = this.userDataService.isAuthenticated();
+      const isAdmin = this.userDataService.isAdmin();
+      if (loaded && authenticated && !isAdmin) {
+        this.onboardingService.getStatus().subscribe({
+          next: (status) => {
+            if (!status.completed) {
+              this.showOnboarding.set(true);
+            }
+          },
+          error: () => {
+            // Silently ignore — don't block the user if the request fails
+          }
+        });
+      }
+    });
+  }
+
+  onOnboardingComplete(): void {
+    this.onboardingService.complete().subscribe({
+      next: () => this.showOnboarding.set(false),
+      error: () => this.showOnboarding.set(false),
+    });
+  }
 
   ngOnInit() {
     let navigationStartTime = 0;

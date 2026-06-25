@@ -715,5 +715,30 @@
     "BIMESTER_2": "2nd Bimester",
     "BIMESTER_3": "3rd Bimester",
     "BIMESTER_4": "4th Bimester"
+  },
+  "ONBOARDING": {
+    "PREV": "Back",
+    "NEXT": "Next",
+    "FINISH": "Get Started",
+    "WELCOME": {
+      "TITLE": "Welcome to HS Education!",
+      "DESC": "This is your learning platform. Let us give you a quick tour of the sections available to you."
+    },
+    "HOME": {
+      "TITLE": "Home",
+      "DESC": "Find a summary of your activity: pending quizzes, recent progress, and general statistics."
+    },
+    "CLASSROOMS": {
+      "TITLE": "My Classrooms",
+      "DESC": "Access your active classrooms. Inside each one you will find study materials, quizzes, and your progress."
+    },
+    "REPOSITORY": {
+      "TITLE": "Repository",
+      "DESC": "Manage and organize academic materials for the courses you coordinate. Upload documents and assign them to topics."
+    },
+    "SERY": {
+      "TITLE": "Chat with Sery",
+      "DESC": "Sery is your AI assistant. Ask academic questions and get personalized explanations at any time."
+    }
   }
 }
