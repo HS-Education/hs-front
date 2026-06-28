@@ -20,7 +20,13 @@
     "LANGUAGE": "Idioma",
     "HELP": "Ayuda",
     "LOGOUT": "Cerrar Sesión",
-    "NOTIFICATIONS": "Notificaciones"
+    "NOTIFICATIONS": "Notificaciones",
+    "PREFERENCES_APP": "Aplicación",
+    "PREFERENCES_NOTIFICATIONS": "Tipo de notificaciones",
+    "NOTIFY_QUIZ_RESULTS": "Recibir notificaciones sobre resultados de cuestionarios",
+    "NOTIFY_RELEVANT_ACTIVITY": "Notificaciones sobre actividad académica (alertas de Sery y actualizaciones)",
+    "NOTIFY_NEW_DOCUMENT": "Recibir notificación por nuevo documento disponible",
+    "NOTIFY_UNRESOLVED_QUIZZES": "Notificaciones de cuestionarios que aún no se resuelven (>2 días)"
   },
   "PROGRESS": {
     "STUDENT_TITLE": "Mi Progreso Académico",
@@ -234,7 +240,8 @@
     "FAQ_5": {
       "Q": "¿Cómo se calcula la Tendencia de Calificaciones Promedio?",
       "A": "Se promedian todas las evaluaciones y tareas realizadas por los estudiantes de un aula durante la semana académica correspondiente."
-    }
+    },
+    "TUTORIAL_CREATED_SUCCESS": "Tutorial creado correctamente"
   },
   "CHAT": {
     "LOADING_ACCESS": "Verificando acceso...",
@@ -427,7 +434,8 @@
       "SUBMIT_TITLE": "Enviar Respuestas",
       "SUBMIT_MSG": "¿Estás seguro de enviar tus respuestas?",
       "PREVIEW_ERROR": "No se pudo cargar la previsualización del documento.",
-      "RELOAD_QUIZZES": "Recargar cuestionarios"
+      "RELOAD_QUIZZES": "Recargar cuestionarios",
+      "ONBOARDING_COMPLETED_SUCCESS": "Progreso guardado correctamente"
     },
     "REPO": {
       "LOADING": "Cargando material académico...",
@@ -740,5 +748,16 @@
       "TITLE": "Chat con Sery",
       "DESC": "Sery es tu asistente de IA. Puedes consultarle dudas académicas y obtener explicaciones personalizadas en cualquier momento."
     }
+  },
+  "COMMON": {
+    "CLOSE": "Cerrar",
+    "CANCEL": "Cancelar",
+    "SAVE": "Guardar"
+  },
+  "CALENDAR": {
+    "TITLE_SUBTITLE": "Calendario Académico",
+    "TODAY": "Hoy",
+    "EVENT_DETAILS": "Detalles del Evento",
+    "GO_TO_COURSE": "Ir al curso"
   }
 }

@@ -98,6 +98,57 @@
 
   </div>
 
+  <!-- Filters & Calendar Section -->
+  @let classroomList = classrooms();
+  @if (classroomList.length > 0) {
+    <div class="space-y-4 mb-6">
+      <!-- Course Filters for Calendar -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+        <button 
+          (click)="selectedCourseIdFilter.set(null)"
+          class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border"
+          [class.bg-[var(--brand-primary)]]="selectedCourseIdFilter() === null"
+          [class.text-white]="selectedCourseIdFilter() === null"
+          [class.border-[var(--brand-primary)]]="selectedCourseIdFilter() === null"
+          [class.bg-[var(--surface)]]="selectedCourseIdFilter() !== null"
+          [class.text-[var(--text-secondary)]]="selectedCourseIdFilter() !== null"
+          [class.border-[var(--border)]]="selectedCourseIdFilter() !== null"
+          [class.hover:bg-[var(--bg-secondary)]]="selectedCourseIdFilter() !== null"
+        >
+          Todos los cursos
+        </button>
+        @for (c of classroomList; track c.id) {
+          <button 
+            (click)="selectedCourseIdFilter.set(c.id)"
+            class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border"
+            [class.bg-[var(--brand-primary)]]="selectedCourseIdFilter() === c.id"
+            [class.text-white]="selectedCourseIdFilter() === c.id"
+            [class.border-[var(--brand-primary)]]="selectedCourseIdFilter() === c.id"
+            [class.bg-[var(--surface)]]="selectedCourseIdFilter() !== c.id"
+            [class.text-[var(--text-secondary)]]="selectedCourseIdFilter() !== c.id"
+            [class.border-[var(--border)]]="selectedCourseIdFilter() !== c.id"
+            [class.hover:bg-[var(--bg-secondary)]]="selectedCourseIdFilter() !== c.id"
+          >
+            {{ c.courseName }}
+          </button>
+        }
+      </div>
+
+      <!-- Calendar Widget -->
+      <app-calendar-widget 
+        [events]="mockEvents()" 
+        [selectedCourseId]="selectedCourseIdFilter()"
+        (eventClicked)="openEventModal($event)"
+      ></app-calendar-widget>
+    </div>
+  }
+
+  <app-event-modal 
+    [isOpen]="isModalOpen()" 
+    [event]="selectedEvent()" 
+    (closed)="closeEventModal()"
+  ></app-event-modal>
+
   <!-- Main Grid: KPIs, Actions, Activity -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

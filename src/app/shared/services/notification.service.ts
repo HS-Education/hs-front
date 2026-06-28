@@ -3,6 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../environment/environment';
 import {Notification} from '../models/notification.model';
 import {MessageResource} from '../models/message-resource.model';
+import {NotificationPreference, UpdateNotificationPreference} from '../models/notification-preference.model';
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +23,21 @@ export class NotificationService {
     return this.http.post<MessageResource>(
       `${this.baseUrl}/notifications/${id}/read`,
       {},
+      { withCredentials: true }
+    );
+  }
+
+  getPreferences() {
+    return this.http.get<NotificationPreference>(
+      `${this.baseUrl}/notifications/preferences`,
+      { withCredentials: true }
+    );
+  }
+
+  updatePreferences(preferences: UpdateNotificationPreference) {
+    return this.http.put<NotificationPreference>(
+      `${this.baseUrl}/notifications/preferences`,
+      preferences,
       { withCredentials: true }
     );
   }

@@ -10,6 +10,8 @@ export interface RepoDocument extends Document {
 }
 
 import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
+import {OnboardingService} from '../../../onboarding/data-access/onboarding.service';
+import {ToastService} from '../../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-repo',
@@ -22,12 +24,17 @@ export class Repo {
   private readonly classroomService = inject(ClassroomService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly translocoService = inject(TranslocoService);
+  private readonly onboardingService = inject(OnboardingService);
+  private readonly toastService = inject(ToastService);
 
   readonly courseId = input.required<number>();
   readonly documents = signal<RepoDocument[]>([]);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly downloadingId = signal<number | null>(null);
+
+  // Onboarding
+  readonly showOnboardingBanner = signal(false);
 
   // Preview Signals
   readonly previewDocumentTitle = signal<string>('');
@@ -76,12 +83,34 @@ export class Repo {
 
   constructor() {
     effect(() => {
-      this.fetchDocuments();
+      const cId = this.courseId();
+      if (cId) {
+        this.loadDocuments(cId);
+      }
+    });
+
+    this.onboardingService.getStatus().subscribe({
+      next: (status) => {
+        if (!status.repositoryCompleted) {
+          this.showOnboardingBanner.set(true);
+        }
+      }
     });
   }
 
-  private fetchDocuments() {
-    const id = this.courseId();
+  markOnboardingCompleted(): void {
+    this.onboardingService.completeRepository().subscribe({
+      next: () => {
+        this.showOnboardingBanner.set(false);
+        this.toastService.success(this.translocoService.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_SUCCESS'));
+      },
+      error: () => {
+        this.toastService.error('Error al guardar el progreso');
+      }
+    });
+  }
+
+  private loadDocuments(id: number) {
     this.loading.set(true);
     this.error.set(null);
 

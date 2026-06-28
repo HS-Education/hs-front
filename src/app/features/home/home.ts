@@ -6,6 +6,9 @@ import {Classroom} from '../classrooms/data-access/models/responses/classroom.mo
 import {DatePipe} from '@angular/common';
 import {TranslateEnumPipe} from '../../shared/pipes/translate-enum.pipe';
 import {TranslocoPipe} from '@jsverse/transloco';
+import {CalendarEvent} from '../classrooms/data-access/models/calendar-event.model';
+import {CalendarWidget} from '../classrooms/classroom-list/ui/calendar-widget';
+import {EventModal} from '../../shared/components/event-modal/event-modal';
 
 export interface RecentActivity {
   id: number;
@@ -19,7 +22,7 @@ export interface RecentActivity {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, DatePipe, TranslateEnumPipe, TranslocoPipe],
+  imports: [RouterModule, DatePipe, TranslateEnumPipe, TranslocoPipe, CalendarWidget, EventModal],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -109,6 +112,71 @@ export class Home implements OnInit {
       return activities.filter(a => a.type === 'INSIGHT' || a.type === 'DOCUMENT' || a.type === 'SYSTEM');
     }
   });
+
+  // Calendar State
+  readonly selectedCourseIdFilter = signal<number | null>(null);
+  readonly isModalOpen = signal<boolean>(false);
+  readonly selectedEvent = signal<CalendarEvent | null>(null);
+
+  // Computed Mock Events based on classrooms
+  readonly mockEvents = computed<CalendarEvent[]>(() => {
+    const list = this.classrooms();
+    if (!list || list.length === 0) return [];
+    
+    const events: CalendarEvent[] = [];
+    const today = new Date();
+    
+    // Generate some stable fake events based on course IDs
+    list.forEach((course, index) => {
+      // Event 1: A Quiz coming up in a few days
+      const d1 = new Date(today);
+      d1.setDate(today.getDate() + (index % 5) + 2);
+      events.push({
+        id: `event-${course.id}-1`,
+        title: `Cuestionario Semanal - ${course.courseName.substring(0, 15)}...`,
+        description: `Evaluación correspondiente a la unidad actual del curso ${course.courseName}. Asegúrate de repasar los últimos documentos subidos al repositorio.`,
+        date: d1,
+        courseId: course.id,
+        type: 'QUIZ'
+      });
+
+      // Event 2: An Assignment that was due a few days ago
+      const d2 = new Date(today);
+      d2.setDate(today.getDate() - (index % 4) - 1);
+      events.push({
+        id: `event-${course.id}-2`,
+        title: `Entrega de Proyecto`,
+        description: `Fecha límite para la entrega de la asignación principal del bimestre.`,
+        date: d2,
+        courseId: course.id,
+        type: 'ASSIGNMENT'
+      });
+      
+      // Event 3: A general event today for the first course
+      if (index === 0) {
+        events.push({
+          id: `event-${course.id}-3`,
+          title: `Revisión de Notas`,
+          description: `El profesor publicará las notas finales del mes hoy.`,
+          date: today,
+          courseId: course.id,
+          type: 'EVENT'
+        });
+      }
+    });
+
+    return events;
+  });
+
+  openEventModal(event: CalendarEvent) {
+    this.selectedEvent.set(event);
+    this.isModalOpen.set(true);
+  }
+
+  closeEventModal() {
+    this.isModalOpen.set(false);
+    setTimeout(() => this.selectedEvent.set(null), 300); // clear after animation
+  }
 
   ngOnInit() {
     this.loadClassrooms();

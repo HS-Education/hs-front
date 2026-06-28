@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { ClassroomService } from '../data-access/classroom.service';
 import { Classroom } from '../data-access/models/responses/classroom.model';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -39,8 +39,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
         </div>
       </div>
 
-      @let classroomList = classrooms();
 
+      @let classroomList = classrooms();
+      
       @if (classroomList.length > 0) {
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           @for (classroom of classroomList; track classroom.id) {
@@ -78,5 +79,5 @@ export class ClassroomList {
       switchMap((profile) => this.classroomService.getClassrooms(profile.id))
     ),
     { initialValue: [] as Classroom[] }
-  )
+  );
 }

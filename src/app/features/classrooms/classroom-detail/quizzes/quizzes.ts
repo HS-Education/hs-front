@@ -12,6 +12,7 @@ import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {ToastService} from '../../../../shared/services/toast.service';
 import {ConfirmModal} from '../../../../shared/components/modal/confirm-modal';
 import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
+import {OnboardingService} from '../../../onboarding/data-access/onboarding.service';
 
 interface MockStudentGrade {
   name: string;
@@ -35,6 +36,7 @@ export class Quizzes implements OnInit {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly translocoService = inject(TranslocoService);
+  private readonly onboardingService = inject(OnboardingService);
 
   readonly courseId = input.required<number>();
   readonly classroomId = input.required<number>();
@@ -61,6 +63,9 @@ export class Quizzes implements OnInit {
 
   // Expand State Signal
   readonly expandedQuizId = signal<number | null>(null);
+
+  // Onboarding
+  readonly showOnboardingBanner = signal(false);
 
   // Loading state for starting/retrying a quiz
   readonly startingQuizId = signal<number | null>(null);
@@ -180,6 +185,14 @@ export class Quizzes implements OnInit {
   ngOnInit(): void {
     this.loadAvailableQuizzes();
     this.loadClassroomInfo();
+
+    this.onboardingService.getStatus().subscribe({
+      next: (status) => {
+        if (!status.quizzesCompleted) {
+          this.showOnboardingBanner.set(true);
+        }
+      }
+    });
 
     // Check if there is an instanceId in the route
     this.route.paramMap.subscribe(params => {
@@ -532,6 +545,18 @@ export class Quizzes implements OnInit {
       },
       error: (err) => {
         console.error('Error al descargar:', err);
+      }
+    });
+  }
+
+  markOnboardingCompleted(): void {
+    this.onboardingService.completeQuizzes().subscribe({
+      next: () => {
+        this.showOnboardingBanner.set(false);
+        this.toastService.success(this.translocoService.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_SUCCESS'));
+      },
+      error: () => {
+        this.toastService.error('Error al guardar el progreso');
       }
     });
   }

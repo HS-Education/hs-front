@@ -20,7 +20,13 @@
     "LANGUAGE": "Language",
     "HELP": "Help",
     "LOGOUT": "Log Out",
-    "NOTIFICATIONS": "Notifications"
+    "NOTIFICATIONS": "Notifications",
+    "PREFERENCES_APP": "Application",
+    "PREFERENCES_NOTIFICATIONS": "Notification types",
+    "NOTIFY_QUIZ_RESULTS": "Receive notifications about quiz results",
+    "NOTIFY_RELEVANT_ACTIVITY": "Notifications about academic activity (Sery alerts & updates)",
+    "NOTIFY_NEW_DOCUMENT": "Receive notification for a new document available",
+    "NOTIFY_UNRESOLVED_QUIZZES": "Notifications for unresolved quizzes (>2 days)"
   },
   "PROGRESS": {
     "STUDENT_TITLE": "My Academic Progress",
@@ -234,7 +240,8 @@
     "FAQ_5": {
       "Q": "How is the Average Grades Trend calculated?",
       "A": "All assessments and assignments completed by the students of a classroom during the corresponding academic week are averaged."
-    }
+    },
+    "TUTORIAL_CREATED_SUCCESS": "Tutorial created successfully"
   },
   "CHAT": {
     "LOADING_ACCESS": "Verifying access...",
@@ -427,7 +434,8 @@
       "SUBMIT_TITLE": "Submit Answers",
       "SUBMIT_MSG": "Are you sure you want to submit your answers?",
       "PREVIEW_ERROR": "Could not load document preview.",
-      "RELOAD_QUIZZES": "Reload quizzes"
+      "RELOAD_QUIZZES": "Reload quizzes",
+      "ONBOARDING_COMPLETED_SUCCESS": "Progress saved successfully"
     },
     "REPO": {
       "LOADING": "Loading academic material...",
@@ -740,5 +748,16 @@
       "TITLE": "Chat with Sery",
       "DESC": "Sery is your AI assistant. Ask academic questions and get personalized explanations at any time."
     }
+  },
+  "COMMON": {
+    "CLOSE": "Close",
+    "CANCEL": "Cancel",
+    "SAVE": "Save"
+  },
+  "CALENDAR": {
+    "TITLE_SUBTITLE": "Academic Calendar",
+    "TODAY": "Today",
+    "EVENT_DETAILS": "Event Details",
+    "GO_TO_COURSE": "Go to course"
   }
 }

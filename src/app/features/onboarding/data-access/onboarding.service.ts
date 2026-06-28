@@ -5,6 +5,8 @@ import { environment } from '../../../../environment/environment';
 
 export interface OnboardingStatus {
   completed: boolean;
+  quizzesCompleted: boolean;
+  repositoryCompleted: boolean;
 }
 
 @Injectable({
@@ -20,5 +22,13 @@ export class OnboardingService {
 
   complete(): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/complete`, {});
+  }
+
+  completeQuizzes(): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/complete/quizzes`, {});
+  }
+
+  completeRepository(): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/complete/repository`, {});
   }
 }
