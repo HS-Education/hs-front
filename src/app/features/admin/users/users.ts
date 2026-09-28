@@ -9,12 +9,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { NgClass } from '@angular/common';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { StyledSelectDirective } from '../../../shared/directives/styled-select.directive';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [Modal, FormsModule, TranslateEnumPipe, NgClass, TranslocoPipe],
+  imports: [Modal, FormsModule, TranslateEnumPipe, NgClass, TranslocoPipe, StyledSelectDirective],
   templateUrl: './users.html',
+  styleUrl: './users.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Users implements OnInit {

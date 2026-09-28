@@ -1,6 +1,5 @@
-import {ChangeDetectionStrategy, Component, inject, signal, OnInit, DestroyRef} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {interval} from 'rxjs';
+import {LocalizedDatePipe} from '../../pipes/localized-date.pipe';
+import {ChangeDetectionStrategy, Component, inject, signal, OnInit, DestroyRef, ElementRef, HostListener} from '@angular/core';
 import {UserDataService} from '../../services/user-data.service';
 import {AuthService} from '../../../auth/services/auth.service';
 import {Router, RouterLink, RouterLinkActive} from '@angular/router';
@@ -9,7 +8,8 @@ import {ThemeService} from '../../services/theme.service';
 import {NotificationService} from '../../services/notification.service';
 import {Notification} from '../../models/notification.model';
 import {NotificationPreference} from '../../models/notification-preference.model';
-import {DatePipe} from '@angular/common';
+
+import {LanguageService, AppLanguage} from '../../../core/i18n/language.service';
 
 @Component({
   selector: 'app-navbar',
@@ -17,7 +17,7 @@ import {DatePipe} from '@angular/common';
     RouterLink,
     RouterLinkActive,
     RouterLinkActive,
-    DatePipe,
+    LocalizedDatePipe,
     TranslocoPipe
   ],
   templateUrl: './navbar.html',
@@ -28,10 +28,12 @@ export class Navbar implements OnInit {
   protected readonly userDataService = inject(UserDataService);
   protected readonly themeService = inject(ThemeService);
   protected readonly translocoService = inject(TranslocoService);
+  private readonly language = inject(LanguageService);
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
-  private readonly router = inject(Router);
+  protected readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
 
   readonly userProfile = this.userDataService.userProfile;
   readonly isMobileMenuOpen = signal(false);
@@ -40,14 +42,20 @@ export class Navbar implements OnInit {
   readonly isNotificationsOpen = signal(false);
   
   readonly isPreferencesOpen = signal(false);
+  readonly isLanguageMenuOpen = signal(false);
+  readonly isThemeMenuOpen = signal(false);
   readonly notificationPreferences = signal<NotificationPreference | null>(null);
   readonly showNotificationSettings = signal(false);
 
   ngOnInit() {
     this.fetchNotifications();
-    interval(300000)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.fetchNotifications());
+    const user = this.userDataService.userProfile();
+    const disconnectRealtime = user
+      ? this.notificationService.connectRealtime((notification) => {
+          this.unreadNotifications.update((current) => [notification, ...current.filter((n) => n.id !== notification.id)]);
+        }, () => this.fetchNotifications())
+      : undefined;
+    this.destroyRef.onDestroy(() => disconnectRealtime?.());
   }
 
   fetchNotifications() {
@@ -77,13 +85,44 @@ export class Navbar implements OnInit {
   togglePreferences(): void {
     const willOpen = !this.isPreferencesOpen();
     this.isPreferencesOpen.set(willOpen);
-    if (willOpen && !this.notificationPreferences()) {
+    if (willOpen && !this.userDataService.isAdmin() && !this.notificationPreferences()) {
       this.fetchNotificationPreferences();
     }
   }
 
   closePreferences(): void {
     this.isPreferencesOpen.set(false);
+    this.isLanguageMenuOpen.set(false);
+    this.isThemeMenuOpen.set(false);
+  }
+
+  toggleThemeMenu(): void {
+    const shouldOpen = !this.isThemeMenuOpen();
+    this.isThemeMenuOpen.set(shouldOpen);
+    if (shouldOpen) this.isLanguageMenuOpen.set(false);
+  }
+
+  toggleLanguageMenu(): void {
+    const shouldOpen = !this.isLanguageMenuOpen();
+    this.isLanguageMenuOpen.set(shouldOpen);
+    if (shouldOpen) this.isThemeMenuOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeUtilityPanelsOnOutsideClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.closeNotifications();
+      this.closePreferences();
+    }
+  }
+
+  onPreferencesPanelClick(event: MouseEvent): void {
+    event.stopPropagation();
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    if (!target.closest('[data-theme-dropdown]')) this.isThemeMenuOpen.set(false);
+    if (!target.closest('[data-language-dropdown]')) this.isLanguageMenuOpen.set(false);
   }
 
   toggleNotificationPreference(key: keyof NotificationPreference): void {
@@ -91,9 +130,10 @@ export class Navbar implements OnInit {
     if (!current) return;
     
     const updated = { ...current, [key]: !current[key] };
+    const { userId: _userId, ...request } = updated;
     this.notificationPreferences.set(updated as NotificationPreference);
     
-    this.notificationService.updatePreferences(updated).subscribe({
+    this.notificationService.updatePreferences(request).subscribe({
       next: (prefs) => this.notificationPreferences.set(prefs),
       error: () => this.notificationPreferences.set(current)
     });
@@ -127,13 +167,19 @@ export class Navbar implements OnInit {
     this.themeService.toggleTheme();
   }
 
+  setTheme(theme: 'light' | 'dark'): void {
+    this.themeService.setTheme(theme);
+    this.isThemeMenuOpen.set(false);
+  }
+
   get activeLang(): string {
-    return this.translocoService.getActiveLang();
+    return this.language.activeLanguage();
   }
 
   setLanguage(lang: string): void {
-    this.translocoService.setActiveLang(lang);
-    localStorage.setItem('appLang', lang);
+    if (lang !== 'es' && lang !== 'en') return;
+    void this.language.setLanguage(lang as AppLanguage);
+    this.isLanguageMenuOpen.set(false);
   }
 
   onLogOut(): void {

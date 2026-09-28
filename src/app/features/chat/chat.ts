@@ -1,3 +1,4 @@
+import {LocalizedDatePipe} from '../../shared/pipes/localized-date.pipe';
 import {ChangeDetectionStrategy, Component, computed, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
 import {ChatService} from './data-access/chat.service';
 import {ClassroomService} from '../classrooms/data-access/classroom.service';
@@ -7,12 +8,13 @@ import {ChatMessage} from './data-access/models/chat-message.model';
 import {Classroom} from '../classrooms/data-access/models/responses/classroom.model';
 import {QuestionnaireService} from '../classrooms/data-access/questionnaire.service';
 import {FormsModule} from '@angular/forms';
-import {DatePipe} from '@angular/common';
-import {MarkdownMathPipe} from '../../shared/pipes/markdown-math.pipe';
+
+import {MarkdownMathPipe, sanitizeRenderedHtml} from '../../shared/pipes/markdown-math.pipe';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {DomSanitizer, SafeResourceUrl, SafeHtml} from '@angular/platform-browser';
 import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
 import {TranslocoService, TranslocoPipe} from '@jsverse/transloco';
+import {StyledSelectDirective} from '../../shared/directives/styled-select.directive';
 
 export interface ChatSource {
   name: string;
@@ -23,7 +25,7 @@ export interface ChatSource {
 
 @Component({
   selector: 'app-chat',
-  imports: [FormsModule, DatePipe, ConfirmModal, RouterLink, TranslocoPipe],
+  imports: [FormsModule, LocalizedDatePipe, ConfirmModal, RouterLink, TranslocoPipe, StyledSelectDirective],
   templateUrl: './chat.html',
   styleUrl: './chat.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,6 +55,8 @@ export class Chat implements OnInit {
   readonly sendingMessage = signal(false);
   readonly loadingSessions = signal(false);
   readonly loadingMessages = signal(false);
+  private readonly awaitBubbleResponse = history.state?.awaitBubbleResponse === true;
+  private historyRefreshAttempts = 0;
 
   // Block state
   readonly isBlockedByQuizBackend = signal<boolean | null>(null);
@@ -202,12 +206,23 @@ export class Chat implements OnInit {
         this.messages.set(history);
         this.loadingMessages.set(false);
         this.scrollToBottom();
+        this.refreshPendingBubbleResponse(sessionId, history);
       },
       error: (err: unknown) => {
         console.error('Error al cargar historial de chat:', err);
         this.loadingMessages.set(false);
       }
     });
+  }
+
+  private refreshPendingBubbleResponse(sessionId: number, history: ChatMessage[]): void {
+    if (!this.awaitBubbleResponse || this.historyRefreshAttempts >= 120) return;
+
+    const lastMessage = history[history.length - 1];
+    if (lastMessage?.role.toUpperCase() === 'ASSISTANT' && lastMessage.content?.trim()) return;
+
+    this.historyRefreshAttempts++;
+    setTimeout(() => this.fetchHistoryForSession(sessionId), 1000);
   }
 
   createNewSession(): void {
@@ -335,7 +350,7 @@ export class Chat implements OnInit {
   getSources(content: string | null | undefined): ChatSource[] {
     if (!content) return [];
     const sources: ChatSource[] = [];
-    const regex = /(?:\*\*)?Fuente:(?:\*\*)?\s*(.*?)\s*(?:\*\*)?Enlace de descarga:(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+    const regex = /(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
     let match;
     while ((match = regex.exec(content)) !== null) {
       sources.push({
@@ -353,7 +368,7 @@ export class Chat implements OnInit {
     const sources = this.getSources(rawText);
 
     if (sources.length > 0) {
-      const regex = /\s*(?:\[\d+\])?\s*(?:\*\*)?Fuente:(?:\*\*)?\s*(.*?)\s*(?:\*\*)?Enlace de descarga:(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+      const regex = /\s*(?:\[\d+\])?\s*(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
       rawText = rawText.replace(regex, (match) => {
         const idx = sources.findIndex(s => match.includes(`/documents/${s.documentId}/download`));
         if (idx >= 0) {
@@ -388,7 +403,7 @@ export class Chat implements OnInit {
         const idx = Number(p1);
         if (idx >= 0 && idx < sources.length) {
           const src = sources[idx];
-          return `<div class="mt-3"><a href="javascript:void(0)" data-source-index="${idx}" class="inline-flex items-center gap-1.5 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/20 hover:underline px-3 py-1.5 rounded-lg font-semibold text-xs transition border border-[var(--brand-primary)]/20 w-auto">
+          return `<div class="mt-3"><a href="javascript:void(0)" data-source-index="${idx}" class="inline-flex items-center gap-1.5 bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary-soft)] hover:underline px-3 py-1.5 rounded-lg font-semibold text-xs transition border border-[var(--brand-primary)]/20 w-auto">
             <span class="text-[var(--brand-primary)] font-bold px-0.5 py-0.5 text-[10px] tracking-wide">[${idx + 1}]</span> 
             <span>${src.name}</span>
           </a></div>`;
@@ -400,7 +415,7 @@ export class Chat implements OnInit {
       htmlString = htmlString.replace(/(?:<br\/>|\s)*<div class="mt-3">/g, '<div class="mt-3">');
     }
 
-    return this.sanitizer.bypassSecurityTrustHtml(htmlString);
+    return this.sanitizer.bypassSecurityTrustHtml(sanitizeRenderedHtml(htmlString));
   }
 
   handleMessageClick(event: MouseEvent, msg: ChatMessage): void {

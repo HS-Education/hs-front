@@ -41,4 +41,29 @@ export class NotificationService {
       { withCredentials: true }
     );
   }
+
+  connectRealtime(
+    onNotification: (notification: Notification) => void,
+    onReconnected?: () => void,
+  ): () => void {
+    const streamUrl = `${this.baseUrl}/notifications/stream`;
+    const eventSource = new EventSource(streamUrl, { withCredentials: true });
+    let hasConnected = false;
+
+    eventSource.onopen = () => {
+      if (hasConnected) onReconnected?.();
+      hasConnected = true;
+    };
+
+    eventSource.addEventListener('notification', (event) => {
+      const data = (event as MessageEvent<string>).data;
+      try {
+        onNotification(JSON.parse(data) as Notification);
+      } catch {
+        // Ignore malformed events and keep the stream alive.
+      }
+    });
+
+    return () => eventSource.close();
+  }
 }

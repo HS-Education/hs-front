@@ -1,0 +1,9 @@
+.study-plan-target {
+  background-color: var(--color-info);
+  border-color: var(--color-info-hover);
+}
+
+:host-context(.dark) .study-plan-target {
+  background-color: #234d6b;
+  border-color: #477795;
+}

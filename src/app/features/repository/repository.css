@@ -3,6 +3,95 @@
 }
 
 .topic-group-card:hover {
-  border-color: rgba(99, 102, 241, 0.2);
-  box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.05);
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 20px -6px rgb(0 0 0 / 5%);
+}
+
+.grade-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.grade-option {
+  position: relative;
+  display: inline-flex;
+  min-height: 1.8rem;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.grade-option:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.grade-option:focus-within {
+  outline: 1px solid var(--brand-primary);
+  outline-offset: 1px;
+}
+
+.grade-option-selected:focus-within {
+  outline: none;
+}
+
+.grade-option-selected {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary-soft);
+  color: var(--text-primary);
+}
+
+.grade-option-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.grade-option-indicator {
+  display: grid;
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 0.85rem;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.32rem;
+  background: var(--bg-secondary);
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.grade-option-indicator::after {
+  width: 0.28rem;
+  height: 0.48rem;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  content: "";
+  opacity: 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.grade-option-selected .grade-option-indicator {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary);
+}
+
+.grade-option-selected .grade-option-indicator::after {
+  opacity: 1;
+}
+
+.grade-option-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.2;
 }

@@ -36,6 +36,29 @@ export interface ClassroomPerformance {
 export interface ClassroomAchievementResource {
   performance: ClassroomPerformance;
   latestInsight: string | null;
+  latestInsightCreatedAt?: string | null;
+}
+
+export interface ClassroomQuestionAnswer {
+  questionId: number;
+  topicId: number;
+  questionText: string;
+  correct: boolean;
+  remedial: boolean;
+}
+
+export interface ClassroomQuestionnaireProgress {
+  questionnaireId: number;
+  gradingPeriodId: number;
+  weekNumber: number;
+  type: 'NORMAL' | 'REMEDIAL';
+  status: string;
+  submissions: Array<{
+    studentId: number;
+    score: number;
+    submittedAt: string;
+    answers: ClassroomQuestionAnswer[];
+  }>;
 }
 
 export interface AreaPerformanceResource {
@@ -48,6 +71,7 @@ export interface AreaPerformanceResource {
 export interface AreaAchievementResource {
   targetId: number;
   latestInsight: string | null;
+  latestInsightCreatedAt?: string | null;
   performance: AreaPerformanceResource;
 }
 
@@ -107,8 +131,8 @@ export class AchievementService {
     return this.http.get<ClassroomAchievementResource>(`${this.apiUrl}/classrooms/${classroomId}`);
   }
 
-  generateClassroomInsight(classroomId: number): Observable<unknown> {
-    return this.http.post(`${this.apiUrl}/classrooms/${classroomId}/insights`, {});
+  getClassroomProgressDetails(classroomId: number): Observable<ClassroomQuestionnaireProgress[]> {
+    return this.http.get<ClassroomQuestionnaireProgress[]>(`${this.apiUrl}/classrooms/${classroomId}/progress-details`);
   }
 
   generateAreaInsight(areaId: number): Observable<unknown> {

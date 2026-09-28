@@ -8,7 +8,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   },
   template: `
     <article
-      class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-6 shadow-sm transition-all duration-300 ease-out hover:shadow-md hover:border-[var(--brand-primary)]/30 hover:-translate-y-1 flex flex-col h-full"
+      class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-6 shadow-sm transition-all duration-300 ease-out hover:shadow-md hover:border-[var(--border-strong)] hover:-translate-y-1 flex flex-col h-full"
       role="none"
     >
       <header class="mb-4 flex items-start justify-between gap-3 min-w-0 shrink-0">

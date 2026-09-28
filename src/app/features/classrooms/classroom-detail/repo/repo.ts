@@ -12,10 +12,12 @@ export interface RepoDocument extends Document {
 import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 import {OnboardingService} from '../../../onboarding/data-access/onboarding.service';
 import {ToastService} from '../../../../shared/services/toast.service';
+import {StyledSelectDirective} from '../../../../shared/directives/styled-select.directive';
+import {LanguageService} from '../../../../core/i18n/language.service';
 
 @Component({
   selector: 'app-repo',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, StyledSelectDirective],
   templateUrl: './repo.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,6 +28,7 @@ export class Repo {
   private readonly translocoService = inject(TranslocoService);
   private readonly onboardingService = inject(OnboardingService);
   private readonly toastService = inject(ToastService);
+  private readonly language = inject(LanguageService);
 
   readonly courseId = input.required<number>();
   readonly documents = signal<RepoDocument[]>([]);
@@ -44,7 +47,11 @@ export class Repo {
   // Filter Signals
   readonly filterTitle = signal('');
   readonly filterTopicId = signal<number | null>(null);
-  readonly topicsList = signal<Array<{ id: number; title: string }>>([]);
+  private readonly topicData = signal<Array<{ id: number; name: string; orderIndex: number }>>([]);
+  readonly topicsList = computed(() => {
+    this.language.activeLanguage();
+    return this.topicData().map(topic => ({id: topic.id, title: `${this.translocoService.translate('CLASSROOMS.REPO.WEEK')} ${topic.orderIndex}: ${topic.name}`}));
+  });
 
   // Computed filtered list of documents
   readonly filteredDocuments = computed(() => {
@@ -105,7 +112,7 @@ export class Repo {
         this.toastService.success(this.translocoService.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_SUCCESS'));
       },
       error: () => {
-        this.toastService.error('Error al guardar el progreso');
+        this.toastService.error(this.translocoService.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_ERROR'));
       }
     });
   }
@@ -126,12 +133,12 @@ export class Repo {
         });
 
         // Set topics list for dropdown
-        this.topicsList.set(topics.map(t => ({ id: t.id, title: `${this.translocoService.translate('CLASSROOMS.REPO.WEEK')} ${t.orderIndex}: ${t.name}` })));
+        this.topicData.set(topics);
 
         // Sort documents by topic orderIndex, putting unknown topics at the end
         const mappedDocs: RepoDocument[] = documents.map(doc => ({
           ...doc,
-          topicName: topicMap.get(doc.topicId)?.name ?? this.translocoService.translate('CLASSROOMS.REPO.NO_TOPIC'),
+          topicName: topicMap.get(doc.topicId)?.name ?? '',
           topicOrder: topicMap.get(doc.topicId)?.orderIndex ?? 9999
         }));
 
@@ -141,7 +148,7 @@ export class Repo {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(this.translocoService.translate('CLASSROOMS.REPO.ERROR_FETCH'));
+        this.error.set('CLASSROOMS.REPO.ERROR_FETCH');
         this.loading.set(false);
         console.error(err);
       },

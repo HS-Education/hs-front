@@ -13,20 +13,117 @@
   }
 }
 
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s ease-in-out infinite;
+}
+
+@keyframes pulseSubtle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.96;
+    transform: scale(1.002);
+  }
+}
+
 .select-card {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .select-card:hover {
-  border-color: rgba(234, 88, 12, 0.3);
+  border-color: var(--border-strong);
   transform: translateY(-0.5px);
 }
 
+.quiz-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.5rem;
+  padding: 0.15rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  font-size: 0.625rem;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.quiz-status-pill--pending {
+  color: var(--brand-primary);
+  border-color: color-mix(in srgb, var(--brand-primary) 38%, var(--border));
+  background: color-mix(in srgb, var(--brand-primary) 12%, var(--surface));
+}
+
+.quiz-status-pill--active {
+  color: #ca8a04;
+  border-color: color-mix(in srgb, #ca8a04 38%, var(--border));
+  background: color-mix(in srgb, #ca8a04 12%, var(--surface));
+}
+
+/* Completed status pill: matches exact palette of the progress bar (var(--quiz-completed)) */
+.quiz-status-pill--completed {
+  color: var(--quiz-completed);
+  border-color: color-mix(in srgb, var(--quiz-completed) 35%, var(--border));
+  background: color-mix(in srgb, var(--quiz-completed) 14%, var(--surface));
+}
+
+/* Bimester badge: matches exact brand color of the active Cuestionarios tab (var(--brand-primary)) */
+.quiz-bimester-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.025em;
+  color: var(--brand-primary);
+  background: color-mix(in srgb, var(--brand-primary) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--brand-primary) 35%, var(--border));
+}
+
+/* High-contrast Return / Back button in both modes */
+.quiz-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.quiz-back-button:hover {
+  border-color: var(--brand-primary);
+  background: var(--brand-primary);
+  color: #ffffff;
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 6px rgba(194, 65, 12, 0.25);
+}
+
+:root[data-theme='dark'] .quiz-back-button:hover,
+.dark .quiz-back-button:hover,
+[data-theme='dark'] .quiz-back-button:hover {
+  border-color: #ea580c !important;
+  background: #ea580c !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.45) !important;
+}
+
 .rainbow-bg {
-  background: linear-gradient(124deg, #ff2400, #e81d1d, #e8b71d, #1de840, #1ddde8, #2b1de8, #dd00f3, #dd00f3);
-  background-size: 1800% 1800%;
+  background: linear-gradient(124deg, var(--button-primary-bg), var(--brand-primary), var(--brand-secondary), var(--brand-primary), var(--button-primary-bg));
+  background-size: 800% 800%;
   animation: rainbow 3s ease infinite;
-  color: white !important;
+  color: var(--button-primary-text) !important;
   border: none !important;
 }
 

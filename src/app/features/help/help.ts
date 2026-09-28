@@ -1,4 +1,4 @@
-import { Component, computed, signal, inject } from '@angular/core';
+import { Component, computed, signal, inject, DestroyRef, ElementRef, viewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,8 @@ import { OnboardingService, OnboardingStatus } from '../onboarding/data-access/o
 import { TutorialService, PlatformTutorial } from './data-access/tutorial.service';
 import { UserDataService } from '../../shared/services/user-data.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { ActivatedRoute } from '@angular/router';
+import {LanguageService} from '../../core/i18n/language.service';
 
 export interface Tutorial {
   id: number;
@@ -28,19 +30,24 @@ export interface Faq {
   isOpen?: boolean;
 }
 
-export type HelpFilter = 'ALL' | 'VIDEO' | 'DOCUMENT' | 'FAQ' | 'FAVORITE';
+export type HelpFilter = 'TUTORIAL' | 'VIDEO' | 'DOCUMENT' | 'FAQ' | 'FAVORITE' | null;
 
 @Component({
   selector: 'app-help',
   standalone: true,
   imports: [CommonModule, FormsModule, Modal, TranslocoPipe],
   templateUrl: './help.html',
-  styleUrls: []
+  styleUrls: [],
+  host: {
+    class: 'block h-full min-h-0 overflow-hidden'
+  }
 })
 export class HelpCenter {
   private readonly translocoService = inject(TranslocoService);
+  private readonly language = inject(LanguageService);
   readonly searchQuery = signal('');
-  readonly selectedFilter = signal<HelpFilter>('ALL');
+  readonly selectedFilter = signal<HelpFilter>(null);
+  private readonly contentContainer = viewChild<ElementRef<HTMLDivElement>>('contentContainer');
   
   // Onboarding tracking
   private readonly onboardingService = inject(OnboardingService);
@@ -50,6 +57,9 @@ export class HelpCenter {
   private readonly tutorialService = inject(TutorialService);
   readonly userDataService = inject(UserDataService);
   private readonly toastService = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly requestedTutorialId = signal<number | null>(null);
 
   // Favorites
   private readonly FAVORITES_KEY = 'hs_tesis_tutorial_favorites';
@@ -63,8 +73,17 @@ export class HelpCenter {
   readonly createFormTitle = signal('');
   readonly createFormDesc = signal('');
   readonly creating = signal(false);
+  readonly editingTutorialId = signal<number | null>(null);
 
   constructor() {
+    const keydownHandler = (event: KeyboardEvent) => this.onDocumentKeydown(event);
+    window.addEventListener('keydown', keydownHandler, true);
+    this.destroyRef.onDestroy(() => window.removeEventListener('keydown', keydownHandler, true));
+
+    this.route.queryParamMap.subscribe(params => {
+      const tutorialId = Number(params.get('tutorial'));
+      this.requestedTutorialId.set(Number.isInteger(tutorialId) && tutorialId > 0 ? tutorialId : null);
+    });
     this.onboardingService.getStatus().subscribe(status => {
       this.onboardingStatus.set(status);
     });
@@ -79,15 +98,23 @@ export class HelpCenter {
           id: 1000 + t.id, // Offset ID to avoid collision with mocks
           titleKey: t.title, // Backend tutorials store literal strings for now, not translation keys
           descriptionKey: t.description,
-          type: 'TEXT',
-          duration: 'Texto'
+          type: t.fileUrl?.trim() ? 'DOCUMENT' : 'TEXT',
+          duration: t.fileUrl?.trim() ? this.getDocumentFormat(t.fileUrl) : '',
+          documentUrl: t.fileUrl?.trim() || undefined
         }));
         
         // Append to existing tutorials
         this.tutorials.update(current => {
           // Remove previously loaded backend tutorials (id >= 1000)
           const mocks = current.filter(c => c.id < 1000);
-          return this.loadTutorialsWithFavorites([...mocks, ...mapped]);
+          const tutorials = this.loadTutorialsWithFavorites([...mocks, ...mapped]);
+          const requestedId = this.requestedTutorialId();
+          const requestedTutorial = requestedId ? tutorials.find(tutorial => tutorial.id === 1000 + requestedId) : null;
+          if (requestedTutorial) {
+            this.selectedFilter.set('TUTORIAL');
+            this.searchQuery.set(requestedTutorial.titleKey);
+          }
+          return tutorials;
         });
       },
       error: () => console.error('Failed to load tutorials from backend')
@@ -95,9 +122,27 @@ export class HelpCenter {
   }
 
   openCreateModal() {
+    this.editingTutorialId.set(null);
     this.createFormTitle.set('');
     this.createFormDesc.set('');
     this.isCreateModalOpen.set(true);
+  }
+
+  openEditTutorial(tutorial: Tutorial) {
+    if (tutorial.id < 1000 || !this.userDataService.isCoordinator()) return;
+    this.editingTutorialId.set(tutorial.id - 1000);
+    this.createFormTitle.set(tutorial.titleKey);
+    this.createFormDesc.set(tutorial.descriptionKey);
+    this.isCreateModalOpen.set(true);
+  }
+
+  deleteTutorial(tutorial: Tutorial) {
+    if (tutorial.id < 1000 || !this.userDataService.isCoordinator()) return;
+    if (!window.confirm(this.translocoService.translate('UI_TEXT.DELETE_THIS_TUTORIAL'))) return;
+    this.tutorialService.delete(tutorial.id - 1000).subscribe({
+      next: () => { this.toastService.success(this.translocoService.translate('HELP.TUTORIAL_DELETED_SUCCESS')); this.loadBackendTutorials(); },
+      error: () => this.toastService.error(this.translocoService.translate('HELP.TUTORIAL_DELETE_ERROR')),
+    });
   }
 
   closeCreateModal = () => {
@@ -110,59 +155,27 @@ export class HelpCenter {
     if (!title || !desc) return;
 
     this.creating.set(true);
-    this.tutorialService.create({ title, description: desc, fileUrl: '' }).subscribe({
+    const tutorialId = this.editingTutorialId();
+    const request = { title, description: desc, fileUrl: '' };
+    const operation = tutorialId === null
+      ? this.tutorialService.create(request)
+      : this.tutorialService.update(tutorialId, request);
+    operation.subscribe({
       next: () => {
-        this.toastService.success(this.translocoService.translate('HELP.TUTORIAL_CREATED_SUCCESS'));
+        this.toastService.success(this.translocoService.translate(tutorialId === null ? 'HELP.TUTORIAL_CREATED_SUCCESS' : 'HELP.TUTORIAL_UPDATED_SUCCESS'));
         this.creating.set(false);
         this.closeCreateModal();
+        this.editingTutorialId.set(null);
         this.loadBackendTutorials();
       },
       error: () => {
-        this.toastService.error('Error al crear el tutorial');
+        this.toastService.error(this.translocoService.translate(tutorialId === null ? 'HELP.TUTORIAL_CREATE_ERROR' : 'HELP.TUTORIAL_UPDATE_ERROR'));
         this.creating.set(false);
       }
     });
   }
 
-  // Mock Data: Tutorials
-  readonly tutorials = signal<Tutorial[]>(this.loadTutorialsWithFavorites([
-    {
-      id: 1,
-      titleKey: 'HELP.TUTORIAL_1.TITLE',
-      descriptionKey: 'HELP.TUTORIAL_1.DESC',
-      type: 'VIDEO',
-      duration: '4:20',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-    },
-    {
-      id: 2,
-      titleKey: 'HELP.TUTORIAL_2.TITLE',
-      descriptionKey: 'HELP.TUTORIAL_2.DESC',
-      type: 'VIDEO',
-      duration: '5:45'
-    },
-    {
-      id: 3,
-      titleKey: 'HELP.TUTORIAL_3.TITLE',
-      descriptionKey: 'HELP.TUTORIAL_3.DESC',
-      type: 'DOCUMENT',
-      duration: 'PDF (2.3 MB)'
-    },
-    {
-      id: 4,
-      titleKey: 'HELP.TUTORIAL_4.TITLE',
-      descriptionKey: 'HELP.TUTORIAL_4.DESC',
-      type: 'VIDEO',
-      duration: '3:15'
-    },
-    {
-      id: 5,
-      titleKey: 'HELP.TUTORIAL_5.TITLE',
-      descriptionKey: 'HELP.TUTORIAL_5.DESC',
-      type: 'DOCUMENT',
-      duration: 'PDF (1.8 MB)'
-    }
-  ]));
+  readonly tutorials = signal<Tutorial[]>([]);
 
   // Mock Data: FAQs
   readonly faqs = signal<Faq[]>([
@@ -224,12 +237,17 @@ export class HelpCenter {
 
   // Derived state: Filtered Tutorials
   readonly filteredTutorials = computed(() => {
+    this.language.activeLanguage();
     const query = this.searchQuery().toLowerCase().trim();
     const filter = this.selectedFilter();
-    
+
+    // The initial Help screen is a welcome page. Searching without a category
+    // selected searches all help content, including tutorials and FAQs.
+    if (filter === null && !query) return [];
+
     return this.tutorials().filter(tut => {
       // 1. Filter by Type
-      if (filter === 'FAQ') return false; 
+      if (filter === 'FAQ') return false;
       if (filter === 'VIDEO' && tut.type !== 'VIDEO') return false;
       if (filter === 'DOCUMENT' && tut.type !== 'DOCUMENT') return false;
       if (filter === 'FAVORITE' && !tut.isFavorite) return false;
@@ -248,12 +266,15 @@ export class HelpCenter {
 
   // Derived state: Filtered FAQs
   readonly filteredFaqs = computed(() => {
+    this.language.activeLanguage();
     const query = this.searchQuery().toLowerCase().trim();
     const filter = this.selectedFilter();
 
+    if (filter === null && !query) return [];
+
     return this.faqs().filter(faq => {
       // 1. Filter by Type
-      if (filter === 'VIDEO' || filter === 'DOCUMENT') return false; // Hide FAQs if video/doc is selected
+      if (filter === 'TUTORIAL' || filter === 'VIDEO' || filter === 'DOCUMENT' || filter === 'FAVORITE') return false;
       
       // 2. Filter by Search Query
       if (query) {
@@ -270,12 +291,53 @@ export class HelpCenter {
   readonly isPdfPreviewOpen = signal(false);
   readonly selectedPdf = signal<Tutorial | null>(null);
   readonly previewSecureUrl = signal<SafeResourceUrl | null>(null);
+  readonly previewOpenUrl = signal<string | null>(null);
+  readonly previewError = signal(false);
   readonly previewLoading = signal(false);
 
   private readonly sanitizer = inject(DomSanitizer);
 
   setFilter(filter: HelpFilter) {
-    this.selectedFilter.set(filter);
+    this.searchQuery.set('');
+    this.selectedFilter.set(this.selectedFilter() === filter ? null : filter);
+  }
+
+  private getDocumentFormat(fileUrl: string): string {
+    const fileName = fileUrl.split(/[?#]/, 1)[0].split('/').pop() ?? '';
+    const extension = fileName.includes('.') ? fileName.split('.').pop() : '';
+    return extension && extension.length <= 6
+      ? extension.toUpperCase()
+      : this.translocoService.translate('HELP.CONTENT.FILE');
+  }
+
+  onSearchChange(query: string) {
+    this.searchQuery.set(query);
+    if (query.trim()) this.selectedFilter.set(null);
+  }
+
+  onHelpWheel(event: WheelEvent): void {
+    const container = this.contentContainer()?.nativeElement;
+    if (!container) return;
+
+    // The header is outside the scrollable element, so forward its wheel gesture to the content.
+    if (!container.contains(event.target as Node)) {
+      event.preventDefault();
+      container.scrollTop += event.deltaY;
+    }
+  }
+
+  onDocumentKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target || target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+
+    const delta = event.key === 'ArrowDown' ? 0.12 : event.key === 'ArrowUp' ? -0.12 : 0;
+    if (delta === 0) return;
+
+    const container = this.contentContainer()?.nativeElement;
+    if (!container) return;
+
+    event.preventDefault();
+    container.scrollTop += delta > 0 ? 40 : -40;
   }
 
   toggleFaq(id: number) {
@@ -300,18 +362,33 @@ export class HelpCenter {
   }
 
   previewDocument(tutorial: Tutorial) {
-    if (tutorial.type === 'DOCUMENT') {
-      this.selectedPdf.set(tutorial);
-      this.isPdfPreviewOpen.set(true);
-      this.previewLoading.set(true);
-      
-      // Simulate network delay to fetch safe URL
-      setTimeout(() => {
-        // A minimal blank PDF in base64 to avoid CSP / Frame-Ancestors errors
-        const dummyPdfUrl = 'data:application/pdf;base64,JVBERi0xLjAKMSAwIG9iago8PC9QYWdlcyAyIDAgUiAvVHlwZSAvQ2F0YWxvZz4+CmVuZG9iagoyIDAgb2JqCjw8L0NvdW50IDEgL0tpZHMgWzMgMCBSXSAvVHlwZSAvUGFnZXM+PgplbmRvYmoKMyAwIG9iago8PC9NZWRpYUJveCBbMCAwIDYxMiA3OTJdIC9QYXJlbnQgMiAwIFIgL1R5cGUgL1BhZ2U+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDEwIDAwMDAwIG4gCjAwMDAwMDAwNjAgMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAp0cmFpbGVyCjw8L1Jvb3QgMSAwIFIgL1NpemUgND4+CnN0YXJ0eHJlZgoxNzMKJSVFT0YK';
-        this.previewSecureUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(dummyPdfUrl));
-        this.previewLoading.set(false);
-      }, 1200);
+    this.selectedPdf.set(tutorial);
+    this.isPdfPreviewOpen.set(true);
+    this.previewSecureUrl.set(null);
+    this.previewOpenUrl.set(null);
+    this.previewError.set(false);
+    this.previewLoading.set(false);
+
+    // Text tutorials use their description as the full article. Document
+    // tutorials use the persisted fileUrl supplied by the API.
+    if (tutorial.type === 'TEXT') return;
+
+    const fileUrl = tutorial.documentUrl?.trim();
+    if (!fileUrl) {
+      this.previewError.set(true);
+      return;
+    }
+
+    try {
+      const resolvedUrl = new URL(fileUrl, window.location.origin);
+      if (resolvedUrl.protocol !== 'http:' && resolvedUrl.protocol !== 'https:') {
+        this.previewError.set(true);
+        return;
+      }
+      this.previewOpenUrl.set(resolvedUrl.href);
+      this.previewSecureUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(resolvedUrl.href));
+    } catch {
+      this.previewError.set(true);
     }
   }
 
@@ -319,6 +396,8 @@ export class HelpCenter {
     this.isPdfPreviewOpen.set(false);
     this.selectedPdf.set(null);
     this.previewSecureUrl.set(null);
+    this.previewOpenUrl.set(null);
+    this.previewError.set(false);
     this.previewLoading.set(false);
   }
 }

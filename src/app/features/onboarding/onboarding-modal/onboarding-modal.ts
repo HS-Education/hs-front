@@ -78,7 +78,7 @@ interface OnboardingStep {
               (click)="goTo($index)"
               class="h-2 rounded-full transition-all duration-300"
               [class.w-6]="currentIndex() === $index"
-              [class.bg-[var(--brand-primary)]]="currentIndex() === $index"
+              [class.bg-[var(--button-primary-bg)]]="currentIndex() === $index"
               [class.w-2]="currentIndex() !== $index"
               [class.bg-[var(--border)]]="currentIndex() !== $index"
               [style.background-color]="currentIndex() !== $index ? 'var(--text-secondary)' : ''"
@@ -105,14 +105,14 @@ interface OnboardingStep {
             <button
               type="button"
               (click)="finish()"
-              class="px-5 py-2 text-xs font-bold text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] rounded-lg transition active:scale-[0.97] shadow-sm shadow-[var(--brand-primary)]/30">
+              class="px-5 py-2 text-xs font-bold text-white bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] rounded-lg transition active:scale-[0.97] shadow-sm shadow-[var(--brand-primary)]/30">
               {{ 'ONBOARDING.FINISH' | transloco }}
             </button>
           } @else {
             <button
               type="button"
               (click)="next()"
-              class="px-5 py-2 text-xs font-bold text-white bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] rounded-lg transition active:scale-[0.97] shadow-sm shadow-[var(--brand-primary)]/30">
+              class="px-5 py-2 text-xs font-bold text-white bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] rounded-lg transition active:scale-[0.97] shadow-sm shadow-[var(--brand-primary)]/30">
               {{ 'ONBOARDING.NEXT' | transloco }}
             </button>
           }
@@ -141,20 +141,20 @@ export class OnboardingModal implements OnInit, AfterViewInit {
         icon: '👋',
         titleKey: 'ONBOARDING.WELCOME.TITLE',
         descKey: 'ONBOARDING.WELCOME.DESC',
-        iconBgClass: 'bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]',
+        iconBgClass: 'bg-[var(--brand-primary-soft)] text-[var(--brand-primary)]',
       },
       {
         icon: '🏠',
         titleKey: 'ONBOARDING.HOME.TITLE',
         descKey: 'ONBOARDING.HOME.DESC',
-        iconBgClass: 'bg-amber-100 dark:bg-amber-900/30',
+        iconBgClass: 'bg-[var(--color-warning-soft)]',
         targetId: 'nav-home'
       },
       {
         icon: '📚',
         titleKey: 'ONBOARDING.CLASSROOMS.TITLE',
         descKey: 'ONBOARDING.CLASSROOMS.DESC',
-        iconBgClass: 'bg-blue-100 dark:bg-blue-900/30',
+        iconBgClass: 'bg-[var(--color-info-soft)]',
         targetId: 'nav-classrooms'
       },
     ];
@@ -164,7 +164,7 @@ export class OnboardingModal implements OnInit, AfterViewInit {
         icon: '📁',
         titleKey: 'ONBOARDING.REPOSITORY.TITLE',
         descKey: 'ONBOARDING.REPOSITORY.DESC',
-        iconBgClass: 'bg-purple-100 dark:bg-purple-900/30',
+        iconBgClass: 'bg-[var(--calendar-event-4-bg)]',
         targetId: 'nav-repository'
       },
     ];
@@ -173,8 +173,8 @@ export class OnboardingModal implements OnInit, AfterViewInit {
       icon: '🤖',
       titleKey: 'ONBOARDING.SERY.TITLE',
       descKey: 'ONBOARDING.SERY.DESC',
-      iconBgClass: 'bg-green-100 dark:bg-green-900/30',
-      targetId: 'nav-chat'
+      iconBgClass: 'bg-[var(--color-success-soft)]',
+      targetId: 'sery-bubble'
     };
 
     if (this.userDataService.isCoordinator() && !this.userDataService.isAdmin()) {

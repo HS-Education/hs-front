@@ -3,10 +3,10 @@
   class="flex lg:hidden items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] shrink-0 w-full z-30">
   <div class="flex items-center gap-2">
     <div
-      class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-[var(--brand-primary)] to-[var(--brand-primary-hover)] shadow-md text-white font-bold text-sm">
+      class="navbar-brand-mark flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--brand-mark-bg)] shadow-md text-[var(--brand-mark-text)] font-bold text-sm">
       HS
     </div>
-    <span class="text-sm font-bold tracking-tight text-[var(--brand-primary)]">HS Education</span>
+    <span class="navbar-brand-title font-serif text-base font-semibold tracking-tight text-[var(--navbar-brand-text)]">HS Education</span>
   </div>
   <button type="button" (click)="toggleMobileMenu()"
     class="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
@@ -30,13 +30,13 @@
   <!-- Top Section: Header & Navigation Links -->
   <div class="flex-1 flex flex-col min-h-0">
     <!-- Header / Brand (Desktop Only) -->
-    <div class="hidden lg:flex items-center gap-3 px-6 py-6 border-b border-[var(--border)] shrink-0">
+    <div class="hidden lg:flex items-center gap-3 px-6 pt-6 pb-2 border-b border-[var(--border)] shrink-0">
       <div
-        class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[var(--brand-primary)] to-[var(--brand-primary-hover)] shadow-lg shadow-[var(--brand-primary)]/10 text-white font-bold text-lg">
+        class="navbar-brand-mark flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-mark-bg)] shadow-lg shadow-[var(--brand-primary)]/10 text-[var(--brand-mark-text)] font-bold text-lg">
         HS
       </div>
       <div>
-        <h1 class="text-md font-bold tracking-tight text-[var(--brand-primary)]">
+        <h1 class="navbar-brand-title font-serif text-xl font-semibold tracking-tight text-[var(--navbar-brand-text)]">
           HS Education
         </h1>
       </div>
@@ -47,10 +47,10 @@
       class="flex lg:hidden items-center justify-between px-6 py-4 border-b border-[var(--border)] shrink-0 bg-[var(--bg-secondary)]">
       <div class="flex items-center gap-2">
         <div
-          class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-[var(--brand-primary)] to-[var(--brand-primary-hover)] shadow-md text-white font-bold text-sm">
+          class="navbar-brand-mark flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--brand-mark-bg)] shadow-md text-[var(--brand-mark-text)] font-bold text-sm">
           HS
         </div>
-        <span class="text-sm font-bold tracking-tight text-[var(--brand-primary)]">HS Education</span>
+        <span class="navbar-brand-title font-serif text-base font-semibold tracking-tight text-[var(--navbar-brand-text)]">HS Education</span>
       </div>
       <button type="button" (click)="closeMobileMenu()"
         class="p-1.5 rounded-lg hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
@@ -61,7 +61,7 @@
     </div>
 
     <!-- Navigation Links -->
-    <div class="flex-1 overflow-y-auto py-6 space-y-1.5 px-3">
+    <div class="flex-1 overflow-y-auto pt-2 pb-6 space-y-1.5 px-3">
       @if (!userDataService.isAdmin()) {
       <a id="nav-home" routerLink="/home" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
@@ -106,6 +106,8 @@
       </a>
       }
 
+      <!-- El acceso a Sery se realiza desde el bubble flotante. -->
+      <!--
       <a id="nav-chat" routerLink="/chat" (click)="!userDataService.isTakingQuiz() && closeMobileMenu()"
         [class.pointer-events-none]="userDataService.isTakingQuiz()" [class.opacity-50]="userDataService.isTakingQuiz()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-l-2 border-[var(--brand-primary)] font-bold"
@@ -124,6 +126,7 @@
         </svg>
         }
       </a>
+      -->
       }
 
       @if (userDataService.isAdmin()) {
@@ -179,19 +182,22 @@
   <div class="border-t border-[var(--border)] bg-[var(--bg-secondary)] shrink-0">
     <!-- Utility Toggles (Notifications, Preferences/Dark Mode, Help) -->
     <div class="px-3 py-4 space-y-1">
+      @if (!userDataService.isAdmin()) {
       <!-- Notifications Toggle Button -->
-      <div (click)="toggleNotifications()"
+      <div
         class="relative flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition duration-200 cursor-pointer">
-        <div class="flex items-center gap-3 relative z-50">
-          <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <button type="button" (click)="toggleNotifications()" [attr.aria-expanded]="isNotificationsOpen()" class="flex w-full items-center gap-3 relative z-50 text-left">
+          <svg class="h-4.5 w-4.5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+            [class.text-[var(--brand-primary)]]="isNotificationsOpen()"
+            [class.text-[var(--text-secondary)]]="!isNotificationsOpen()">
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
           <span>{{ 'NAVBAR.NOTIFICATIONS' | transloco }}</span>
-        </div>
+        </button>
         @if (unreadNotifications().length > 0) {
         <div
-          class="flex items-center justify-center min-w-[20px] h-5 rounded-full bg-[var(--brand-mustard)] text-white text-[10px] px-1.5 font-bold relative z-50">
+          class="flex items-center justify-center min-w-[20px] h-5 rounded-full bg-[var(--brand-mustard)] text-[var(--text-inverse)] text-[10px] px-1.5 font-bold relative z-50">
           {{ unreadNotifications().length }}
         </div>
         }
@@ -213,7 +219,7 @@
           <div class="p-2 space-y-1">
             @if (unreadNotifications().length === 0) {
             <div class="p-4 text-center text-[var(--text-secondary)] text-xs">
-              No tienes notificaciones nuevas
+              {{ 'TOAST.NO_NEW_NOTIFICATIONS' | transloco }}
             </div>
             } @else {
             @for (notification of unreadNotifications(); track notification.id) {
@@ -223,11 +229,11 @@
               </p>
               <div class="flex items-center justify-between mt-1">
                 <span class="text-[10px] text-[var(--text-secondary)]">
-                  {{ notification.createdAt | date:'short' }}
+                  {{ notification.createdAt | localizedDate:'short' }}
                 </span>
                 <button (click)="markAsRead(notification.id, $event)"
                   class="text-[10px] text-[var(--brand-mustard)] font-semibold hover:underline opacity-0 group-hover:opacity-100 transition-opacity">
-                  Marcar leída
+                  {{ 'TOAST.MARK_AS_READ' | transloco }}
                 </button>
               </div>
             </div>
@@ -237,18 +243,21 @@
         </div>
         }
       </div>
+      }
 
       <!-- Preferences Modal Toggle -->
-      <div (click)="togglePreferences()"
+      <div
         class="relative flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition duration-200 cursor-pointer">
-        <div class="flex items-center gap-3 relative z-50">
-          <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <button type="button" (click)="togglePreferences()" [attr.aria-expanded]="isPreferencesOpen()" class="flex w-full items-center gap-3 relative z-50 text-left">
+          <svg class="h-4.5 w-4.5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+            [class.text-[var(--brand-primary)]]="isPreferencesOpen()"
+            [class.text-[var(--text-secondary)]]="!isPreferencesOpen()">
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           <span>{{ 'NAVBAR.PREFERENCES' | transloco }}</span>
-        </div>
+        </button>
 
         <!-- Dropdown Panel -->
         @if (isPreferencesOpen()) {
@@ -256,42 +265,106 @@
 
         <div
           class="absolute bottom-full left-0 mb-2 w-80 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-lg z-50 flex flex-col cursor-default"
-          (click)="$event.stopPropagation()">
+          (click)="onPreferencesPanelClick($event)">
           <div class="px-4 py-3 border-b border-[var(--border)] bg-[var(--surface)] z-10 rounded-t-xl">
             <h3 class="font-bold text-[var(--text-primary)] text-sm font-['Plus_Jakarta_Sans']">{{ 'NAVBAR.PREFERENCES'
               | transloco }}</h3>
           </div>
 
           <div class="p-2 space-y-1">
-            <div class="px-3 py-1 mt-1">
-              <span class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'NAVBAR.PREFERENCES_APP' | transloco }}</span>
-            </div>
             <!-- Theme Toggle -->
             <div
-              class="flex items-center justify-between p-3 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors">
-              <span class="text-xs font-semibold text-[var(--text-primary)]">{{ 'SIDEBAR.THEME' | transloco }}</span>
-              <button type="button" (click)="themeService.toggleTheme()"
-                class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-250 ease-in-out focus:outline-none"
-                [class.bg-[var(--brand-primary)]]="themeService.theme() === 'dark'"
-                [class.bg-[var(--border)]]="themeService.theme() !== 'dark'">
-                <span
-                  class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md transition duration-250 ease-in-out"
-                  [class.translate-x-3]="themeService.theme() === 'dark'"
-                  [class.translate-x-0]="themeService.theme() !== 'dark'"></span>
-              </button>
+              class="flex items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/45 px-2.5 py-2 transition-colors hover:border-[var(--brand-primary)]/40">
+              <div class="flex items-center gap-2">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--brand-primary-soft)] text-[var(--brand-primary)]">
+                  @if (themeService.theme() === 'dark') {
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                  </svg>
+                  } @else {
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="4" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                  </svg>
+                  }
+                </span>
+                <span class="text-xs font-semibold text-[var(--text-primary)]">{{ 'SIDEBAR.THEME' | transloco }}</span>
+              </div>
+              <div class="relative shrink-0" data-theme-dropdown>
+                <button type="button" (click)="toggleThemeMenu()"
+                  class="flex min-w-[92px] items-center justify-between gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-[11px] font-bold text-[var(--text-primary)] shadow-sm outline-none transition-all hover:border-[var(--brand-primary)] focus-visible:border-[var(--brand-primary)] focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]/20"
+                  [attr.aria-expanded]="isThemeMenuOpen()">
+                  <span>{{ (themeService.theme() === 'dark' ? 'SIDEBAR.THEME_DARK' : 'SIDEBAR.THEME_LIGHT') | transloco }}</span>
+                  <svg class="h-3.5 w-3.5 text-[var(--text-secondary)] transition-transform" [class.rotate-180]="isThemeMenuOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+                @if (isThemeMenuOpen()) {
+                  <div class="absolute right-0 top-full z-[70] mt-1.5 w-36 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-xl shadow-black/15">
+                    <button type="button" (click)="setTheme('light')"
+                      class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-[var(--bg-secondary)]"
+                      [class.bg-[var(--button-primary-bg)]]="themeService.theme() === 'light'"
+                      [class.text-white]="themeService.theme() === 'light'"
+                      [class.text-[var(--text-primary)]]="themeService.theme() !== 'light'">
+                      <span>{{ 'SIDEBAR.THEME_LIGHT' | transloco }}</span>
+                      @if (themeService.theme() === 'light') { <span aria-hidden="true">✓</span> }
+                    </button>
+                    <button type="button" (click)="setTheme('dark')"
+                      class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-[var(--bg-secondary)]"
+                      [class.bg-[var(--button-primary-bg)]]="themeService.theme() === 'dark'"
+                      [class.text-white]="themeService.theme() === 'dark'"
+                      [class.text-[var(--text-primary)]]="themeService.theme() !== 'dark'">
+                      <span>{{ 'SIDEBAR.THEME_DARK' | transloco }}</span>
+                      @if (themeService.theme() === 'dark') { <span aria-hidden="true">✓</span> }
+                    </button>
+                  </div>
+                }
+              </div>
             </div>
 
-            <!-- Language Select -->
-            <div
-              class="flex items-center justify-between p-3 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors">
-              <span class="text-xs font-semibold text-[var(--text-primary)]">{{ 'NAVBAR.LANGUAGE' | transloco }}</span>
-              <select [value]="activeLang" (change)="setLanguage($any($event.target).value)"
-                class="bg-[var(--bg-primary)] border border-[var(--border)] text-[var(--text-primary)] text-[10px] font-semibold rounded px-2 py-1 focus:outline-none cursor-pointer">
-                <option value="es">Español</option>
-                <option value="en">English</option>
-              </select>
+            <!-- Language selector -->
+            <div class="flex items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/45 px-2.5 py-2 transition-colors hover:border-[var(--brand-primary)]/40">
+              <div class="flex items-center gap-2">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--brand-primary-soft)] text-[var(--brand-primary)]">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm0 0c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3 7.5 7.03 7.5 12s2.015 9 4.5 9zm-8.5-9h17" />
+                  </svg>
+                </span>
+                <span class="text-xs font-semibold text-[var(--text-primary)]">{{ 'NAVBAR.LANGUAGE' | transloco }}</span>
+              </div>
+              <div class="relative shrink-0" data-language-dropdown>
+                <button type="button" (click)="toggleLanguageMenu()"
+                  class="flex min-w-[92px] items-center justify-between gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5 text-[11px] font-bold text-[var(--text-primary)] shadow-sm outline-none transition-all hover:border-[var(--brand-primary)] focus-visible:border-[var(--brand-primary)] focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]/20"
+                  [attr.aria-expanded]="isLanguageMenuOpen()">
+                  <span>{{ activeLang === 'es' ? ('TOAST.LANGUAGE_SPANISH' | transloco) : ('TOAST.LANGUAGE_ENGLISH' | transloco) }}</span>
+                  <svg class="h-3.5 w-3.5 text-[var(--text-secondary)] transition-transform" [class.rotate-180]="isLanguageMenuOpen()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                </svg>
+                </button>
+                @if (isLanguageMenuOpen()) {
+                  <div class="absolute right-0 top-full z-[70] mt-1.5 w-36 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-xl shadow-black/15">
+                    <button type="button" (click)="setLanguage('es')"
+                      class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-[var(--bg-secondary)]"
+                      [class.bg-[var(--button-primary-bg)]]="activeLang === 'es'"
+                      [class.text-white]="activeLang === 'es'"
+                      [class.text-[var(--text-primary)]]="activeLang !== 'es'">
+                      <span>{{ 'TOAST.LANGUAGE_SPANISH' | transloco }}</span>
+                      @if (activeLang === 'es') { <span aria-hidden="true">✓</span> }
+                    </button>
+                    <button type="button" (click)="setLanguage('en')"
+                      class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-[var(--bg-secondary)]"
+                      [class.bg-[var(--button-primary-bg)]]="activeLang === 'en'"
+                      [class.text-white]="activeLang === 'en'"
+                      [class.text-[var(--text-primary)]]="activeLang !== 'en'">
+                      <span>{{ 'TOAST.LANGUAGE_ENGLISH' | transloco }}</span>
+                      @if (activeLang === 'en') { <span aria-hidden="true">✓</span> }
+                    </button>
+                  </div>
+                }
+              </div>
             </div>
 
+            @if (!userDataService.isAdmin()) {
             <!-- Notifications Accordion Toggle -->
             <button type="button" (click)="showNotificationSettings.set(!showNotificationSettings())"
               class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors text-left mt-1">
@@ -306,55 +379,42 @@
             @if (showNotificationSettings()) {
               <div class="pl-2 pr-1 space-y-1 bg-[var(--bg-secondary)]/50 rounded-lg py-2 animate-fade-in">
                 @if (notificationPreferences(); as prefs) {
-                  <!-- Quiz Results -->
+                  <!-- New questionnaire -->
                   <div class="flex items-center justify-between p-2 rounded hover:bg-[var(--surface)] transition-colors gap-3">
-                    <span class="text-[11px] leading-tight font-medium text-[var(--text-primary)]">{{ 'NAVBAR.NOTIFY_QUIZ_RESULTS' | transloco }}</span>
-                    <button type="button" (click)="toggleNotificationPreference('notifyQuizResults')"
+                    <span class="text-[11px] leading-tight font-medium text-[var(--text-primary)]">{{ 'TOAST.NOTIFY_NEW_QUESTIONNAIRE' | transloco }}</span>
+                    <button type="button" (click)="toggleNotificationPreference('notifyNewQuestionnaire')"
                       class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-250 ease-in-out focus:outline-none"
-                      [class.bg-[var(--brand-primary)]]="prefs.notifyQuizResults"
-                      [class.bg-[var(--border)]]="!prefs.notifyQuizResults">
+                      [class.bg-[var(--button-primary-bg)]]="prefs.notifyNewQuestionnaire"
+                      [class.bg-[var(--border)]]="!prefs.notifyNewQuestionnaire">
                       <span class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md transition duration-250 ease-in-out"
-                        [class.translate-x-3]="prefs.notifyQuizResults"
-                        [class.translate-x-0]="!prefs.notifyQuizResults"></span>
+                        [class.translate-x-3]="prefs.notifyNewQuestionnaire"
+                        [class.translate-x-0]="!prefs.notifyNewQuestionnaire"></span>
                     </button>
                   </div>
                   
-                  <!-- Relevant Activity -->
+                  <!-- New tutorial -->
                   <div class="flex items-center justify-between p-2 rounded hover:bg-[var(--surface)] transition-colors gap-3">
-                    <span class="text-[11px] leading-tight font-medium text-[var(--text-primary)]">{{ 'NAVBAR.NOTIFY_RELEVANT_ACTIVITY' | transloco }}</span>
-                    <button type="button" (click)="toggleNotificationPreference('notifyRelevantActivity')"
+                    <span class="text-[11px] leading-tight font-medium text-[var(--text-primary)]">{{ 'TOAST.NOTIFY_NEW_TUTORIAL' | transloco }}</span>
+                    <button type="button" (click)="toggleNotificationPreference('notifyNewTutorial')"
                       class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-250 ease-in-out focus:outline-none"
-                      [class.bg-[var(--brand-primary)]]="prefs.notifyRelevantActivity"
-                      [class.bg-[var(--border)]]="!prefs.notifyRelevantActivity">
+                      [class.bg-[var(--button-primary-bg)]]="prefs.notifyNewTutorial"
+                      [class.bg-[var(--border)]]="!prefs.notifyNewTutorial">
                       <span class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md transition duration-250 ease-in-out"
-                        [class.translate-x-3]="prefs.notifyRelevantActivity"
-                        [class.translate-x-0]="!prefs.notifyRelevantActivity"></span>
+                        [class.translate-x-3]="prefs.notifyNewTutorial"
+                        [class.translate-x-0]="!prefs.notifyNewTutorial"></span>
                     </button>
                   </div>
 
-                  <!-- New Document -->
+                  <!-- Low performance -->
                   <div class="flex items-center justify-between p-2 rounded hover:bg-[var(--surface)] transition-colors gap-3">
-                    <span class="text-[11px] leading-tight font-medium text-[var(--text-primary)]">{{ 'NAVBAR.NOTIFY_NEW_DOCUMENT' | transloco }}</span>
-                    <button type="button" (click)="toggleNotificationPreference('notifyNewDocument')"
+                    <span class="text-[11px] leading-tight font-medium text-[var(--text-primary)]">{{ 'TOAST.NOTIFY_LOW_PERFORMANCE' | transloco }}</span>
+                    <button type="button" (click)="toggleNotificationPreference('notifyLowPerformance')"
                       class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-250 ease-in-out focus:outline-none"
-                      [class.bg-[var(--brand-primary)]]="prefs.notifyNewDocument"
-                      [class.bg-[var(--border)]]="!prefs.notifyNewDocument">
+                      [class.bg-[var(--button-primary-bg)]]="prefs.notifyLowPerformance"
+                      [class.bg-[var(--border)]]="!prefs.notifyLowPerformance">
                       <span class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md transition duration-250 ease-in-out"
-                        [class.translate-x-3]="prefs.notifyNewDocument"
-                        [class.translate-x-0]="!prefs.notifyNewDocument"></span>
-                    </button>
-                  </div>
-
-                  <!-- Unresolved Quizzes -->
-                  <div class="flex items-center justify-between p-2 rounded hover:bg-[var(--surface)] transition-colors gap-3">
-                    <span class="text-[11px] leading-tight font-medium text-[var(--text-primary)]">{{ 'NAVBAR.NOTIFY_UNRESOLVED_QUIZZES' | transloco }}</span>
-                    <button type="button" (click)="toggleNotificationPreference('notifyUnresolvedQuizzes')"
-                      class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-250 ease-in-out focus:outline-none"
-                      [class.bg-[var(--brand-primary)]]="prefs.notifyUnresolvedQuizzes"
-                      [class.bg-[var(--border)]]="!prefs.notifyUnresolvedQuizzes">
-                      <span class="pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md transition duration-250 ease-in-out"
-                        [class.translate-x-3]="prefs.notifyUnresolvedQuizzes"
-                        [class.translate-x-0]="!prefs.notifyUnresolvedQuizzes"></span>
+                        [class.translate-x-3]="prefs.notifyLowPerformance"
+                        [class.translate-x-0]="!prefs.notifyLowPerformance"></span>
                     </button>
                   </div>
                 } @else {
@@ -365,6 +425,7 @@
                 }
               </div>
             }
+            }
           </div>
         </div>
         }
@@ -372,11 +433,13 @@
 
       <!-- Teacher/Coordinator View Mode Toggle (if applicable) -->
       @if (userProfile(); as user) {
-      @if (userDataService.isTeacher() || userDataService.isCoordinator()) {
+      @if (!userDataService.isAdmin() && (userDataService.isTeacher() || userDataService.isCoordinator())) {
       <div
         class="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition duration-200">
         <div class="flex items-center gap-3">
-          <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg class="h-4.5 w-4.5 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+            [class.text-[var(--brand-primary)]]="userDataService.teacherViewMode() === 'STUDENT'"
+            [class.text-[var(--text-secondary)]]="userDataService.teacherViewMode() !== 'STUDENT'">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -384,6 +447,7 @@
           <span>{{ 'SIDEBAR.STUDENT_VIEW' | transloco }}</span>
         </div>
         <button type="button" (click)="toggleViewMode()"
+          [attr.aria-label]="'SIDEBAR.STUDENT_VIEW' | transloco" [attr.aria-pressed]="userDataService.teacherViewMode() === 'STUDENT'"
           class="relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-250 ease-in-out focus:outline-none"
           [class.bg-[var(--brand-forest)]]="userDataService.teacherViewMode() === 'STUDENT'"
           [class.bg-[var(--border)]]="userDataService.teacherViewMode() !== 'STUDENT'">
@@ -396,21 +460,26 @@
       }
       }
 
+      @if (!userDataService.isAdmin()) {
       <!-- Help / Ayuda Link -->
-      <a routerLink="/help" (click)="closeMobileMenu()"
+      <a id="nav-help" routerLink="/help" (click)="closeMobileMenu()"
         routerLinkActive="bg-[var(--surface)] text-[var(--brand-primary)] border-[var(--brand-primary)] font-bold"
         class="flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface)] cursor-pointer transition duration-200">
-        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
+        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+          [style.color]="router.url.startsWith('/help') ? 'var(--brand-primary)' : 'var(--text-secondary)'"
+          [style.stroke]="router.url.startsWith('/help') ? 'var(--brand-primary)' : 'var(--text-secondary)'">
+          <path [style.stroke]="router.url.startsWith('/help') ? 'var(--brand-primary)' : 'var(--text-secondary)'"
+            stroke-linecap="round" stroke-linejoin="round"
             d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span>{{ 'NAVBAR.HELP' | transloco }}</span>
       </a>
+      }
     </div>
 
     <!-- User Profile Card & Logout Button -->
     <div
-      class="border-t border-[var(--border)] px-4 py-4.5 bg-[var(--bg-primary)]/40 flex items-center justify-between">
+      class="navbar-user-profile border-t border-[var(--border)] px-4 py-4.5 bg-[var(--bg-primary)]/40 flex items-center justify-between">
       @if (!userDataService.isSessionLoaded()) {
       <div class="flex items-center gap-3 animate-pulse flex-1">
         <div class="h-9 w-9 rounded-full bg-[var(--border)]"></div>
@@ -423,20 +492,20 @@
       <div class="flex items-center gap-3 overflow-hidden flex-1 mr-2">
         <!-- User initials Avatar Badge -->
         <div
-          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 text-[var(--brand-primary)] font-bold text-sm">
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--text-secondary)] font-bold text-sm">
           {{ user.username.slice(0, 2).toUpperCase() }}
         </div>
         <div class="overflow-hidden">
           <p class="text-xs font-bold text-[var(--text-primary)] truncate leading-tight">{{ user.name }}</p>
           <p class="text-[10px] text-[var(--text-secondary)]/80 truncate mt-0.5">
-            {{ userDataService.isAdmin() ? 'Administrador' : userDataService.isCoordinator() ? 'Coordinador' :
-            userDataService.isTeacher() ? 'Docente' : 'Estudiante' }}
+            {{ userDataService.isAdmin() ? ('TOAST.ROLE_ADMIN' | transloco) : userDataService.isCoordinator() ? ('TOAST.ROLE_COORDINATOR' | transloco) :
+            userDataService.isTeacher() ? ('TOAST.ROLE_TEACHER' | transloco) : ('TOAST.ROLE_STUDENT' | transloco) }}
           </p>
         </div>
       </div>
 
       <!-- Logout IconButton -->
-      <button type="button" (click)="onLogOut()" title="Cerrar sesión"
+      <button type="button" (click)="onLogOut()" [title]="'TOAST.LOGOUT' | transloco"
         class="flex items-center gap-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:bg-[var(--surface)] transition duration-200">
         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round"

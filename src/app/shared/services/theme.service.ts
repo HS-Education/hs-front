@@ -34,4 +34,8 @@ export class ThemeService {
   toggleTheme(): void {
     this.themeSignal.update((current) => (current === 'light' ? 'dark' : 'light'));
   }
+
+  setTheme(theme: 'light' | 'dark'): void {
+    this.themeSignal.set(theme);
+  }
 }

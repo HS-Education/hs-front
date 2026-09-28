@@ -5,6 +5,104 @@
   flex-shrink: 0;
 }
 
+/* Keep the wordmark consistent in light and dark themes. */
+:host .navbar-brand-mark {
+  display: none;
+}
+
+/* Dark mode keeps the wordmark quiet and legible without the orange initials tile. */
+:host-context(.dark) {
+  /* Claude-like sidebar treatment, scoped so application surfaces stay intact. */
+  --bg-secondary: #0f0f0f;
+  --surface: #2d2d2d;
+  --surface-hover: #3a3a3a;
+  --border: #292929;
+  --text-secondary: #ffffff;
+}
+
+:host-context(.dark) .navbar-brand-mark {
+  display: none;
+}
+
+:host-context(.dark) .navbar-brand-title {
+  color: var(--text-primary) !important;
+}
+
+/* Active tabs use the selected surface without the decorative accent stripe. */
+:host a.router-link-active {
+  border-left-width: 0 !important;
+}
+
+/* The active utility class is added dynamically by Angular; never render its stripe. */
+:host a.border-l-2 {
+  border-left-width: 0 !important;
+  border-left-color: transparent !important;
+}
+
+/* Navbar item states: orange is reserved for the active icon. */
+:host nav a svg {
+  color: var(--text-secondary) !important;
+  stroke: var(--text-secondary) !important;
+}
+
+:host nav a:hover {
+  background-color: var(--surface-hover) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+:host nav a:hover svg {
+  color: var(--text-primary) !important;
+  stroke: var(--text-primary) !important;
+}
+
+:host nav a.router-link-active,
+:host nav a.router-link-active:hover {
+  background-color: color-mix(in srgb, var(--surface-elevated) 82%, var(--text-primary) 18%) !important;
+  color: var(--text-secondary) !important;
+  box-shadow: none !important;
+}
+
+:host nav a.router-link-active svg {
+  color: var(--brand-primary) !important;
+  stroke: var(--brand-primary) !important;
+}
+
+:host nav a.router-link-active:hover svg {
+  color: var(--brand-primary) !important;
+  stroke: var(--brand-primary) !important;
+}
+
+/* Help is a utility link but follows the same active-icon convention as primary navigation. */
+:host #nav-help.router-link-active svg,
+:host #nav-help.router-link-active:hover svg {
+  color: var(--brand-primary) !important;
+  stroke: var(--brand-primary) !important;
+}
+
+:host #nav-help.router-link-active svg path,
+:host #nav-help.router-link-active:hover svg path {
+  stroke: var(--brand-primary) !important;
+}
+
+/* Keep the sidebar visually continuous without horizontal section dividers. */
+:host nav .border-b,
+:host nav .border-t {
+  border-color: transparent !important;
+}
+
+/* Keep one subtle separator immediately above the user profile. */
+:host nav .navbar-user-profile {
+  border-top-color: var(--border) !important;
+}
+
+/* routerLinkActive applies border-l-2 as its active marker in this template. */
+:host nav a.border-l-2 svg,
+:host nav a.border-l-2:hover svg {
+  color: var(--brand-primary) !important;
+  stroke: var(--brand-primary) !important;
+}
+
 @media (min-width: 768px) {
   :host {
     display: block;

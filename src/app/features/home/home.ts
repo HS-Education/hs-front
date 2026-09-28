@@ -1,38 +1,81 @@
-import {ChangeDetectionStrategy, Component, inject, OnInit, signal, computed} from '@angular/core';
+import {ChangeDetectionStrategy, Component, inject, OnInit, OnDestroy, signal, computed, effect} from '@angular/core';
 import {UserDataService} from '../../shared/services/user-data.service';
 import {RouterModule} from '@angular/router';
 import {ClassroomService} from '../classrooms/data-access/classroom.service';
 import {Classroom} from '../classrooms/data-access/models/responses/classroom.model';
-import {DatePipe} from '@angular/common';
 import {TranslateEnumPipe} from '../../shared/pipes/translate-enum.pipe';
-import {TranslocoPipe} from '@jsverse/transloco';
+import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 import {CalendarEvent} from '../classrooms/data-access/models/calendar-event.model';
-import {CalendarWidget} from '../classrooms/classroom-list/ui/calendar-widget';
-import {EventModal} from '../../shared/components/event-modal/event-modal';
+import {CalendarDay, CalendarWidget} from '../classrooms/classroom-list/ui/calendar-widget';
+import {DayEventsModal} from '../../shared/components/event-modal/day-events-modal';
+import {QuestionnaireService, AvailableQuestionnaire} from '../classrooms/data-access/questionnaire.service';
+import {Document} from '../classrooms/data-access/models/responses/document.model';
+import {SeryBubbleService} from '../../shared/components/sery-bubble/sery-bubble.service';
+import {forkJoin} from 'rxjs';
+import {TutorialService, PlatformTutorial} from '../help/data-access/tutorial.service';
+import {toSignal} from '@angular/core/rxjs-interop';
 
 export interface RecentActivity {
-  id: number;
-  type: 'INSIGHT' | 'DOCUMENT' | 'SYSTEM' | 'STUDENT_CHAT' | 'STUDENT_COURSE';
+  id: string;
+  type: 'QUIZ' | 'DOCUMENT' | 'TUTORIAL';
   titleKey: string;
-  descriptionKey: string;
+  titleParams?: Record<string, string | number>;
+  description: string;
+  descriptionKey?: string;
   timestamp: Date;
   icon: string;
+  route: Array<string | number>;
+  queryParams?: Record<string, string | number>;
 }
 
 @Component({
   selector: 'app-home',
-  standalone: true,
-  imports: [RouterModule, DatePipe, TranslateEnumPipe, TranslocoPipe, CalendarWidget, EventModal],
+  imports: [RouterModule, TranslateEnumPipe, TranslocoPipe, CalendarWidget, DayEventsModal],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy {
   protected readonly userDataService = inject(UserDataService);
   private readonly classroomService = inject(ClassroomService);
+  private readonly questionnaireService = inject(QuestionnaireService);
+  private readonly translocoService = inject(TranslocoService);
+  private readonly seryBubbleService = inject(SeryBubbleService);
+  private readonly tutorialService = inject(TutorialService);
+  private readonly activeLanguage = toSignal(this.translocoService.langChanges$, {
+    initialValue: this.translocoService.getActiveLang(),
+  });
+
+  formatActivityDay(date: Date): string {
+    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+  }
+
+  formatActivityTime(date: Date): string {
+    return new Intl.DateTimeFormat(this.activeLanguage() === 'es' ? 'es-PE' : 'en-US', {
+      hour: '2-digit', minute: '2-digit',
+    }).format(date);
+  }
+
+  constructor() {
+    effect(() => {
+      const isFiltered = this.selectedCourseIdFilter() !== null;
+      this.seryBubbleService.setCourseFiltered(isFiltered);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.seryBubbleService.setCourseFiltered(false);
+  }
+
+  openSeryBubble(): void {
+    this.seryBubbleService.open();
+  }
 
   readonly userProfile = this.userDataService.userProfile;
   readonly classrooms = signal<Classroom[]>([]);
+  readonly questionnaires = signal<AvailableQuestionnaire[]>([]);
+  readonly classroomDocuments = signal<Array<{ classroom: Classroom; document: Document }>>([]);
+  readonly tutorials = signal<PlatformTutorial[]>([]);
   readonly loading = signal(true);
 
   // Determine Active Dashboard
@@ -55,131 +98,139 @@ export class Home implements OnInit {
     return courseIds.size;
   });
 
-  // Mock Recent Activity (Dynamically filtered by dashboard)
-  readonly allRecentActivity = signal<RecentActivity[]>([
-    {
-      id: 1,
-      type: 'INSIGHT',
-      titleKey: 'HOME.ACTIVITY.INSIGHT_TITLE',
-      descriptionKey: 'HOME.ACTIVITY.INSIGHT_DESC',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
-      icon: 'M13 10V3L4 14h7v7l9-11h-7z'
-    },
-    {
-      id: 2,
-      type: 'DOCUMENT',
-      titleKey: 'HOME.ACTIVITY.DOC_TITLE',
-      descriptionKey: 'HOME.ACTIVITY.DOC_DESC',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
-    },
-    {
-      id: 3,
-      type: 'SYSTEM',
-      titleKey: 'HOME.ACTIVITY.SYS_TITLE',
-      descriptionKey: 'HOME.ACTIVITY.SYS_DESC',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'
-    },
-    {
-      id: 4,
-      type: 'STUDENT_CHAT',
-      titleKey: 'HOME.ACTIVITY.CHAT_TITLE',
-      descriptionKey: 'HOME.ACTIVITY.CHAT_DESC',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 mins ago
-      icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'
-    },
-    {
-      id: 5,
-      type: 'STUDENT_COURSE',
-      titleKey: 'HOME.ACTIVITY.COURSE_TITLE',
-      descriptionKey: 'HOME.ACTIVITY.COURSE_DESC',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-      icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
-    }
-  ]);
-
   readonly recentActivity = computed(() => {
-    const dashboard = this.activeDashboard();
-    const activities = this.allRecentActivity();
-    
-    if (dashboard === 'STUDENT') {
-      return activities.filter(a => a.type === 'STUDENT_CHAT' || a.type === 'STUDENT_COURSE');
-    } else if (dashboard === 'TEACHER') {
-      return activities.filter(a => a.type === 'INSIGHT' || a.type === 'DOCUMENT' || a.type === 'STUDENT_CHAT');
-    } else {
-      // Coordinator / Admin
-      return activities.filter(a => a.type === 'INSIGHT' || a.type === 'DOCUMENT' || a.type === 'SYSTEM');
+    const classroomByCourse = new Map(this.classrooms().map(c => [c.courseId, c]));
+    const canUseGlobalRepository = this.userDataService.isCoordinator()
+      && !this.userDataService.isAdmin()
+      && !this.userDataService.isStudentView();
+    const quizActivities: RecentActivity[] = this.questionnaires()
+      .filter(q => !!q.createdAt && classroomByCourse.has(q.courseId))
+      .map(q => {
+        const latestAttempt = [...q.pastAttempts]
+          .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())[0];
+        const wasCompleted = !!latestAttempt;
+
+        return {
+          id: `quiz-${q.id}`,
+          type: 'QUIZ',
+          titleKey: wasCompleted ? 'HOME.ACTIVITY.QUIZ_COMPLETED' : 'HOME.ACTIVITY.QUIZ_GENERATED',
+          titleParams: { week: q.weekNumber },
+          description: classroomByCourse.get(q.courseId)!.courseName,
+          timestamp: new Date(wasCompleted ? latestAttempt.submittedAt : q.createdAt!),
+          icon: 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V9l-4-4H9zM9 5v4h4M9 14l2 2 4-4',
+          route: latestAttempt
+            ? ['/classrooms', classroomByCourse.get(q.courseId)!.id, 'quizzes', latestAttempt.instanceId]
+            : ['/classrooms', classroomByCourse.get(q.courseId)!.id],
+          queryParams: latestAttempt ? undefined : { tab: 'quizzes', questionnaireId: q.id },
+        };
+      });
+
+    const documentActivities: RecentActivity[] = this.classroomDocuments()
+      .filter(item => !!item.document.createdAt)
+      .map(item => ({
+        id: `document-${item.document.id}`,
+        type: 'DOCUMENT',
+        titleKey: 'HOME.ACTIVITY.DOCUMENT_UPLOADED',
+        titleParams: { title: item.document.title },
+        description: item.classroom.courseName,
+        timestamp: new Date(item.document.createdAt!),
+        icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
+        route: canUseGlobalRepository ? ['/repository'] : ['/classrooms', item.classroom.id],
+        queryParams: canUseGlobalRepository ? undefined : { tab: 'repo' },
+      }));
+
+    const tutorialActivities: RecentActivity[] = this.tutorials()
+      .filter(tutorial => !!tutorial.createdAt)
+      .map(tutorial => ({
+        id: `tutorial-${tutorial.id}`,
+        type: 'TUTORIAL' as const,
+        titleKey: 'HOME.ACTIVITY.TUTORIAL_CREATED',
+        titleParams: { title: tutorial.title },
+        description: '',
+        descriptionKey: 'HOME.ACTIVITY.HELP_CENTER',
+        timestamp: new Date(tutorial.createdAt),
+        route: ['/help'],
+        queryParams: { tutorial: tutorial.id },
+        icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
+      }));
+
+    return [...quizActivities, ...documentActivities, ...tutorialActivities]
+      .filter(activity => !Number.isNaN(activity.timestamp.getTime()))
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, 8);
+  });
+
+  readonly recentActivityGroups = computed(() => {
+    const groups = new Map<string, { date: Date; activities: RecentActivity[] }>();
+    for (const activity of this.recentActivity()) {
+      const key = `${activity.timestamp.getFullYear()}-${activity.timestamp.getMonth()}-${activity.timestamp.getDate()}`;
+      const group = groups.get(key) ?? { date: activity.timestamp, activities: [] };
+      group.activities.push(activity);
+      groups.set(key, group);
     }
+    return [...groups.values()];
   });
 
   // Calendar State
   readonly selectedCourseIdFilter = signal<number | null>(null);
-  readonly isModalOpen = signal<boolean>(false);
-  readonly selectedEvent = signal<CalendarEvent | null>(null);
+  readonly selectedCalendarDay = signal<CalendarDay | null>(null);
 
-  // Computed Mock Events based on classrooms
-  readonly mockEvents = computed<CalendarEvent[]>(() => {
-    const list = this.classrooms();
-    if (!list || list.length === 0) return [];
-    
-    const events: CalendarEvent[] = [];
-    const today = new Date();
-    
-    // Generate some stable fake events based on course IDs
-    list.forEach((course, index) => {
-      // Event 1: A Quiz coming up in a few days
-      const d1 = new Date(today);
-      d1.setDate(today.getDate() + (index % 5) + 2);
-      events.push({
-        id: `event-${course.id}-1`,
-        title: `Cuestionario Semanal - ${course.courseName.substring(0, 15)}...`,
-        description: `Evaluación correspondiente a la unidad actual del curso ${course.courseName}. Asegúrate de repasar los últimos documentos subidos al repositorio.`,
-        date: d1,
-        courseId: course.id,
-        type: 'QUIZ'
+  // Eventos reales: únicamente cuestionarios devueltos por el backend.
+  readonly calendarEvents = computed<CalendarEvent[]>(() => {
+    this.activeLanguage();
+    const classrooms = this.classrooms();
+    const classroomByCourse = new Map(classrooms.map(c => [c.courseId, c]));
+    const roles = this.userProfile()?.roles ?? [];
+    const isStudentOnly = roles.some(role => ['STUDENT', 'ROLE_STUDENT'].includes(role))
+      && !roles.some(role => ['TEACHER', 'ROLE_TEACHER', 'COORDINATOR', 'ROLE_COORDINATOR', 'ADMIN', 'ROLE_ADMIN'].includes(role));
+    const isCoordinatorTeacherStudentView = !this.userDataService.isAdmin()
+      && this.userDataService.isCoordinator()
+      && this.userDataService.isTeacher()
+      && this.userDataService.teacherViewMode() === 'STUDENT';
+
+    return this.questionnaires()
+      .filter(q => classroomByCourse.has(q.courseId))
+      .map(q => {
+        const classroom = classroomByCourse.get(q.courseId)!;
+        const latestAttempt = [...q.pastAttempts]
+          .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())[0];
+        return {
+          id: `quiz-${q.id}`,
+          questionnaireId: q.id,
+          // Solo un intento enviado tiene vista de resultados. Uno activo se abre desde la lista para reanudarlo.
+          questionnaireInstanceId: latestAttempt?.instanceId ?? null,
+          title: this.translocoService.translate('HOME.CALENDAR.QUIZ_TITLE', { week: q.weekNumber }),
+          courseName: classroom.courseName,
+          description: '',
+          date: q.createdAt ? new Date(q.createdAt) : new Date(),
+          courseId: classroom.id,
+          type: 'QUIZ' as const,
+          navigationTarget: isStudentOnly && latestAttempt
+            ? 'QUESTIONNAIRE'
+            : isCoordinatorTeacherStudentView
+              ? 'CLASSROOM_QUIZZES'
+              : 'NONE',
+          sectionName: classroom.section.name,
+          educationLevel: classroom.section.educationLevel,
+          gradeLevel: classroom.section.gradeLevel,
+        };
       });
-
-      // Event 2: An Assignment that was due a few days ago
-      const d2 = new Date(today);
-      d2.setDate(today.getDate() - (index % 4) - 1);
-      events.push({
-        id: `event-${course.id}-2`,
-        title: `Entrega de Proyecto`,
-        description: `Fecha límite para la entrega de la asignación principal del bimestre.`,
-        date: d2,
-        courseId: course.id,
-        type: 'ASSIGNMENT'
-      });
-      
-      // Event 3: A general event today for the first course
-      if (index === 0) {
-        events.push({
-          id: `event-${course.id}-3`,
-          title: `Revisión de Notas`,
-          description: `El profesor publicará las notas finales del mes hoy.`,
-          date: today,
-          courseId: course.id,
-          type: 'EVENT'
-        });
-      }
-    });
-
-    return events;
   });
 
-  openEventModal(event: CalendarEvent) {
-    this.selectedEvent.set(event);
-    this.isModalOpen.set(true);
+  openDayEventsModal(day: CalendarDay) {
+    this.selectedCalendarDay.set(day);
   }
 
-  closeEventModal() {
-    this.isModalOpen.set(false);
-    setTimeout(() => this.selectedEvent.set(null), 300); // clear after animation
+  closeDayEventsModal() {
+    this.selectedCalendarDay.set(null);
   }
 
   ngOnInit() {
     this.loadClassrooms();
+    this.tutorialService.getAll().subscribe({
+      next: tutorials => this.tutorials.set(tutorials),
+      error: () => this.tutorials.set([])
+    });
   }
 
   private loadClassrooms() {
@@ -192,11 +243,31 @@ export class Home implements OnInit {
     this.classroomService.getClassrooms(user.id).subscribe({
       next: (data) => {
         this.classrooms.set(data);
+        this.questionnaireService.getAvailableQuestionnaires().subscribe({
+          next: questionnaires => this.questionnaires.set(questionnaires),
+          error: () => this.questionnaires.set([])
+        });
+        this.loadClassroomDocuments(data);
         this.loading.set(false);
       },
       error: () => {
         this.loading.set(false);
       }
+    });
+  }
+
+  private loadClassroomDocuments(classrooms: Classroom[]) {
+    if (classrooms.length === 0) return;
+
+    forkJoin(classrooms.map(classroom =>
+      this.classroomService.getClassroomDocuments(classroom.courseId)
+    )).subscribe({
+      next: documentLists => this.classroomDocuments.set(
+        documentLists.flatMap((documents, index) =>
+          documents.map(document => ({ classroom: classrooms[index]!, document }))
+        )
+      ),
+      error: () => this.classroomDocuments.set([])
     });
   }
 }
