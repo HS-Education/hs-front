@@ -67,7 +67,9 @@ export class ToastService {
 
   private resolveMessage(message: string): string {
     // Final safeguard: a technical i18n key must never reach an end user.
-    const looksLikeTranslationKey = /^[A-Z][A-Z0-9_]*(?:[._][A-Z][A-Z0-9_]*)+$/.test(message);
+    // Keep token characters separate from delimiters so untrusted messages
+    // cannot trigger excessive regex backtracking on long inputs.
+    const looksLikeTranslationKey = /^[A-Z][A-Z0-9]*(?:[._][A-Z][A-Z0-9]*)+$/.test(message);
     if (!looksLikeTranslationKey) return message;
 
     const translated = this.translocoService.translate(message);
