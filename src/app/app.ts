@@ -33,7 +33,7 @@ export class App implements OnInit {
   });
 
   readonly showSeryBubble = computed(() => {
-    if (!this.userDataService.isAuthenticated()) return false;
+    if (!this.userDataService.isAuthenticated() || this.userDataService.isAdmin()) return false;
     const url = this.currentUrl();
     if (url.includes('/chat') || url.includes('/sign-in') || url.includes('/update-password')) return false;
     if (this.userDataService.isTakingQuiz()) return false;
