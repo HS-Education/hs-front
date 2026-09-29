@@ -10,7 +10,7 @@
       </div>
 
       <button type="button" (click)="openGenerateModal()" [disabled]="!isPlanning()"
-        class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--brand-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+        class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--button-primary-bg)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[var(--button-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
         <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round"
             d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
@@ -20,17 +20,17 @@
     </div>
 
   @if (!isPlanning()) {
-    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-6">
+    <div class="bg-[var(--color-warning-soft)] border-l-4 border-[var(--color-warning)] p-4 rounded-r-lg mb-6">
     <div class="flex">
       <div class="flex-shrink-0">
-        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+        <svg class="h-5 w-5 text-[var(--color-warning)]" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd"
             d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
             clip-rule="evenodd" />
         </svg>
       </div>
       <div class="ml-3">
-        <p class="text-sm text-yellow-700">
+        <p class="text-sm text-[var(--color-warning)]">
           {{ 'ADMIN.CLASSROOMS.ONLY_PLANNED' | transloco }}
         </p>
       </div>
@@ -54,31 +54,25 @@
     </div>
 
     <div>
-      <select [ngModel]="filterEducationLevel()" (ngModelChange)="filterEducationLevel.set($event)"
+      <select [ngModel]="filterEducationLevel()" (ngModelChange)="filterEducationLevel.set($event)" data-accent="brand"
         class="block w-full px-3 py-2 pr-8 text-sm text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] transition-colors shadow-sm bg-no-repeat bg-[right_0.5rem_center] bg-[length:1em_1em]"
         style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E');">
         <option value="" disabled hidden>{{ 'ADMIN.CLASSROOMS.LEVEL' | transloco }}</option>
-        <option value="PRIMARY">{{ 'ADMIN.CLASSROOMS.PRIMARY' | transloco }}</option>
         <option value="SECONDARY">{{ 'ADMIN.CLASSROOMS.SECONDARY' | transloco }}</option>
       </select>
     </div>
 
     <div>
-      <select [ngModel]="filterGradeLevel()" (ngModelChange)="filterGradeLevel.set($event)"
+      <select [ngModel]="filterGradeLevel()" (ngModelChange)="filterGradeLevel.set($event)" data-accent="brand"
         class="block w-full px-3 py-2 pr-8 text-sm text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] transition-colors shadow-sm bg-no-repeat bg-[right_0.5rem_center] bg-[length:1em_1em]"
         style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E');">
         <option value="" disabled hidden>{{ 'ADMIN.CLASSROOMS.GRADE' | transloco }}</option>
-        <option value="FIRST">{{ 'ADMIN.CLASSROOMS.FIRST' | transloco }}</option>
         <option value="SECOND">{{ 'ADMIN.CLASSROOMS.SECOND' | transloco }}</option>
-        <option value="THIRD">{{ 'ADMIN.CLASSROOMS.THIRD' | transloco }}</option>
-        <option value="FOURTH">{{ 'ADMIN.CLASSROOMS.FOURTH' | transloco }}</option>
-        <option value="FIFTH">{{ 'ADMIN.CLASSROOMS.FIFTH' | transloco }}</option>
-        <option value="SIXTH">{{ 'ADMIN.CLASSROOMS.SIXTH' | transloco }}</option>
       </select>
     </div>
 
     <div>
-      <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)"
+      <select [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)" data-accent="brand"
         class="block w-full px-3 py-2 pr-8 text-sm text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] transition-colors shadow-sm bg-no-repeat bg-[right_0.5rem_center] bg-[length:1em_1em]"
         style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E');">
         <option value="" disabled hidden>{{ 'ADMIN.COMMON.STATUS' | transloco }}</option>
@@ -88,10 +82,11 @@
     </div>
 
     @if (filterCourseName() || filterEducationLevel() || filterGradeLevel() || filterStatus()) {
-    <button (click)="clearFilters()" title="{{ 'ADMIN.COMMON.REMOVE_FILTERS' | transloco }}"
-      class="inline-flex items-center justify-center p-2 text-[var(--text-secondary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+    <button (click)="clearFilters()" [title]="'ADMIN.COMMON.REMOVE_FILTERS' | transloco" [attr.aria-label]="'ADMIN.COMMON.REMOVE_FILTERS' | transloco"
+      class="inline-flex items-center justify-center p-2 text-[var(--text-secondary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)] hover:bg-[var(--brand-primary-soft)] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5Z" />
+        <path stroke-linecap="round" d="M3 21 21 3" />
       </svg>
     </button>
     }
@@ -143,10 +138,7 @@
               <div class="text-sm font-bold text-[var(--text-primary)]">{{ classroom.courseName }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-[var(--text-primary)]">{{ classroom.section.educationLevel | translateEnum }}
-              </div>
-              <div class="text-xs text-[var(--text-secondary)]">{{ classroom.section.gradeLevel | translateEnum }} {{ 'ADMIN.CLASSROOMS.GRADE' | transloco }}
-              </div>
+              <div class="text-sm font-medium text-[var(--text-primary)]">{{ 'ADMIN.CLASSROOMS.GRADE_LEVEL_FORMAT' | transloco: { grade: ('ADMIN.CLASSROOMS.GRADE_ORDINAL.' + classroom.section.gradeLevel | transloco), level: (('ENUM.' + classroom.section.educationLevel) | transloco) } }}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span
@@ -159,9 +151,11 @@
               <div class="flex items-center justify-center gap-2">
                 <span class="text-sm font-medium text-[var(--text-primary)]">{{ 'ADMIN.CLASSROOMS.PROF' | transloco }} {{
                   classroomTeachers()[classroom.id].name }}</span>
-                <button (click)="unassignTeacher(classroom.id)" title="{{ 'ADMIN.CLASSROOMS.UNASSIGN_TEACHER' | transloco }}"
-                  class="text-red-500 hover:text-red-700 transition-colors rounded hover:bg-red-50 p-1">
-                  <i class="bi bi-x-lg"></i>
+                <button type="button" (click)="unassignTeacher(classroom.id)" title="{{ 'ADMIN.CLASSROOMS.UNASSIGN_TEACHER' | transloco }}" [attr.aria-label]="'ADMIN.CLASSROOMS.UNASSIGN_TEACHER' | transloco"
+                  class="inline-flex items-center justify-center border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] text-[var(--color-danger)] hover:text-[var(--color-danger-hover)] transition-colors rounded-lg p-1.5">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="9" cy="8" r="3" /><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 11h5" />
+                  </svg>
                 </button>
               </div>
               } @else {
@@ -171,39 +165,38 @@
             <td class="px-6 py-4 whitespace-nowrap text-center">
               @if (classroom.status === 'ACTIVE') {
               <span
-                class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{{ 'ADMIN.COMMON.ACTIVE' | transloco }}</span>
+                class="inline-flex items-center rounded-md bg-[var(--color-success-soft)] px-2 py-1 text-xs font-medium text-[var(--color-success)] ring-1 ring-inset ring-[var(--color-success-border)]">{{ 'ADMIN.COMMON.ACTIVE' | transloco }}</span>
               } @else {
               <span
-                class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">{{ 'ADMIN.COMMON.INACTIVE' | transloco }}</span>
+                class="inline-flex items-center rounded-md bg-[var(--color-neutral-soft)] px-2 py-1 text-xs font-medium text-[var(--color-neutral)] ring-1 ring-inset ring-[var(--border-strong)]">{{ 'ADMIN.COMMON.INACTIVE' | transloco }}</span>
               }
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <div class="flex items-center justify-end gap-2">
                 @if (!classroomTeachers()[classroom.id]) {
-                <button (click)="openAssignModal(classroom.id)" title="{{ 'ADMIN.CLASSROOMS.ASSIGN_TEACHER' | transloco }}"
-                  class="text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] transition-colors p-2 rounded-lg hover:bg-[var(--brand-primary)]/10">
-                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                <button type="button" (click)="openAssignModal(classroom.id)" title="{{ 'ADMIN.CLASSROOMS.ASSIGN_TEACHER' | transloco }}" [attr.aria-label]="'ADMIN.CLASSROOMS.ASSIGN_TEACHER' | transloco"
+                  class="border border-[var(--brand-primary)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] transition-colors p-2 rounded-lg">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <circle cx="9" cy="8" r="3" /><path d="M3 20v-2a6 6 0 0 1 12 0v2M19 8v6m-3-3h6" />
                   </svg>
                 </button>
                 }
-                <button (click)="openEnrollStudentsModal(classroom)" title="{{ 'ADMIN.CLASSROOMS.ENROLL_STUDENTS' | transloco }}"
-                  class="text-[var(--brand-forest)] hover:text-green-700 transition-colors p-2 rounded-lg hover:bg-green-50">
+                <button type="button" (click)="openEnrollStudentsModal(classroom)" title="{{ 'ADMIN.CLASSROOMS.ENROLL_STUDENTS' | transloco }}" [attr.aria-label]="'ADMIN.CLASSROOMS.ENROLL_STUDENTS' | transloco"
+                  class="border border-[var(--color-success-border)] bg-[var(--color-success-soft)] text-[var(--color-success)] hover:text-[var(--color-success-hover)] transition-colors p-2 rounded-lg">
                   <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                   </svg>
                 </button>
-                <button (click)="openStudentsModal(classroom.id)" title="{{ 'ADMIN.CLASSROOMS.VIEW_STUDENTS' | transloco }}"
-                  class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors p-2 rounded-lg hover:bg-[var(--bg-secondary)]">
+                <button type="button" (click)="openStudentsModal(classroom.id)" title="{{ 'ADMIN.CLASSROOMS.VIEW_STUDENTS' | transloco }}" [attr.aria-label]="'ADMIN.CLASSROOMS.VIEW_STUDENTS' | transloco"
+                  class="border border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:border-[var(--border-strong)] transition-colors p-2 rounded-lg">
                   <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </button>
-                <button (click)="deleteClassroom(classroom.id)" title="{{ 'ADMIN.CLASSROOMS.DELETE_CLASSROOM' | transloco }}"
-                  class="text-red-500 hover:text-red-700 transition-colors p-2 rounded-lg hover:bg-red-50">
+                <button type="button" (click)="deleteClassroom(classroom.id)" title="{{ 'ADMIN.CLASSROOMS.DELETE_CLASSROOM' | transloco }}" [attr.aria-label]="'ADMIN.CLASSROOMS.DELETE_CLASSROOM' | transloco"
+                  class="border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] text-[var(--color-danger)] hover:text-[var(--color-danger-hover)] transition-colors p-2 rounded-lg">
                   <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -223,14 +216,14 @@
 </div>
 
 <!-- Generate Classrooms Modal -->
-<app-modal [isOpen]="isGenerateModalOpen()" title="{{ 'ADMIN.CLASSROOMS.GENERATE_CLASSROOMS' | transloco }}" [onClose]="closeGenerateModal">
+<app-modal [isOpen]="isGenerateModalOpen()" title="{{ 'ADMIN.CLASSROOMS.GENERATE_CLASSROOMS' | transloco }}" [onClose]="closeGenerateModal" widthClass="max-w-md">
   <div class="space-y-4">
     <p class="text-sm text-[var(--text-secondary)]">
       {{ 'ADMIN.CLASSROOMS.GENERATE_MODAL_DESC' | transloco }} <strong>{{ activeAcademicYear()?.year }}</strong>.
       {{ 'ADMIN.CLASSROOMS.GENERATE_MODAL_DESC2' | transloco }}
     </p>
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <p class="text-xs text-blue-800">
+    <div class="admin-classrooms-info border rounded-lg p-4">
+      <p class="text-xs">
         {{ 'ADMIN.CLASSROOMS.GENERATE_MODAL_NOTE' | transloco }}
       </p>
     </div>
@@ -241,7 +234,7 @@
         {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="confirmGenerateClassrooms()" [disabled]="isSubmitting()"
-        class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50">
+        class="inline-flex items-center gap-2 rounded-xl bg-[var(--button-primary-bg)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--button-primary-hover)] transition disabled:opacity-50">
         @if (isSubmitting()) {
         <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -258,7 +251,7 @@
 </app-modal>
 
 <!-- Assign Teacher Modal -->
-<app-modal [isOpen]="isAssignModalOpen()" title="{{ 'ADMIN.CLASSROOMS.ASSIGN_TEACHER_MODAL' | transloco }}" [onClose]="closeAssignModal">
+<app-modal [isOpen]="isAssignModalOpen()" title="{{ 'ADMIN.CLASSROOMS.ASSIGN_TEACHER_MODAL' | transloco }}" [onClose]="closeAssignModal" widthClass="max-w-md">
   <div class="space-y-4">
     <div>
       <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.CLASSROOMS.SELECT_TEACHER' | transloco }}</label>
@@ -270,7 +263,7 @@
         }
       </select>
       @if (teachers().length === 0) {
-      <p class="text-[10px] text-orange-500 mt-1 ml-1">{{ 'ADMIN.CLASSROOMS.NO_TEACHERS_REG' | transloco }}</p>
+      <p class="text-[10px] text-[var(--color-warning)] mt-1 ml-1">{{ 'ADMIN.CLASSROOMS.NO_TEACHERS_REG' | transloco }}</p>
       }
     </div>
 
@@ -280,7 +273,7 @@
         {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="submitAssignTeacher()" [disabled]="!selectedTeacherId() || isSubmitting()"
-        class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50">
+        class="inline-flex items-center gap-2 rounded-xl bg-[var(--button-primary-bg)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--button-primary-hover)] transition disabled:opacity-50">
         @if (isSubmitting()) {
         <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -297,35 +290,30 @@
 </app-modal>
 
 <!-- View Students Modal -->
-<app-modal [isOpen]="isStudentsModalOpen()" title="{{ 'ADMIN.CLASSROOMS.STUDENTS_IN_CLASSROOM' | transloco }}" [onClose]="closeStudentsModal">
+<app-modal [isOpen]="isStudentsModalOpen()" title="{{ 'ADMIN.CLASSROOMS.STUDENTS_IN_CLASSROOM' | transloco }}" [onClose]="closeStudentsModal" widthClass="max-w-4xl">
   <div class="space-y-4">
     @if (classroomStudents().length === 0) {
     <div class="py-6 text-center">
       <p class="text-sm text-[var(--text-secondary)]">{{ 'ADMIN.CLASSROOMS.NO_STUDENTS_IN_CLASSROOM' | transloco }}</p>
     </div>
     } @else {
-    <div
-      class="max-h-60 overflow-y-auto border border-[var(--border)] rounded-xl divide-y divide-[var(--border)] bg-[var(--surface)]">
-      @for (student of classroomStudents(); track student.id; let i = $index) {
-      <div class="flex items-center justify-between p-3 hover:bg-[var(--bg-secondary)] transition-colors">
-        <div class="flex items-center gap-3">
-          <span class="text-xs font-bold text-[var(--text-secondary)] w-6">{{ i + 1 }}.</span>
-          <div>
-            <p class="text-sm font-bold text-[var(--text-primary)]">{{ student.userName }}</p>
+    <div class="max-h-[65vh] overflow-y-auto p-1">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        @for (student of classroomStudents(); track student.id; let i = $index) {
+        <div class="flex min-w-0 items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 hover:bg-[var(--bg-secondary)] transition-colors">
+          <div class="flex min-w-0 items-center gap-2">
+            <span class="w-5 shrink-0 text-xs font-bold text-[var(--text-secondary)]">{{ i + 1 }}.</span>
+            <p class="min-w-0 break-words text-sm font-bold text-[var(--text-primary)]">{{ student.userName }}</p>
           </div>
-        </div>
-        <div class="flex items-center gap-3">
-          <span
-            class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-[10px] font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-            {{ 'ADMIN.CLASSROOMS.ENROLLED' | transloco }}
-          </span>
-          <button (click)="unenrollStudent(student.userId, student.userName)" title="{{ 'ADMIN.CLASSROOMS.UNENROLL_STUDENT' | transloco }}"
-            class="text-red-500 hover:text-red-700 transition-colors p-1.5 rounded-lg hover:bg-red-50">
-            <i class="bi bi-x-lg"></i>
+          <button type="button" (click)="unenrollStudent(student.userId, student.userName)" [title]="'ADMIN.CLASSROOMS.UNENROLL_STUDENT' | transloco" [attr.aria-label]="'ADMIN.CLASSROOMS.UNENROLL_STUDENT' | transloco"
+            class="shrink-0 border border-[var(--color-danger-border)] bg-[var(--color-danger-soft)] text-[var(--color-danger)] hover:text-[var(--color-danger-hover)] transition-colors p-1.5 rounded-lg">
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="9" cy="8" r="3" /><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 11h5" />
+              </svg>
           </button>
         </div>
+        }
       </div>
-      }
     </div>
     }
 
@@ -340,13 +328,14 @@
 
 <!-- Enroll Students Modal -->
 <app-modal [isOpen]="isEnrollStudentsModalOpen()" title="{{ 'ADMIN.CLASSROOMS.ENROLL_STUDENTS_MODAL' | transloco }}"
-  [onClose]="closeEnrollStudentsModal">
+  [onClose]="closeEnrollStudentsModal" widthClass="max-w-4xl">
   <div class="space-y-6">
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <p class="text-xs text-blue-800">
+    <div class="admin-classrooms-info border rounded-lg p-4">
+      <p class="text-xs">
         {{ 'ADMIN.CLASSROOMS.ENROLL_STUDENTS_DESC' | transloco }}
-        (@if(selectedClassroomForEnrollment(); as c) { {{ c.section.educationLevel | translateEnum }} - {{
-        c.section.gradeLevel | translateEnum }} Grado }).
+        @if (selectedClassroomForEnrollment(); as c) {
+          <span class="ml-1 font-semibold text-[var(--text-primary)]">{{ 'ADMIN.CLASSROOMS.GRADE_LEVEL_FORMAT' | transloco: { grade: ('ADMIN.CLASSROOMS.GRADE_ORDINAL.' + c.section.gradeLevel | transloco), level: (('ENUM.' + c.section.educationLevel) | transloco) } }}</span>
+        }
       </p>
     </div>
 
@@ -354,26 +343,43 @@
       <label class="block text-sm font-bold text-[var(--text-secondary)] mb-2">{{ 'ADMIN.CLASSROOMS.SELECT_STUDENTS' | transloco }}</label>
 
       @if (students().length === 0) {
-      <p class="text-[10px] text-orange-500 mt-1 ml-1">{{ 'ADMIN.CLASSROOMS.NO_STUDENTS_REG' | transloco }}</p>
+      <p class="text-[10px] text-[var(--color-warning)] mt-1 ml-1">{{ 'ADMIN.CLASSROOMS.NO_STUDENTS_REG' | transloco }}</p>
       } @else if (availableStudents().length === 0) {
-      <p class="text-[10px] text-green-600 mt-1 ml-1">{{ 'ADMIN.CLASSROOMS.ALL_STUDENTS_ENROLLED' | transloco }}</p>
+      <p class="text-[10px] text-[var(--color-success)] mt-1 ml-1">{{ 'ADMIN.CLASSROOMS.ALL_STUDENTS_ENROLLED' | transloco }}</p>
       } @else {
-      <div
-        class="max-h-60 overflow-y-auto border border-[var(--border)] rounded-xl divide-y divide-[var(--border)] bg-[var(--surface)]">
-        @for (student of availableStudents(); track student.id) {
-        <label class="flex items-center gap-3 p-3 hover:bg-[var(--bg-secondary)] cursor-pointer transition-colors">
-          <input type="checkbox" [checked]="selectedStudentIds().includes(student.id)"
-            (change)="toggleStudentSelection(student.id)"
-            class="h-4 w-4 rounded border-gray-300 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)]">
-          <div>
-            <p class="text-sm font-bold text-[var(--text-primary)]">{{ student.name }}</p>
-            <p class="text-xs text-[var(--text-secondary)]">{{ student.username }}</p>
-          </div>
-        </label>
-        }
+      <div class="relative mb-3">
+        <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><path stroke-linecap="round" d="m20 20-4-4" />
+        </svg>
+        <input type="search" [ngModel]="studentSearch()" (ngModelChange)="studentSearch.set($event)"
+          [placeholder]="'ADMIN.CLASSROOMS.SEARCH_STUDENT' | transloco"
+          [attr.aria-label]="'ADMIN.CLASSROOMS.SEARCH_STUDENT' | transloco"
+          class="w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)]" />
+      </div>
+      @if (filteredAvailableStudents().length === 0) {
+      <p class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] p-4 text-center text-sm text-[var(--text-secondary)]">{{ 'ADMIN.CLASSROOMS.NO_STUDENTS_MATCH' | transloco }}</p>
+      } @else {
+      <div class="max-h-[50vh] overflow-y-auto p-1">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          @for (student of filteredAvailableStudents(); track student.id) {
+          <label class="flex min-w-0 items-start gap-3 rounded-xl border p-3 cursor-pointer transition-colors"
+            [ngClass]="selectedStudentIds().includes(student.id) ? 'border-[var(--brand-primary)] bg-[var(--brand-primary-soft)]' : 'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)]'">
+            <input type="checkbox" [checked]="selectedStudentIds().includes(student.id)"
+              (change)="toggleStudentSelection(student.id)"
+              class="mt-0.5 h-4 w-4 shrink-0 rounded focus:ring-[var(--brand-primary)]"
+              [style.accent-color]="selectedStudentIds().includes(student.id) ? 'var(--brand-primary)' : 'var(--border-strong)'"
+              [style.border-color]="selectedStudentIds().includes(student.id) ? 'var(--brand-primary)' : 'var(--border)'">
+            <div class="min-w-0">
+              <p class="break-words text-sm font-bold text-[var(--text-primary)]">{{ student.name }}</p>
+              <p class="break-all text-xs text-[var(--text-secondary)]">{{ student.username }}</p>
+            </div>
+          </label>
+          }
+        </div>
       </div>
       <p class="text-xs text-[var(--text-secondary)] text-right mt-2">{{ selectedStudentIds().length }} {{ 'ADMIN.CLASSROOMS.SELECTED' | transloco }}
       </p>
+      }
       }
     </div>
 
@@ -384,7 +390,7 @@
       </button>
       <button type="button" (click)="submitEnrollStudents()"
         [disabled]="selectedStudentIds().length === 0 || isSubmitting()"
-        class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-forest)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-green-700 transition disabled:opacity-50">
+        class="inline-flex items-center gap-2 rounded-xl bg-[var(--button-primary-bg)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--button-primary-hover)] transition disabled:opacity-50">
         @if (isSubmitting()) {
         <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -401,5 +407,5 @@
 </app-modal>
 
 <!-- Modal: Confirmación -->
-<app-confirm-modal [isOpen]="confirmModalOpen()" [title]="confirmModalTitle()" [message]="confirmModalMessage()"
+<app-confirm-modal widthClass="max-w-md" [isOpen]="confirmModalOpen()" [title]="confirmModalTitle()" [message]="confirmModalMessage()"
   [onCancel]="closeConfirmModal" [onConfirmCallback]="confirmAction()"></app-confirm-modal>

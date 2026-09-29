@@ -1,0 +1,134 @@
+<div class="comparison-toolbar">
+  <p>{{ 'AREAS.COMPARISON.INTRO' | transloco }}</p>
+</div>
+@if (teachers().length) {
+  <div class="teacher-explorer" [class.is-split]="selection() !== null" [class.is-comparing]="viewTab() !== 'summary'">
+    <div class="teacher-map">
+      <div class="teacher-tree-viewport" (wheel)="onTreeWheel($event)">
+        <div class="teacher-tree" [style.--teacher-count]="pagedTeachers().length">
+          <ul class="root"><li>
+            <div class="diagram-node root-node">
+              <label for="comparison-course">{{ 'AREAS.COURSE_NODE' | transloco }}</label>
+              <select class="w-full" id="comparison-course" data-accent="brand" [value]="courseId() ?? ''" (change)="setCourse($any($event.target).value)">
+                <option value="">{{ 'AREAS.COMPARISON.ALL_COURSES' | transloco }}</option>
+                @for (course of courses(); track course.id) { <option [value]="course.id">{{ course.name }}</option> }
+              </select>
+            </div>
+            <ul class="teacher-list">@for (teacher of pagedTeachers(); track teacher.key) {
+              <li><div class="teacher-branch" [class.selected]="selection()?.teacher === teacher.key">
+                <button type="button" class="diagram-node teacher-node" [attr.aria-pressed]="selection()?.teacher === teacher.key"
+                  (click)="select({teacher: teacher.key, courseId: courseId(), classroomId: null})">
+                  <span class="avatar" aria-hidden="true">{{ teacher.name ? teacher.name.slice(0, 1).toUpperCase() : '—' }}</span>
+                  <strong>{{ teacher.name || ('AREAS.COMPARISON.UNASSIGNED' | transloco) }}</strong>
+                  <small>{{ teacher.classrooms.length }} {{ (teacher.classrooms.length === 1 ? 'AREAS.COMPARISON.CLASSROOM' : 'AREAS.COMPARISON.CLASSROOMS') | transloco }}</small>
+                </button>
+                @if (selection()?.teacher === teacher.key) {
+                <div class="classroom-picker">
+                  <label class="sr-only" [for]="'classrooms-' + teacher.key">{{ 'AREAS.COMPARISON.ALL_CLASSROOMS' | transloco }}: {{ teacher.name }}</label>
+                  <select class="w-full" [id]="'classrooms-' + teacher.key" data-accent="brand" data-menu-layout="compact" data-menu-align="end" data-menu-placement="top" [value]="selection()?.teacher === teacher.key && selection()?.classroomId !== null ? selection()?.classroomId : ''"
+                    (change)="selectTeacherClassroom(teacher.key, $any($event.target).value)">
+                    <option value="">{{ 'AREAS.COMPARISON.ALL_CLASSROOMS' | transloco }}</option>
+                    @for (room of teacher.classrooms; track room.id) {
+                      <option [value]="room.id" [attr.data-menu-primary]="room.courseName" [attr.data-menu-secondary]="(room.section.gradeLevel | translateEnum) + ' ' + room.section.name">{{ room.courseName }} · {{ room.section.gradeLevel | translateEnum }} {{ room.section.name }}</option>
+                    }
+                  </select>
+                </div>
+                }
+              </div></li>
+            }</ul>
+          </li></ul>
+        </div>
+      </div>
+      @if (treePageCount() > 1) {
+        <nav class="tree-pagination" [attr.aria-label]="'AREAS.COMPARISON.TREE_PAGES' | transloco">
+          <span>{{ 'AREAS.COMPARISON.TREE_RANGE' | transloco: { from: treePageIndex() * 4 + 1, to: treePageIndex() * 4 + pagedTeachers().length, total: teachers().length } }}</span>
+          <div class="page-controls">
+            <button type="button" [disabled]="treePageIndex() === 0" (click)="stepTreePage(-1)" [attr.aria-label]="'AREAS.COMPARISON.PREVIOUS_TEACHERS' | transloco"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6" /></svg></button>
+            <small>{{ treePageIndex() + 1 }} / {{ treePageCount() }}</small>
+            <button type="button" [disabled]="treePageIndex() === treePageCount() - 1" (click)="stepTreePage(1)" [attr.aria-label]="'AREAS.COMPARISON.NEXT_TEACHERS' | transloco"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg></button>
+          </div>
+        </nav>
+      }
+      @if (!selection()) {
+        <button type="button" class="open-comparison" (click)="select({teacher: null, courseId: courseId(), classroomId: null})">{{ 'AREAS.COMPARISON.OPEN' | transloco }} <span aria-hidden="true">→</span></button>
+      }
+    </div>
+    @if (selection()) {
+      <aside class="teacher-detail" [class.is-closing]="closing()">
+        <header class="detail-header">
+          <div><small>{{ (viewTab() === 'summary' ? 'AREAS.TREE_EXPLORER.ANNUAL_SUMMARY' : 'AREAS.COMPARISON.ANNUAL_VIEW') | transloco }}</small>
+            <h3>{{ viewTab() === 'summary' ? (scopeTeacher()?.name || ('AREAS.COMPARISON.AREA_OVERVIEW' | transloco)) : (viewTab() === 'teachers' ? ('AREAS.COMPARISON.TEACHERS' | transloco) : ('AREAS.COMPARISON.COURSES' | transloco)) }}</h3>
+            <p>{{ viewTab() === 'summary' ? (scopeClassroom()?.courseName || scopeCourse()?.name || areaName()) : areaName() }}</p>
+          </div>
+          <button type="button" class="close-summary" (click)="close()" [attr.aria-label]="'AREAS.TREE_EXPLORER.CLOSE' | transloco"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
+        </header>
+        <nav class="view-tabs" [attr.aria-label]="'AREAS.COMPARISON.VIEWS' | transloco">
+          <button type="button" [class.active]="viewTab() === 'summary'" [attr.aria-pressed]="viewTab() === 'summary'" (click)="setTab('summary')">{{ 'AREAS.COMPARISON.SUMMARY' | transloco }}</button>
+          <button type="button" [class.active]="viewTab() === 'teachers'" [attr.aria-pressed]="viewTab() === 'teachers'" (click)="setTab('teachers')">{{ 'AREAS.COMPARISON.TEACHERS' | transloco }}</button>
+          <button type="button" [class.active]="viewTab() === 'courses'" [attr.aria-pressed]="viewTab() === 'courses'" (click)="setTab('courses')">{{ 'AREAS.COMPARISON.COURSES' | transloco }}</button>
+        </nav>
+        @if (viewTab() === 'summary') {
+          <div class="summary-cards">
+            <article><h4>{{ 'AREAS.TREE_EXPLORER.AVERAGE' | transloco }}</h4><strong [style.color]="color(metrics().average)">{{ metrics().average === null ? '—' : (metrics().average | number:'1.0-1') }}<small>/20</small></strong></article>
+            <article><h4>{{ 'AREAS.TREE_EXPLORER.EVALUATED' | transloco }}</h4><strong>{{ metrics().students }}</strong><small>{{ metrics().classrooms }} {{ (metrics().classrooms === 1 ? 'AREAS.COMPARISON.CLASSROOM' : 'AREAS.COMPARISON.CLASSROOMS') | transloco }}</small></article>
+            <article><h4>{{ 'AREAS.COMPARISON.EXCELLENT' | transloco }}</h4><strong [style.color]="color(20)">{{ metrics().excellent === null ? '—' : (metrics().excellent | number:'1.0-0') }}<small>@if (metrics().excellent !== null) { % }</small></strong><small>{{ 'AREAS.COMPARISON.ABOVE_17' | transloco }}</small></article>
+          </div>
+          <div class="method-notes">
+            <p>{{ 'AREAS.COMPARISON.AVERAGE_METHOD' | transloco }}</p>
+            <p>{{ 'AREAS.COMPARISON.MISSING_MARKS_METHOD' | transloco }}</p>
+            <p class="method-caution">{{ 'AREAS.COMPARISON.METHOD_CAUTION' | transloco }}</p>
+          </div>
+          @if (metrics().missingClassrooms) { <p class="empty-message">{{ 'AREAS.COMPARISON.INCOMPLETE' | transloco }}</p> }
+        } @else {
+          <section class="comparison-panel" [class.is-course-overview]="viewTab() === 'courses'">
+            <div class="panel-heading"><h4>{{ (viewTab() === 'courses' ? 'AREAS.COMPARISON.COURSE_PERFORMANCE' : 'AREAS.COMPARISON.COMPARE') | transloco }}</h4></div>
+            <p class="comparison-context">{{ (viewTab() === 'courses' ? 'AREAS.COMPARISON.AREA_COURSES' : 'AREAS.COMPARISON.COURSE_TEACHERS') | transloco }}</p>
+            <div class="chart-options">
+              @if (viewTab() === 'teachers') {
+                <div class="compare-picks" [attr.aria-label]="'AREAS.COMPARISON.PICK' | transloco">
+                  <button type="button" [class.active]="!comparedKeys().length" [attr.aria-pressed]="!comparedKeys().length" (click)="clearComparison()">{{ 'AREAS.COMPARISON.SHOW_ALL' | transloco }}</button>
+                  @for (row of rows(); track row.key) {
+                    <button type="button" [class.active]="comparedKeys().includes(row.key)" [attr.aria-pressed]="comparedKeys().includes(row.key)" (click)="toggleCompare(row.key)">{{ row.name }}</button>
+                  }
+                </div>
+              } @else { <span class="chart-hint">{{ 'AREAS.COMPARISON.CHART_SCALE' | transloco }}</span> }
+            </div>
+            <div class="comparison-chart" (wheel)="onChartWheel($event)" [attr.aria-label]="'AREAS.COMPARISON.CHART_LABEL' | transloco">
+              <div class="chart-scale" aria-hidden="true">@for (tick of [20, 15, 10, 5, 0]; track tick) { <span>{{ tick }}</span> }</div>
+              <div class="chart-grid" aria-hidden="true">@for (tick of [20, 15, 10, 5, 0]; track tick) { <span></span> }</div>
+              <div class="chart-columns" [style.--chart-count]="chartRows().length || 1">
+                @for (row of chartRows(); track row.key) {
+                  <button type="button" class="chart-column" [class.active]="activeChartRow()?.key === row.key"
+                    [attr.aria-pressed]="activeChartRow()?.key === row.key" [attr.title]="row.name"
+                    [attr.aria-label]="row.name + ': ' + (row.metrics.average === null ? ('AREAS.COMPARISON.NO_MARKS' | transloco) : (row.metrics.average | number:'1.0-1') + '/20')"
+                    (click)="selectedChartKey.set(row.key)">
+                    <span class="bar-stage"><span class="bar-fill" [class.no-marks]="row.metrics.average === null" [style.height.%]="(row.metrics.average ?? 0) * 5" [style.background]="color(row.metrics.average)">
+                      <b class="bar-value" [style.color]="color(row.metrics.average)">{{ row.metrics.average === null ? '—' : (row.metrics.average | number:'1.0-1') }}</b>
+                    </span></span>
+                    <span class="bar-label">{{ row.name }}</span>
+                  </button>
+                } @empty { <p class="chart-empty">{{ (viewTab() === 'courses' ? 'AREAS.COMPARISON.NO_COURSES' : 'AREAS.COMPARISON.NO_TEACHERS') | transloco }}</p> }
+              </div>
+            </div>
+            <footer class="chart-footer">
+              <span>{{ 'AREAS.COMPARISON.SELECT_BAR' | transloco }}</span>
+              @if (chartPageCount() > 1) {
+                <nav [attr.aria-label]="'AREAS.COMPARISON.CHART_PAGES' | transloco">
+                  <button type="button" [disabled]="chartPageIndex() === 0" (click)="stepChartPage(-1)" [attr.aria-label]="'AREAS.COMPARISON.PREVIOUS_GROUP' | transloco"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6" /></svg></button>
+                  <small>{{ chartPageIndex() + 1 }} / {{ chartPageCount() }}</small>
+                  <button type="button" [disabled]="chartPageIndex() === chartPageCount() - 1" (click)="stepChartPage(1)" [attr.aria-label]="'AREAS.COMPARISON.NEXT_GROUP' | transloco"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg></button>
+                </nav>
+              }
+            </footer>
+            @if (activeChartRow(); as row) {
+              <div class="chart-detail" aria-live="polite">
+                <strong [attr.title]="row.name">{{ row.name }}</strong>
+                <div><span>{{ row.metrics.students }} {{ (row.metrics.students === 1 ? 'AREAS.COMPARISON.STUDENT' : 'AREAS.COMPARISON.STUDENTS') | transloco }}</span><span>{{ row.metrics.classrooms }} {{ (row.metrics.classrooms === 1 ? 'AREAS.COMPARISON.CLASSROOM' : 'AREAS.COMPARISON.CLASSROOMS') | transloco }}</span><span class="excellent-rate" [style.color]="color(20)">{{ row.metrics.excellent === null ? '—' : (row.metrics.excellent | number:'1.0-0') + '%' }} {{ 'AREAS.COMPARISON.EXCELLENT_SHORT' | transloco }}</span></div>
+              </div>
+            }
+          </section>
+        }
+      </aside>
+    }
+  </div>
+} @else { <p class="empty-message">{{ 'AREAS.COMPARISON.EMPTY' | transloco }}</p> }

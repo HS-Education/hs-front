@@ -20,8 +20,8 @@
 
 /* Chat bubble styling */
 .user-bubble {
-  background: linear-gradient(135deg, var(--brand-primary-hover) 0%, var(--brand-primary) 100%);
-  color: white;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
   border-top-right-radius: 4px;
 }
 

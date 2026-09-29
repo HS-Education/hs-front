@@ -1,3 +1,4 @@
+import { TranslocoPipe , TranslocoService} from '@jsverse/transloco';
 import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
@@ -8,7 +9,7 @@ import {finalize} from 'rxjs';
 
 @Component({
   selector: 'app-sign-in',
-  imports: [
+  imports: [TranslocoPipe,
     ReactiveFormsModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,6 +17,7 @@ import {finalize} from 'rxjs';
   styleUrl: './sign-in.css',
 })
 export class SignIn {
+  private readonly translocoService = inject(TranslocoService);
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly userDataService = inject(UserDataService);
@@ -31,7 +33,7 @@ export class SignIn {
 
   onSubmit(): void {
     if (this.form.invalid) {
-      this.errorMessage.set('Completa todos los campos.');
+      this.errorMessage.set(this.translocoService.translate('UI_TEXT.COMPLETE_ALL_FIELDS'));
       return;
     }
 
@@ -63,8 +65,8 @@ export class SignIn {
           }
           this.errorMessage.set(
             isHttpUnauthorized(err)
-              ? 'Credenciales inválidas'
-              : 'Error de conexión. Intenta nuevamente.'
+              ? this.translocoService.translate('UI_TEXT.INVALID_CREDENTIALS')
+              : this.translocoService.translate('UI_TEXT.CONNECTION_ERROR_PLEASE_TRY_AGAIN')
           );
         },
       });

@@ -12,14 +12,15 @@ import { ToastService } from '../../../shared/services/toast.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Modal } from '../../../shared/components/modal/modal';
 import { ConfirmModal } from '../../../shared/components/modal/confirm-modal';
-import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { StyledSelectDirective } from '../../../shared/directives/styled-select.directive';
 
 @Component({
   selector: 'app-classrooms-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal, ConfirmModal, TranslateEnumPipe, TranslocoPipe],
+  imports: [CommonModule, FormsModule, Modal, ConfirmModal, TranslocoPipe, StyledSelectDirective],
   templateUrl: './classrooms-management.html',
+  styleUrl: './classrooms-management.css',
   host: {
     class: 'block h-full'
   }
@@ -40,6 +41,7 @@ export class ClassroomsManagement implements OnInit {
   readonly teachers = signal<User[]>([]);
   readonly students = signal<User[]>([]);
   readonly availableStudents = signal<User[]>([]);
+  readonly studentSearch = signal('');
   
   // Filters
   readonly filterCourseName = signal('');
@@ -71,6 +73,17 @@ export class ClassroomsManagement implements OnInit {
 
   // Computed state
   readonly isPlanning = computed(() => this.activeAcademicYear()?.status === 'PLANNED');
+
+  readonly filteredAvailableStudents = computed(() => {
+    const query = this.studentSearch().trim().toLocaleLowerCase();
+    const students = this.availableStudents();
+    if (!query) return students;
+
+    return students.filter(student =>
+      student.name.toLocaleLowerCase().includes(query) ||
+      student.username.toLocaleLowerCase().includes(query)
+    );
+  });
 
   readonly filteredClassrooms = computed(() => {
     let result = this.classrooms();
@@ -256,6 +269,7 @@ export class ClassroomsManagement implements OnInit {
   openEnrollStudentsModal(classroom: Classroom) {
     this.selectedClassroomForEnrollment.set(classroom);
     this.selectedStudentIds.set([]);
+    this.studentSearch.set('');
     this.availableStudents.set([]); // Clear previous
     this.isEnrollStudentsModalOpen.set(true);
 
@@ -287,6 +301,7 @@ export class ClassroomsManagement implements OnInit {
 
   closeEnrollStudentsModal = () => {
     this.isEnrollStudentsModalOpen.set(false);
+    this.studentSearch.set('');
   }
 
   toggleStudentSelection(studentId: number) {

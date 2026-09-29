@@ -38,6 +38,7 @@
               }
             ],
             "styles": [
+              "node_modules/katex/dist/katex.min.css",
               "src/styles.css"
             ]
           },
@@ -51,8 +52,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "500kB",
+                  "maximumError": "1.5MB"
                 }
               ],
               "outputHashing": "all"

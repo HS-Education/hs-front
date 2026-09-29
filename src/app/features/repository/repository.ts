@@ -1,17 +1,20 @@
-import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ClassroomService} from '../classrooms/data-access/classroom.service';
 import {UserDataService} from '../../shared/services/user-data.service';
 import {Classroom} from '../classrooms/data-access/models/responses/classroom.model';
 import {Topic} from '../classrooms/data-access/models/responses/topic.model';
 import {Document} from '../classrooms/data-access/models/responses/document.model';
-import {forkJoin, map, switchMap} from 'rxjs';
+import {EMPTY, catchError, exhaustMap, filter, forkJoin, interval, map, switchMap} from 'rxjs';
 import {FormsModule} from '@angular/forms';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {Modal} from '../../shared/components/modal/modal';
 import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
 import {TranslateEnumPipe} from '../../shared/pipes/translate-enum.pipe';
 import {BIMESTER_OPTIONS, EDUCATION_LEVEL_OPTIONS, GRADE_LEVEL_OPTIONS} from '../../shared/models/academic-levels.model';
-import {TranslocoPipe} from '@jsverse/transloco';
+import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
+import {StyledSelectDirective} from '../../shared/directives/styled-select.directive';
+import {ToastService} from '../../shared/services/toast.service';
 
 interface GradingPeriodResource {
   id: number;
@@ -28,13 +31,16 @@ interface UploadFileMetadata {
 
 @Component({
   selector: 'app-repository',
-  imports: [Modal, ConfirmModal, FormsModule, TranslateEnumPipe, TranslocoPipe],
+  imports: [Modal, ConfirmModal, FormsModule, TranslateEnumPipe, TranslocoPipe, StyledSelectDirective],
   templateUrl: './repository.html',
   styleUrl: './repository.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Repository implements OnInit {
+  private readonly translocoService = inject(TranslocoService);
+  private readonly toastService = inject(ToastService);
   private readonly classroomService = inject(ClassroomService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly userDataService = inject(UserDataService);
   private readonly sanitizer = inject(DomSanitizer);
 
@@ -50,7 +56,9 @@ export class Repository implements OnInit {
 
   readonly loadingClassrooms = signal(true);
   readonly loadingContent = signal(false);
+  readonly classroomsLoadFailed = signal(false);
   readonly downloadingId = signal<number | null>(null);
+  readonly retryingDocumentId = signal<number | null>(null);
 
   readonly coordinatorArea = signal<string | null>(null);
   readonly coordinatorAreaId = signal<number | null>(null);
@@ -119,21 +127,20 @@ export class Repository implements OnInit {
   });
 
   ngOnInit(): void {
+    interval(5000).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      filter(() => this.documents().some((doc) => doc.document_status === 'UPLOADED' || doc.document_status === 'PROCESSING')),
+      exhaustMap(() => {
+        const courseId = this.selectedCourseId();
+        return courseId
+          ? this.classroomService.getClassroomDocuments(courseId).pipe(catchError(() => EMPTY))
+          : EMPTY;
+      })
+    ).subscribe((latestDocuments) => this.refreshDocumentStatuses(latestDocuments));
+
     const user = this.userDataService.userProfile();
     if (user) {
-      this.classroomService.getClassrooms(user.id).subscribe({
-        next: (list) => {
-          this.classrooms.set(list);
-          this.loadingClassrooms.set(false);
-          if (list.length > 0) {
-            this.selectCourse(list[0].courseId);
-          }
-        },
-        error: (err: unknown) => {
-          console.error('Error al cargar aulas:', err);
-          this.loadingClassrooms.set(false);
-        }
-      });
+      this.loadClassrooms(user.id);
 
       this.classroomService.getAreas().subscribe({
         next: (areas) => {
@@ -148,6 +155,34 @@ export class Repository implements OnInit {
         }
       });
     }
+  }
+
+  retryLoadingClassrooms(): void {
+    const user = this.userDataService.userProfile();
+    if (user) this.loadClassrooms(user.id);
+  }
+
+  private loadClassrooms(userId: number): void {
+    this.loadingClassrooms.set(true);
+    this.classroomsLoadFailed.set(false);
+    this.classroomService.getClassrooms(userId).subscribe({
+      next: (list) => {
+        this.classrooms.set(list);
+        this.loadingClassrooms.set(false);
+        if (list.length > 0) {
+          this.selectCourse(list[0].courseId);
+        } else {
+          this.selectedCourseId.set(null);
+          this.topics.set([]);
+          this.documents.set([]);
+        }
+      },
+      error: (err: unknown) => {
+        console.error('Error al cargar aulas:', err);
+        this.classroomsLoadFailed.set(true);
+        this.loadingClassrooms.set(false);
+      }
+    });
   }
 
   selectCourse(courseId: number): void {
@@ -180,7 +215,7 @@ export class Repository implements OnInit {
         this.documents.set(documents);
         
         if (periods && periods.length > 0) {
-          this.gradingPeriods.set(periods);
+          this.gradingPeriods.set(this.sortGradingPeriods(periods));
         } else {
           this.useDefaultGradingPeriods();
         }
@@ -194,6 +229,14 @@ export class Repository implements OnInit {
     });
   }
 
+  private refreshDocumentStatuses(latestDocuments: Document[]): void {
+    const statusesById = new Map(latestDocuments.map((document) => [document.id, document.document_status]));
+    this.documents.update((documents) => documents.map((document) => {
+      const latestStatus = statusesById.get(document.id);
+      return latestStatus ? {...document, document_status: latestStatus} : document;
+    }));
+  }
+
   useDefaultGradingPeriods(): void {
     this.gradingPeriods.set([
       { id: 1, bimester: 'BIMESTER_1' },
@@ -203,6 +246,23 @@ export class Repository implements OnInit {
     ]);
   }
 
+  private sortGradingPeriods(periods: GradingPeriodResource[]): GradingPeriodResource[] {
+    const order = (value: string): number => {
+      const normalized = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+      const configuredIndex = BIMESTER_OPTIONS.findIndex(option => option.value === normalized);
+      if (configuredIndex >= 0) return configuredIndex + 1;
+
+      const numericOrder = normalized.match(/\d+/)?.[0];
+      if (numericOrder) return Number(numericOrder);
+
+      const ordinalNames = ['FIRST|PRIMER|PRIMERO', 'SECOND|SEGUNDO', 'THIRD|TERCER|TERCERO', 'FOURTH|CUARTO'];
+      const ordinalIndex = ordinalNames.findIndex(names => new RegExp(`\\b(${names})\\b`).test(normalized));
+      return ordinalIndex >= 0 ? ordinalIndex + 1 : Number.MAX_SAFE_INTEGER;
+    };
+
+    return [...periods].sort((a, b) => order(a.bimester) - order(b.bimester) || a.id - b.id);
+  }
+
   getTopicBimester(gradingPeriodId: number): string {
     const period = this.gradingPeriods().find(gp => gp.id === gradingPeriodId);
     return period ? period.bimester : '';
@@ -210,6 +270,24 @@ export class Repository implements OnInit {
 
   getDocsForTopic(topicId: number): Document[] {
     return this.documents().filter((doc) => doc.topicId === topicId);
+  }
+
+  retryDocumentProcessing(documentId: number): void {
+    const courseId = this.selectedCourseId();
+    if (!courseId || this.retryingDocumentId() !== null) return;
+
+    this.retryingDocumentId.set(documentId);
+    this.classroomService.retryDocumentProcessing(courseId, documentId).subscribe({
+      next: () => {
+        this.toastService.success(this.translocoService.translate('CLASSROOMS.REPO.RETRY_PROCESSING_QUEUED'));
+        this.fetchCourseContent(courseId);
+        this.retryingDocumentId.set(null);
+      },
+      error: () => {
+        this.toastService.error(this.translocoService.translate('CLASSROOMS.REPO.RETRY_PROCESSING_ERROR'));
+        this.retryingDocumentId.set(null);
+      }
+    });
   }
 
   downloadDocument(documentId: number, documentTitle: string): void {
@@ -251,7 +329,7 @@ export class Repository implements OnInit {
       error: (err) => {
         console.error('Error al obtener URL de previsualización:', err);
         this.previewLoading.set(false);
-        alert('No se pudo cargar la previsualización del documento.');
+        alert(this.translocoService.translate('UI_TEXT.UNABLE_TO_LOAD_THE_DOCUMENT_PREVIEW'));
       }
     });
   }
@@ -266,7 +344,7 @@ export class Repository implements OnInit {
     if (!courseId) return;
 
     this.confirmModalTitle.set('Eliminar Documento');
-    this.confirmModalMessage.set('¿Estás seguro de eliminar este documento?');
+    this.confirmModalMessage.set(this.translocoService.translate('UI_TEXT.ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS'));
     this.confirmAction.set(() => {
       this.classroomService.deleteDocument(courseId, documentId).subscribe({
         next: () => {
@@ -355,7 +433,7 @@ export class Repository implements OnInit {
     if (!courseId) return;
 
     this.confirmModalTitle.set('Eliminar Tema');
-    this.confirmModalMessage.set('¿Estás seguro de eliminar este tema? También se desvincularán los documentos.');
+    this.confirmModalMessage.set(this.translocoService.translate('UI_TEXT.ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_77'));
     this.confirmAction.set(() => {
       this.classroomService.deleteTopic(courseId, topicId).subscribe({
         next: () => {

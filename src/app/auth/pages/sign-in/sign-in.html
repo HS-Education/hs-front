@@ -9,7 +9,7 @@
       <!-- Logo HS Education (match navbar) -->
       <div class="flex items-center justify-center gap-3 mb-6">
         <div
-          class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[var(--brand-primary)] to-[var(--brand-primary-hover)] shadow-lg shadow-[var(--brand-primary)]/10 text-white font-bold text-lg"
+          class="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-mark-bg)] shadow-lg shadow-[var(--brand-primary)]/10 text-[var(--brand-mark-text)] font-bold text-lg"
         >
           HS
         </div>
@@ -19,8 +19,8 @@
           </h1>
         </div>
       </div>
-      <h1 class="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">Bienvenido</h1>
-      <p class="mt-1.5 text-xs text-[var(--text-secondary)] font-medium">Plataforma de Aprendizaje Personalizado</p>
+      <h1 class="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">{{ 'UI_TEXT.WELCOME' | transloco }}</h1>
+      <p class="mt-1.5 text-xs text-[var(--text-secondary)] font-medium">{{ 'UI_TEXT.PERSONALIZED_LEARNING_PLATFORM' | transloco }}</p>
     </div>
 
     <!-- Username Input Group -->
@@ -43,7 +43,7 @@
                peer-focus:top-1.5 peer-focus:-translate-y-0 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[var(--brand-primary)]
                peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:-translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold"
       >
-        Nombre de usuario
+        {{ 'UI_TEXT.USERNAME' | transloco }}
       </label>
     </div>
 
@@ -67,7 +67,7 @@
                peer-focus:top-1.5 peer-focus:-translate-y-0 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[var(--brand-primary)]
                peer-[:not(:placeholder-shown)]:top-1.5 peer-[:not(:placeholder-shown)]:-translate-y-0 peer-[:not(:placeholder-shown)]:text-[10px] peer-[:not(:placeholder-shown)]:font-bold"
       >
-        Contraseña
+        {{ 'ADMIN.USERS.PASSWORD' | transloco }}
       </label>
     </div>
 
@@ -75,16 +75,16 @@
     <button
       type="submit"
       [disabled]="loading() || form.invalid"
-      class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--brand-primary)] to-[var(--brand-primary-hover)] hover:from-[var(--brand-primary-hover)] hover:to-[var(--brand-primary)] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-[var(--brand-primary)]/20 hover:shadow-[var(--brand-primary)]/30 transition-all duration-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:from-[var(--bg-secondary)] disabled:to-[var(--bg-secondary)] disabled:text-[var(--text-secondary)]/40 disabled:border disabled:border-[var(--border)]/30 disabled:shadow-none"
+      class="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] px-4 py-3.5 text-sm font-bold text-[var(--button-primary-text)] shadow-lg shadow-[var(--brand-primary)]/20 hover:shadow-[var(--brand-primary)]/30 transition-all duration-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[var(--bg-secondary)] disabled:text-[var(--text-secondary)]/40 disabled:border disabled:border-[var(--border)]/30 disabled:shadow-none"
     >
       @if (loading()) {
         <svg class="h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <span>Ingresando...</span>
+        <span>{{ 'UI_TEXT.SIGNING_IN' | transloco }}</span>
       } @else {
-        <span>Ingresar</span>
+        <span>{{ 'UI_TEXT.SIGN_IN' | transloco }}</span>
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
         </svg>

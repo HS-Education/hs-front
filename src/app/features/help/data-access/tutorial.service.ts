@@ -35,4 +35,8 @@ export class TutorialService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
+
+  update(id: number, tutorial: CreatePlatformTutorial): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/${id}`, tutorial);
+  }
 }

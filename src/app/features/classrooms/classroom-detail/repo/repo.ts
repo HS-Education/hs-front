@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, input, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ClassroomService} from '../../data-access/classroom.service';
 import {Document} from '../../data-access/models/responses/document.model';
-import {forkJoin} from 'rxjs';
+import {EMPTY, catchError, exhaustMap, filter, forkJoin, interval} from 'rxjs';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 
 export interface RepoDocument extends Document {
@@ -12,20 +13,24 @@ export interface RepoDocument extends Document {
 import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 import {OnboardingService} from '../../../onboarding/data-access/onboarding.service';
 import {ToastService} from '../../../../shared/services/toast.service';
+import {StyledSelectDirective} from '../../../../shared/directives/styled-select.directive';
+import {LanguageService} from '../../../../core/i18n/language.service';
 
 @Component({
   selector: 'app-repo',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, StyledSelectDirective],
   templateUrl: './repo.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Repo {
   private readonly classroomService = inject(ClassroomService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly translocoService = inject(TranslocoService);
   private readonly onboardingService = inject(OnboardingService);
   private readonly toastService = inject(ToastService);
+  private readonly language = inject(LanguageService);
 
   readonly courseId = input.required<number>();
   readonly documents = signal<RepoDocument[]>([]);
@@ -44,7 +49,11 @@ export class Repo {
   // Filter Signals
   readonly filterTitle = signal('');
   readonly filterTopicId = signal<number | null>(null);
-  readonly topicsList = signal<Array<{ id: number; title: string }>>([]);
+  private readonly topicData = signal<Array<{ id: number; name: string; orderIndex: number }>>([]);
+  readonly topicsList = computed(() => {
+    this.language.activeLanguage();
+    return this.topicData().map(topic => ({id: topic.id, title: `${this.translocoService.translate('CLASSROOMS.REPO.WEEK')} ${topic.orderIndex}: ${topic.name}`}));
+  });
 
   // Computed filtered list of documents
   readonly filteredDocuments = computed(() => {
@@ -96,6 +105,15 @@ export class Repo {
         }
       }
     });
+
+    interval(5000).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      filter(() => this.documents().some((document) => document.document_status === 'UPLOADED'
+        || document.document_status === 'PROCESSING')),
+      exhaustMap(() => this.classroomService.getClassroomDocuments(this.courseId()).pipe(
+        catchError(() => EMPTY)
+      ))
+    ).subscribe((latestDocuments) => this.refreshDocumentStatuses(latestDocuments));
   }
 
   markOnboardingCompleted(): void {
@@ -105,7 +123,7 @@ export class Repo {
         this.toastService.success(this.translocoService.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_SUCCESS'));
       },
       error: () => {
-        this.toastService.error('Error al guardar el progreso');
+        this.toastService.error(this.translocoService.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_ERROR'));
       }
     });
   }
@@ -126,12 +144,12 @@ export class Repo {
         });
 
         // Set topics list for dropdown
-        this.topicsList.set(topics.map(t => ({ id: t.id, title: `${this.translocoService.translate('CLASSROOMS.REPO.WEEK')} ${t.orderIndex}: ${t.name}` })));
+        this.topicData.set(topics);
 
         // Sort documents by topic orderIndex, putting unknown topics at the end
         const mappedDocs: RepoDocument[] = documents.map(doc => ({
           ...doc,
-          topicName: topicMap.get(doc.topicId)?.name ?? this.translocoService.translate('CLASSROOMS.REPO.NO_TOPIC'),
+          topicName: topicMap.get(doc.topicId)?.name ?? '',
           topicOrder: topicMap.get(doc.topicId)?.orderIndex ?? 9999
         }));
 
@@ -141,11 +159,19 @@ export class Repo {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(this.translocoService.translate('CLASSROOMS.REPO.ERROR_FETCH'));
+        this.error.set('CLASSROOMS.REPO.ERROR_FETCH');
         this.loading.set(false);
         console.error(err);
       },
     });
+  }
+
+  private refreshDocumentStatuses(latestDocuments: Document[]): void {
+    const statusesById = new Map(latestDocuments.map((document) => [document.id, document.document_status]));
+    this.documents.update((documents) => documents.map((document) => {
+      const latestStatus = statusesById.get(document.id);
+      return latestStatus ? {...document, document_status: latestStatus} : document;
+    }));
   }
 
   downloadDocument(documentId: number) {

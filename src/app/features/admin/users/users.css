@@ -1,0 +1,5 @@
+:host-context(.dark) .user-role-badge {
+  background-color: #343330;
+  border-color: #55534f;
+  color: #dedbd4;
+}

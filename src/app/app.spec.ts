@@ -1,23 +1,12 @@
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { routes } from './app.routes';
+import { authGuard } from './auth/guards/auth-guard';
 
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    }).compileComponents();
-  });
-
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it('should render title', async () => {
-    const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, hs-tesis-front');
+describe('application routes', () => {
+  it('keeps sign-in public and protects metrics by role', () => {
+    const signIn = routes.find(route => route.path === 'sign-in');
+    const metrics = routes.find(route => route.path === 'metrics');
+    expect(signIn?.canActivate).toBeDefined();
+    expect(metrics?.canActivate).toContain(authGuard);
+    expect(metrics?.data?.['expectedRoles']).toEqual(['COORDINATOR', 'ADMIN']);
   });
 });

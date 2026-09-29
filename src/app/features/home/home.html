@@ -16,39 +16,37 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
     <!-- Welcome Banner -->
-    <div class="lg:col-span-2 relative overflow-hidden rounded-3xl bg-[var(--surface)] border border-[var(--border)] p-8 shadow-sm flex flex-col justify-center">
+    <div class="lg:col-span-2 relative overflow-hidden rounded-3xl bg-[var(--surface)] border border-[var(--border)] p-6 md:p-8 shadow-sm flex flex-col justify-center">
       <div class="relative z-10">
-        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-[var(--text-primary)] font-['Plus_Jakarta_Sans']">
-          @if (activeDashboard() === 'STUDENT' && (userDataService.isTeacher() || userDataService.isCoordinator())) {
-            {{ 'HOME.WELCOME_STUDENT' | transloco }}
-          } @else {
-            {{ 'HOME.WELCOME_USER' | transloco: {name: user.name} }}
-          }
-        </h1>
-        <p class="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed max-w-lg font-medium">
-          @if (activeDashboard() === 'STUDENT') {
-            {{ 'HOME.DESC_STUDENT' | transloco }}
-          } @else if (activeDashboard() === 'TEACHER') {
-            {{ 'HOME.DESC_TEACHER' | transloco }}
-          } @else {
-            {{ 'HOME.DESC_COORDINATOR' | transloco }}
-          }
-        </p>
-
-        <div class="mt-6 flex flex-wrap gap-2">
-          @for (role of user.roles; track role) {
-          <span
-            class="inline-flex items-center gap-1.5 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)]">
-            <div class="h-1.5 w-1.5 rounded-full bg-[var(--brand-primary)]"></div>
-            {{ role | translateEnum }}
-          </span>
-          }
-          @if (activeDashboard() === 'STUDENT' && (userDataService.isTeacher() || userDataService.isCoordinator())) {
-            <span class="inline-flex items-center gap-1.5 rounded-lg bg-[var(--brand-forest)]/10 border border-[var(--brand-forest)]/30 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[var(--brand-forest)]">
-              {{ 'HOME.SIMULATING_STUDENT' | transloco }}
-            </span>
-          }
+        <div class="flex items-start justify-between gap-6">
+          <div class="min-w-0">
+          <h1 class="text-2xl md:text-3xl font-black tracking-tight text-[var(--text-primary)] font-['Plus_Jakarta_Sans']">
+            @if (activeDashboard() === 'STUDENT' && (userDataService.isTeacher() || userDataService.isCoordinator())) {
+              {{ 'HOME.WELCOME_STUDENT' | transloco }}
+            } @else {
+              {{ 'HOME.WELCOME_USER' | transloco: {name: user.name} }}
+            }
+          </h1>
+          <p class="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed max-w-lg font-medium">
+            @if (activeDashboard() === 'STUDENT') {
+              {{ 'HOME.DESC_STUDENT' | transloco }}
+            } @else if (activeDashboard() === 'TEACHER') {
+              {{ 'HOME.DESC_TEACHER' | transloco }}
+            } @else {
+              {{ 'HOME.DESC_COORDINATOR' | transloco }}
+            }
+          </p>
+          </div>
+          <div class="flex shrink-0 flex-col items-stretch gap-2 sm:items-end sm:pt-1">
+            @for (role of user.roles; track role) {
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-secondary)] border border-[var(--border)] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[var(--text-primary)] shadow-sm">
+                <span class="h-1.5 w-1.5 rounded-full bg-[var(--brand-primary)]"></span>
+                {{ role | translateEnum }}
+              </span>
+            }
+          </div>
         </div>
+
       </div>
 
       <!-- Abstract Background Graphics -->
@@ -56,281 +54,340 @@
       <div class="absolute right-20 -bottom-10 h-40 w-40 rounded-full bg-[var(--brand-mustard)]/10 blur-3xl pointer-events-none"></div>
     </div>
 
-    <!-- Sery Tip -->
-    <div class="relative overflow-hidden rounded-3xl bg-[var(--brand-sery)] p-6 shadow-md text-white flex flex-col">
-      <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-        <svg class="h-24 w-24" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-        </svg>
-      </div>
+    <!-- Quick Access -->
+    <div class="quick-access-panel relative overflow-hidden rounded-3xl bg-[var(--surface)] border border-[var(--border)] p-5 md:p-6 shadow-sm">
+      <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[var(--brand-primary-soft)] blur-2xl pointer-events-none"></div>
 
-      <div class="flex items-center gap-2 mb-4 relative z-10">
-        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 backdrop-blur text-white">
+      <div class="flex items-center justify-between mb-4 relative z-10">
+        <div class="flex items-center gap-2">
+          <div class="quick-access-icon flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
           <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm tracking-wide text-[var(--text-primary)]">{{ 'HOME.ACTIONS.TITLE' | transloco }}</h3>
+            <p class="text-[10px] text-[var(--text-secondary)] font-medium">{{ 'HOME.ACTIONS.SUBTITLE' | transloco }}</p>
+          </div>
         </div>
-        <h3 class="font-extrabold text-sm tracking-wide">{{ 'HOME.SERY_TIP.TITLE' | transloco }}</h3>
+        <span class="text-[9px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'HOME.ACTIONS.SHORTCUTS' | transloco }}</span>
       </div>
 
-      <div class="relative z-10 mt-auto">
+      <div class="relative z-10 grid grid-cols-2 gap-2">
+        <a routerLink="/classrooms" class="group flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/60 p-2.5 transition-all hover:-translate-y-0.5 hover:border-[var(--brand-primary)]/40 hover:bg-[var(--surface)]">
+          <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--brand-primary-soft)] text-[var(--brand-primary)]"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" /></svg></span>
+          <span class="min-w-0"><span class="block text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.CLASSROOMS' | transloco }}</span></span>
+        </a>
         @if (activeDashboard() === 'COORDINATOR') {
-          <p class="text-xs text-white/90 leading-relaxed font-medium" [innerHTML]="'HOME.SERY_TIP.COORD_DESC' | transloco">
-          </p>
-          <a routerLink="/metrics" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
-            {{ 'HOME.SERY_TIP.COORD_BTN' | transloco }}
+          <a routerLink="/repository" class="quick-access-repository group flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/60 p-2.5 transition-all hover:-translate-y-0.5 hover:border-[var(--brand-mustard)]/40 hover:bg-[var(--surface)]">
+            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--brand-mustard)]/15 text-[var(--brand-mustard)]"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M5 7l1 13h12l1-13M9 11h6" /></svg></span>
+            <span><span class="block text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.REPOSITORY' | transloco }}</span></span>
           </a>
-        } @else if (activeDashboard() === 'TEACHER') {
-          <p class="text-xs text-white/90 leading-relaxed font-medium" [innerHTML]="'HOME.SERY_TIP.TEACHER_DESC' | transloco">
-          </p>
-          <a routerLink="/classrooms" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
-            {{ 'HOME.SERY_TIP.TEACHER_BTN' | transloco }}
-          </a>
-        } @else {
-          <p class="text-xs text-white/90 leading-relaxed font-medium" [innerHTML]="'HOME.SERY_TIP.STUDENT_DESC' | transloco">
-          </p>
-          <a routerLink="/chat" class="inline-block mt-4 text-[10px] font-bold uppercase tracking-wider bg-white text-[var(--brand-sery)] px-4 py-2 rounded-lg hover:bg-white/90 transition-colors">
-            {{ 'HOME.SERY_TIP.STUDENT_BTN' | transloco }}
+          <a routerLink="/metrics" class="group flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/60 p-2.5 transition-all hover:-translate-y-0.5 hover:border-[var(--brand-forest)]/40 hover:bg-[var(--surface)]">
+            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--brand-forest)]/15 text-[var(--brand-forest)]"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19V9m5 10V5m5 14v-7m5 7V3" /></svg></span>
+            <span><span class="block text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.METRICS' | transloco }}</span></span>
           </a>
         }
+        <a routerLink="/help" class="group flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/60 p-2.5 transition-all hover:-translate-y-0.5 hover:border-[var(--brand-primary)]/40 hover:bg-[var(--surface)]">
+          <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--brand-primary-soft)] text-[var(--brand-primary)]"><svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.09 9a3 3 0 115.83 1c0 2-3 2-3 4m.08 4h.01M12 22a10 10 0 100-20 10 10 0 000 20z" /></svg></span>
+          <span><span class="block text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.HELP' | transloco }}</span></span>
+        </a>
       </div>
     </div>
 
   </div>
 
-  <!-- Filters & Calendar Section -->
-  @let classroomList = classrooms();
-  @if (classroomList.length > 0) {
-    <div class="space-y-4 mb-6">
-      <!-- Course Filters for Calendar -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
-        <button 
-          (click)="selectedCourseIdFilter.set(null)"
-          class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border"
-          [class.bg-[var(--brand-primary)]]="selectedCourseIdFilter() === null"
-          [class.text-white]="selectedCourseIdFilter() === null"
-          [class.border-[var(--brand-primary)]]="selectedCourseIdFilter() === null"
-          [class.bg-[var(--surface)]]="selectedCourseIdFilter() !== null"
-          [class.text-[var(--text-secondary)]]="selectedCourseIdFilter() !== null"
-          [class.border-[var(--border)]]="selectedCourseIdFilter() !== null"
-          [class.hover:bg-[var(--bg-secondary)]]="selectedCourseIdFilter() !== null"
-        >
-          Todos los cursos
-        </button>
-        @for (c of classroomList; track c.id) {
-          <button 
-            (click)="selectedCourseIdFilter.set(c.id)"
-            class="px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border"
-            [class.bg-[var(--brand-primary)]]="selectedCourseIdFilter() === c.id"
-            [class.text-white]="selectedCourseIdFilter() === c.id"
-            [class.border-[var(--brand-primary)]]="selectedCourseIdFilter() === c.id"
-            [class.bg-[var(--surface)]]="selectedCourseIdFilter() !== c.id"
-            [class.text-[var(--text-secondary)]]="selectedCourseIdFilter() !== c.id"
-            [class.border-[var(--border)]]="selectedCourseIdFilter() !== c.id"
-            [class.hover:bg-[var(--bg-secondary)]]="selectedCourseIdFilter() !== c.id"
-          >
-            {{ c.courseName }}
-          </button>
-        }
+  <!-- Quick Actions Section -->
+  <section class="hidden">
+    <div class="flex items-center justify-between mb-3 px-1">
+      <div>
+        <h2 class="text-sm font-extrabold text-[var(--text-primary)] tracking-tight font-['Plus_Jakarta_Sans']">
+          {{ 'HOME.ACTIONS.TITLE' | transloco }}
+        </h2>
+        <p class="text-xs text-[var(--text-secondary)] font-medium">{{ 'UI_TEXT.SHORTCUTS_TO_YOUR_MAIN_TOOLS' | transloco }}</p>
       </div>
-
-      <!-- Calendar Widget -->
-      <app-calendar-widget 
-        [events]="mockEvents()" 
-        [selectedCourseId]="selectedCourseIdFilter()"
-        (eventClicked)="openEventModal($event)"
-      ></app-calendar-widget>
     </div>
-  }
 
-  <app-event-modal 
-    [isOpen]="isModalOpen()" 
-    [event]="selectedEvent()" 
-    (closed)="closeEventModal()"
-  ></app-event-modal>
-
-  <!-- Main Grid: KPIs, Actions, Activity -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    <!-- Left Column: KPIs & Actions -->
-    <div class="lg:col-span-2 space-y-6">
-
-      <!-- KPIs Row -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-
-        @if (activeDashboard() === 'STUDENT') {
-          <!-- Classrooms KPI -->
-          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-primary)]/30 transition-colors">
-            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">{{ 'HOME.KPI.CLASSROOMS_STUDENT' | transloco }}</p>
-              <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">{{ totalClassrooms() }}</h2>
-            </div>
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 gap-4"
+      [class.lg:grid-cols-4]="activeDashboard() === 'COORDINATOR'"
+      [class.lg:grid-cols-3]="activeDashboard() !== 'COORDINATOR'"
+    >
+      <!-- Card: Aulas -->
+      <a
+        routerLink="/classrooms"
+        class="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[var(--brand-primary)]/50 flex flex-col justify-between"
+      >
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/20 group-hover:bg-[var(--button-primary-bg)] group-hover:text-white transition-all duration-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
           </div>
-          <!-- Chat KPI -->
-          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-sery)]/30 transition-colors">
-            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-sery)]/10 text-[var(--brand-sery)]">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] group-hover:bg-[var(--brand-primary-soft)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300">
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H7M17 7V17" />
+            </svg>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-sm font-black text-[var(--text-primary)] group-hover:text-[var(--brand-primary)] transition-colors tracking-tight font-['Plus_Jakarta_Sans']">
+            @if (activeDashboard() === 'STUDENT') {
+              {{ 'HOME.ACTIONS.MY_COURSES' | transloco }}
+            } @else if (activeDashboard() === 'TEACHER') {
+              {{ 'HOME.ACTIONS.MY_CLASSROOMS' | transloco }}
+            } @else {
+              {{ 'HOME.ACTIONS.ALL_CLASSROOMS' | transloco }}
+            }
+          </h3>
+          <p class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed font-medium">
+            @if (activeDashboard() === 'STUDENT') {
+              {{ 'UI_TEXT.ACCESS_YOUR_CLASSES_MATERIALS_AND_QUIZZES' | transloco }}
+            } @else if (activeDashboard() === 'TEACHER') {
+              {{ 'UI_TEXT.MANAGE_YOUR_COURSES_AND_STUDENT_PROGRESS' | transloco }}
+            } @else {
+              {{ 'UI_TEXT.MONITOR_ACTIVITY_ACROSS_ALL_ACTIVE_CLASSROOMS' | transloco }}
+            }
+          </p>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-[var(--border)] flex items-center text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
+          <span>{{ 'UI_TEXT.OPEN_SECTION' | transloco }}</span>
+          <svg class="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </a>
+
+      <!-- Card: Sery Tutor (Student / Teacher) -->
+      @if (false && activeDashboard() !== 'COORDINATOR') {
+        <a
+          routerLink="/chat"
+          class="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[var(--brand-sery)]/50 flex flex-col justify-between"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-secondary-soft)] text-[var(--brand-sery)] border border-[var(--brand-sery)]/20 group-hover:bg-[var(--brand-sery)] group-hover:text-[var(--text-inverse)] transition-all duration-300">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <div>
-              <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">{{ 'HOME.KPI.SERY_QUERIES' | transloco }}</p>
-              <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">15</h2>
-            </div>
-          </div>
-        } @else {
-          <!-- Classrooms KPI (Teacher/Coord) -->
-          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-primary)]/30 transition-colors">
-            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] group-hover:bg-[var(--brand-sery)]/10 group-hover:text-[var(--brand-sery)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H7M17 7V17" />
               </svg>
             </div>
-            <div>
-              <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-                {{ activeDashboard() === 'TEACHER' ? ('HOME.KPI.CLASSROOMS_TEACHER' | transloco) : ('HOME.KPI.CLASSROOMS_TOTAL' | transloco) }}
-              </p>
-              <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">{{ totalClassrooms() }}</h2>
-            </div>
           </div>
-          <!-- Courses KPI -->
-          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex items-center gap-5 hover:border-[var(--brand-mustard)]/30 transition-colors">
-            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand-mustard)]/10 text-[var(--brand-mustard)]">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">{{ 'HOME.KPI.COURSES_UNIQUE' | transloco }}</p>
-              <h2 class="text-3xl font-black text-[var(--text-primary)] leading-none font-['Plus_Jakarta_Sans']">{{ totalCourses() }}</h2>
-            </div>
+
+          <div>
+            <h3 class="text-sm font-black text-[var(--text-primary)] group-hover:text-[var(--brand-sery)] transition-colors tracking-tight font-['Plus_Jakarta_Sans']">
+              {{ 'HOME.ACTIONS.SERY_TUTOR' | transloco }}
+            </h3>
+            <p class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed font-medium">
+              {{ 'UI_TEXT.ASK_QUESTIONS_AND_INTERACT_WITH_YOUR_AI_ASSISTANT' | transloco }}
+            </p>
           </div>
-        }
 
-      </div>
+          <div class="mt-4 pt-3 border-t border-[var(--border)] flex items-center text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] group-hover:text-[var(--brand-sery)] transition-colors">
+            <span>{{ 'UI_TEXT.START_A_CONVERSATION' | transloco }}</span>
+            <svg class="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+      }
 
-      <!-- Quick Actions Grid -->
-      <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
-        <h3 class="font-bold text-[var(--text-primary)] text-sm mb-4">{{ 'HOME.ACTIONS.TITLE' | transloco }}</h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-
-          @if (activeDashboard() === 'STUDENT' || activeDashboard() === 'TEACHER') {
-            <a routerLink="/classrooms" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <span class="text-xs font-bold text-[var(--text-primary)]">
-                {{ activeDashboard() === 'STUDENT' ? ('HOME.ACTIONS.MY_COURSES' | transloco) : ('HOME.ACTIONS.MY_CLASSROOMS' | transloco) }}
-              </span>
-            </a>
-
-            <a routerLink="/chat" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-sery)]/50 hover:shadow-sm transition-all group text-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-sery)] text-[var(--text-secondary)] group-hover:text-[var(--brand-sery)] transition-colors">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.SERY_TUTOR' | transloco }}</span>
-            </a>
-          }
-
-          @if (activeDashboard() === 'COORDINATOR') {
-            <a routerLink="/classrooms" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.ALL_CLASSROOMS' | transloco }}</span>
-            </a>
-
-            <a routerLink="/repository" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-              </div>
-              <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.REPOSITORY' | transloco }}</span>
-            </a>
-
-            <a routerLink="/metrics" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.METRICS' | transloco }}</span>
-            </a>
-          }
-
-          <a routerLink="/help" class="flex flex-col items-center justify-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] hover:border-[var(--brand-primary)]/50 hover:shadow-sm transition-all group text-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--brand-primary)] text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
+      <!-- Card: Repositorio (Coordinator / Admin) -->
+      @if (activeDashboard() === 'COORDINATOR') {
+        <a
+          routerLink="/repository"
+          class="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[var(--brand-mustard)]/50 flex flex-col justify-between"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-warning-soft)] text-[var(--brand-mustard)] border border-[var(--brand-mustard)]/20 group-hover:bg-[var(--brand-mustard)] group-hover:text-[var(--text-inverse)] transition-all duration-300">
               <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
               </svg>
             </div>
-            <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'HOME.ACTIONS.HELP' | transloco }}</span>
-          </a>
+            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] group-hover:bg-[var(--color-warning-soft)] group-hover:text-[var(--brand-mustard)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H7M17 7V17" />
+              </svg>
+            </div>
+          </div>
 
+          <div>
+            <h3 class="text-sm font-black text-[var(--text-primary)] group-hover:text-[var(--brand-mustard)] transition-colors tracking-tight font-['Plus_Jakarta_Sans']">
+              {{ 'HOME.ACTIONS.REPOSITORY' | transloco }}
+            </h3>
+            <p class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed font-medium">
+              {{ 'UI_TEXT.MANAGE_DOCUMENTS_CURRICULA_AND_STUDY_RESOURCES' | transloco }}
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[var(--border)] flex items-center text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] group-hover:text-[var(--brand-mustard)] transition-colors">
+            <span>{{ 'UI_TEXT.MANAGE_FILES' | transloco }}</span>
+            <svg class="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+
+        <!-- Card: Métricas (Coordinator / Admin) -->
+        <a
+          routerLink="/metrics"
+          class="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[var(--brand-forest)]/50 flex flex-col justify-between"
+        >
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-forest)]/10 text-[var(--brand-forest)] border border-[var(--brand-forest)]/20 group-hover:bg-[var(--brand-forest)] group-hover:text-[var(--text-inverse)] transition-all duration-300">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] group-hover:bg-[var(--brand-forest)]/10 group-hover:text-[var(--brand-forest)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H7M17 7V17" />
+              </svg>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-black text-[var(--text-primary)] group-hover:text-[var(--brand-forest)] transition-colors tracking-tight font-['Plus_Jakarta_Sans']">
+              {{ 'HOME.ACTIONS.METRICS' | transloco }}
+            </h3>
+            <p class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed font-medium">
+              {{ 'UI_TEXT.ANALYZE_OVERALL_ACADEMIC_PERFORMANCE_AND_STATISTICS_BY_SUBJECT' | transloco }}
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-[var(--border)] flex items-center text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] group-hover:text-[var(--brand-forest)] transition-colors">
+            <span>{{ 'UI_TEXT.VIEW_ANALYTICS' | transloco }}</span>
+            <svg class="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+      }
+
+      <!-- Card: Centro de Ayuda (Todos los roles) -->
+      <a
+        routerLink="/help"
+        class="group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[var(--brand-primary)]/50 flex flex-col justify-between"
+      >
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/20 group-hover:bg-[var(--button-primary-bg)] group-hover:text-white transition-all duration-300">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-[var(--text-secondary)] group-hover:bg-[var(--brand-primary-soft)] group-hover:text-[var(--brand-primary)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300">
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M17 7H7M17 7V17" />
+            </svg>
+          </div>
         </div>
-      </div>
 
+        <div>
+          <h3 class="text-sm font-black text-[var(--text-primary)] group-hover:text-[var(--brand-primary)] transition-colors tracking-tight font-['Plus_Jakarta_Sans']">
+            {{ 'HOME.ACTIONS.HELP' | transloco }}
+          </h3>
+          <p class="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed font-medium">
+            {{ 'UI_TEXT.GUIDES_FREQUENTLY_ASKED_QUESTIONS_AND_HELP_WITH_THE' | transloco }}
+          </p>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-[var(--border)] flex items-center text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)] group-hover:text-[var(--brand-primary)] transition-colors">
+          <span>{{ 'UI_TEXT.OPEN_HELP' | transloco }}</span>
+          <svg class="h-3 w-3 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </a>
+    </div>
+  </section>
+
+
+  <!-- Main Grid: Calendar (2 cols) & Recent Activity Timeline (1 col) in the same row -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch mb-6">
+
+    <!-- Left Column: Calendar Widget (Takes 2 cols) -->
+    <div class="lg:col-span-2 flex flex-col min-h-0">
+      <app-calendar-widget
+        class="flex-1 flex flex-col"
+        [events]="calendarEvents()"
+        [selectedCourseId]="selectedCourseIdFilter()"
+        (dayClicked)="openDayEventsModal($event)"
+      ></app-calendar-widget>
     </div>
 
-    <!-- Right Column: Recent Activity Timeline -->
-    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex flex-col h-full">
-      <div class="flex items-center justify-between mb-6">
-        <h3 class="font-bold text-[var(--text-primary)] text-sm">{{ 'HOME.ACTIVITY.TITLE' | transloco }}</h3>
-        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'HOME.ACTIVITY.SUBTITLE' | transloco }}</span>
-      </div>
+    <!-- Right Column: Recent Activity Timeline (Takes 1 col, limited to calendar's height) -->
+    <div class="lg:col-span-1 flex flex-col min-h-0">
+      <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm flex flex-col h-full max-h-[530px] lg:max-h-none lg:h-0 lg:min-h-full min-h-0">
+        <div class="flex items-center justify-between mb-5 shrink-0">
+          <h3 class="font-bold text-[var(--text-primary)] text-sm tracking-tight">{{ 'HOME.ACTIVITY.TITLE' | transloco }}</h3>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'HOME.ACTIVITY.SUBTITLE' | transloco }}</span>
+        </div>
 
-      <div class="flex-1 relative pl-3">
-        <!-- Vertical Line -->
-        <div class="absolute left-6 top-2 bottom-4 w-px bg-[var(--border)]"></div>
+        <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar relative pl-3 pr-1">
+          <!-- Vertical Line -->
+          <div class="absolute left-6 top-2 bottom-4 w-px bg-[var(--border)]"></div>
 
-        <div class="space-y-6">
-          @if (recentActivity().length === 0) {
-            <p class="text-xs text-[var(--text-secondary)] pl-8">{{ 'HOME.ACTIVITY.EMPTY' | transloco }}</p>
-          } @else {
-            @for (activity of recentActivity(); track activity.id) {
-            <div class="relative flex items-start gap-4">
-              <!-- Icon Badge -->
-              <div
-                class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--surface)] ring-4 ring-[var(--surface)]"
-                [class.bg-[var(--brand-forest)]]="activity.type === 'INSIGHT' || activity.type === 'STUDENT_COURSE'"
-                [class.bg-[var(--brand-mustard)]]="activity.type === 'DOCUMENT'"
-                [class.bg-[var(--brand-sery)]]="activity.type === 'STUDENT_CHAT'"
-                [class.bg-[var(--text-secondary)]]="activity.type === 'SYSTEM'">
-                <svg class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="activity.icon" />
-                </svg>
-              </div>
-
-              <!-- Content -->
-              <div class="flex-1 pb-1">
-                <div class="flex flex-wrap items-baseline justify-between gap-1 mb-1">
-                  <h4 class="text-xs font-bold text-[var(--text-primary)]">{{ activity.titleKey | transloco }}</h4>
-                  <span class="text-[9px] font-semibold text-[var(--text-secondary)] whitespace-nowrap">
-                    {{ activity.timestamp | date:'shortTime' }}
-                  </span>
+          <div class="space-y-5">
+            @if (recentActivity().length === 0) {
+              <p class="text-xs text-[var(--text-secondary)] pl-8 py-4">{{ 'HOME.ACTIVITY.EMPTY' | transloco }}</p>
+            } @else {
+              @for (group of recentActivityGroups(); track group.date.toISOString()) {
+                <div class="relative -ml-3 flex items-center gap-2 py-0.5">
+                  <span class="rounded-full bg-[var(--bg-secondary)] px-2 py-1 text-[10px] font-extrabold tracking-wide text-[var(--text-secondary)]">{{ formatActivityDay(group.date) }}</span>
+                  <div class="h-px flex-1 bg-[var(--border)]"></div>
                 </div>
-                <p class="text-[11px] text-[var(--text-secondary)] leading-relaxed">{{ activity.descriptionKey | transloco }}</p>
-              </div>
-            </div>
+
+                <div class="space-y-3">
+                @for (activity of group.activities; track activity.id) {
+                <a [routerLink]="activity.route" [queryParams]="activity.queryParams" class="relative flex items-start gap-3.5 rounded-lg py-1 transition-colors hover:bg-[var(--bg-secondary)]/60 group">
+                  <div
+                    class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--surface)] ring-4 ring-[var(--surface)]"
+                    [class.bg-[var(--brand-forest)]]="activity.type === 'QUIZ'"
+                    [class.bg-[var(--brand-mustard)]]="activity.type === 'DOCUMENT'"
+                    [class.bg-[var(--button-primary-bg)]]="activity.type === 'TUTORIAL'"
+                    >
+                    <svg class="h-3.5 w-3.5" [class.text-white]="activity.type === 'TUTORIAL'" [class.text-[var(--text-inverse)]]="activity.type !== 'TUTORIAL'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="activity.icon" />
+                    </svg>
+                  </div>
+
+                  <div class="flex-1 min-w-0 pb-1">
+                    <div class="flex items-center justify-between gap-2 mb-0.5 min-w-0">
+                      <h4 class="text-xs font-bold text-[var(--text-primary)] truncate flex-1 min-w-0 group-hover:text-[var(--brand-primary)]" [title]="activity.titleKey | transloco: activity.titleParams">
+                        {{ activity.titleKey | transloco: activity.titleParams }}
+                      </h4>
+                      <span class="text-[10px] font-semibold text-[var(--text-secondary)] whitespace-nowrap shrink-0">
+                        {{ formatActivityTime(activity.timestamp) }}
+                      </span>
+                    </div>
+                    @if (activity.descriptionKey) {
+                      <p class="text-[11px] text-[var(--text-secondary)] truncate leading-relaxed" [title]="activity.descriptionKey | transloco">{{ activity.descriptionKey | transloco }}</p>
+                    } @else {
+                      <p class="text-[11px] text-[var(--text-secondary)] truncate leading-relaxed" [title]="activity.description">{{ activity.description }}</p>
+                    }
+                  </div>
+                </a>
+                }
+                </div>
+              }
             }
-          }
+          </div>
         </div>
       </div>
-
     </div>
 
   </div>
+
+  <app-day-events-modal
+    [isOpen]="!!selectedCalendarDay()"
+    [date]="selectedCalendarDay()?.date ?? null"
+    [events]="selectedCalendarDay()?.events ?? []"
+    (closed)="closeDayEventsModal()"
+  ></app-day-events-modal>
   }
 </div>

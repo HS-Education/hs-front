@@ -1,3 +1,4 @@
+import {TranslateEnumPipe} from '../../../../../shared/pipes/translate-enum.pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,15 +20,16 @@ import {
   type GradeLevel,
 } from '../../../../../shared/models/academic-levels.model';
 import {UploadDocumentRequest} from '../../../data-access/models/requests/upload-document.request';
+import {StyledSelectDirective} from '../../../../../shared/directives/styled-select.directive';
 
 @Component({
   selector: 'app-upload-document-modal',
-  imports: [Modal, TranslocoPipe],
+  imports: [TranslateEnumPipe, Modal, TranslocoPipe, StyledSelectDirective],
   template: `
     <app-modal [isOpen]="isOpen()" [title]="'CLASSROOMS.REPO.ADD_DOCUMENT' | transloco" [onClose]="closeModal">
       <form class="space-y-4" (submit)="submit($event)">
         <div>
-          <label class="text-sm font-medium" for="document-title">Título</label>
+          <label class="text-sm font-medium" for="document-title">{{ 'CLASSROOMS.REPO.DOC_TITLE' | transloco }}</label>
           <input
             id="document-title"
             class="mt-1 block w-full rounded border px-3 py-2 text-sm"
@@ -39,10 +41,10 @@ import {UploadDocumentRequest} from '../../../data-access/models/requests/upload
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="text-sm font-medium" for="document-topic">Topic</label>
+            <label class="text-sm font-medium" for="document-topic">{{ 'UI_TEXT.TOPIC' | transloco }}</label>
 
             @if (sortedTopics().length === 0) {
-              <p class="mt-1 text-sm text-slate-500">No hay topics disponibles</p>
+              <p class="mt-1 text-sm text-[var(--text-muted)]">{{ 'UI_TEXT.NO_TOPICS_AVAILABLE' | transloco }}</p>
             } @else {
               <select
                 id="document-topic"
@@ -51,7 +53,7 @@ import {UploadDocumentRequest} from '../../../data-access/models/requests/upload
                 (change)="setTopicId($event)"
                 required
               >
-                <option value="" disabled>Selecciona un topic</option>
+                <option value="" disabled>{{ 'UI_TEXT.SELECT_A_TOPIC' | transloco }}</option>
                 @for (topic of sortedTopics(); track topic.id) {
                   <option [value]="topic.id">{{ topic.name }}</option>
                 }
@@ -60,7 +62,7 @@ import {UploadDocumentRequest} from '../../../data-access/models/requests/upload
           </div>
 
           <div>
-            <label class="text-sm font-medium" for="document-education-level">Nivel educativo</label>
+            <label class="text-sm font-medium" for="document-education-level">{{ 'UI_TEXT.EDUCATION_LEVEL' | transloco }}</label>
             <select
               id="document-education-level"
               class="mt-1 block w-full rounded border px-3 py-2 text-sm"
@@ -69,14 +71,14 @@ import {UploadDocumentRequest} from '../../../data-access/models/requests/upload
               required
             >
               @for (level of educationLevelOptions; track level) {
-                <option [value]="level">{{ level }}</option>
+                <option [value]="level">{{ level | translateEnum }}</option>
               }
             </select>
           </div>
         </div>
 
         <div>
-          <label class="text-sm font-medium">Grados</label>
+          <label class="text-sm font-medium">{{ 'UI_TEXT.GRADES' | transloco }}</label>
           <div class="mt-1 flex gap-2">
             @for (grade of gradeLevelOptions; track grade) {
               <label class="inline-flex items-center gap-2">
@@ -85,14 +87,14 @@ import {UploadDocumentRequest} from '../../../data-access/models/requests/upload
                   [checked]="gradeLevels().includes(grade)"
                   (change)="toggleGrade(grade)"
                 />
-                <span class="text-sm">{{ grade }}</span>
+                <span class="text-sm">{{ grade | translateEnum }}</span>
               </label>
             }
           </div>
         </div>
 
         <div>
-          <label class="text-sm font-medium" for="document-file">Archivo PDF</label>
+          <label class="text-sm font-medium" for="document-file">{{ 'UI_TEXT.PDF_FILE' | transloco }}</label>
           <input
             id="document-file"
             type="file"
@@ -103,13 +105,13 @@ import {UploadDocumentRequest} from '../../../data-access/models/requests/upload
           />
 
           @if (fileName()) {
-            <p class="mt-1 text-sm text-slate-500">Archivo: {{ fileName() }}</p>
+            <p class="mt-1 text-sm text-[var(--text-muted)]">{{ 'UI_TEXT.FILE' | transloco }} {{ fileName() }}</p>
           }
         </div>
 
         <div class="flex items-center justify-end gap-2">
           <button type="button" class="rounded px-3 py-2" (click)="closeModal()">
-            Cancelar
+            {{ 'PROGRESS.MODALS.CANCEL' | transloco }}
           </button>
 
           <button
@@ -117,7 +119,7 @@ import {UploadDocumentRequest} from '../../../data-access/models/requests/upload
             class="rounded bg-sky-600 px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
             [disabled]="!canSubmit()"
           >
-            Subir documento
+            {{ 'CLASSROOMS.REPO.UPLOAD_MULTI' | transloco }}
           </button>
         </div>
       </form>

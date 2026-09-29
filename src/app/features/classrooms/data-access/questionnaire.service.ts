@@ -6,6 +6,7 @@ export interface QuestionnaireAttempt {
   instanceId: number;
   score: number;
   submittedAt: string;
+  totalQuestions?: number;
 }
 
 export interface AvailableQuestionnaire {
@@ -21,6 +22,7 @@ export interface AvailableQuestionnaire {
   type: string;
   pastAttempts: QuestionnaireAttempt[];
   createdAt?: string;
+  informationalOnly: boolean;
 }
 
 export interface Question {
@@ -29,6 +31,7 @@ export interface Question {
   text: string;
   options: string[];
   isRemedial: boolean;
+  difficulty: 'LOW' | 'INTERMEDIATE';
 }
 
 export interface SubmissionAnswer {
@@ -38,11 +41,12 @@ export interface SubmissionAnswer {
   selectedOptionIndex: number;
   correctOptionIndex: number;
   isCorrect: boolean;
-  aiFeedback: string;
+  aiFeedback: string | null;
 }
 
 export interface QuestionnaireSubmission {
   score: number;
+  feedbackStatus: 'NOT_REQUIRED' | 'PENDING' | 'PROCESSING' | 'READY' | 'FAILED';
   answers: SubmissionAnswer[];
 }
 
@@ -76,9 +80,17 @@ export class QuestionnaireService {
   }
 
   submitQuestionnaire(instanceId: number, answers: { [key: number]: number }) {
-    return this.http.post<void>(
+    return this.http.post<QuestionnaireSubmission>(
       `${this.baseUrl}/assessments/questionnaires/${instanceId}/submit`,
       { answers },
+      { withCredentials: true }
+    );
+  }
+
+  retryFeedback(instanceId: number) {
+    return this.http.post<void>(
+      `${this.baseUrl}/assessments/questionnaires/${instanceId}/feedback/retry`,
+      {},
       { withCredentials: true }
     );
   }
@@ -94,12 +106,11 @@ export class QuestionnaireService {
     courseId: number,
     gradingPeriodId: number,
     weekNumber: number,
-    allowedAttempts: number,
     questionsPerAttempt: number
   ) {
     return this.http.post<void>(
       `${this.baseUrl}/assessments/questionnaires/generate`,
-      { courseId, gradingPeriodId, weekNumber, allowedAttempts, questionsPerAttempt },
+      { courseId, gradingPeriodId, weekNumber, questionsPerAttempt },
       { withCredentials: true }
     );
   }

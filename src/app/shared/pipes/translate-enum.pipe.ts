@@ -1,81 +1,64 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { inject, Pipe, PipeTransform } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 
-const DICTIONARY: Record<string, string> = {
-  // Levels
-  'PRIMARY': 'Primaria',
-  'SECONDARY': 'Secundaria',
+const ENUM_VALUES = new Set([
+  'PRIMARY', 'SECONDARY',
+  'FIRST', 'SECOND', 'THIRD', 'FOURTH', 'FIFTH', 'SIXTH',
+  'ACTIVE', 'INACTIVE', 'PLANNED', 'CLOSED', 'FINISHED', 'COMPLETED', 'STARTED', 'PENDING',
+  'ADMIN', 'ROLE_ADMIN', 'COORDINATOR', 'ROLE_COORDINATOR',
+  'TEACHER', 'ROLE_TEACHER', 'STUDENT', 'ROLE_STUDENT',
+]);
 
-  // Grades & Bimesters
-  'FIRST': 'Primero',
-  'SECOND': 'Segundo',
-  'THIRD': 'Tercero',
-  'FOURTH': 'Cuarto',
-  'FIFTH': 'Quinto',
-  'SIXTH': 'Sexto',
-  'BIMESTER_1': '1er Bimestre',
-  'BIMESTER_2': '2do Bimestre',
-  'BIMESTER_3': '3er Bimestre',
-  'BIMESTER_4': '4to Bimestre',
-  
-  // Statuses
-  'ACTIVE': 'Activo',
-  'PLANNED': 'Planificado',
-  'CLOSED': 'Cerrado',
-  'FINISHED': 'Finalizado',
-  'COMPLETED': 'Completado',
-  'STARTED': 'Iniciado',
-  'PENDING': 'Pendiente',
+const BIMESTER_VALUES = new Set([
+  'FIRST', 'SECOND', 'THIRD', 'FOURTH', 'FIFTH', 'SIXTH',
+  'BIMESTER_1', 'BIMESTER_2', 'BIMESTER_3', 'BIMESTER_4',
+]);
 
-  // Common Roles
-  'ADMIN': 'Administrador',
-  'ROLE_ADMIN': 'Administrador',
-  'COORDINATOR': 'Coordinador',
-  'ROLE_COORDINATOR': 'Coordinador',
-  'TEACHER': 'Docente',
-  'ROLE_TEACHER': 'Docente',
-  'STUDENT': 'Estudiante',
-  'ROLE_STUDENT': 'Estudiante',
+const VALUE_ALIASES: Record<string, string> = {
+  'ADMINISTRADOR': 'ADMIN',
+  'COORDINADOR': 'COORDINATOR',
+  'DOCENTE': 'TEACHER',
+  'PROFESOR': 'TEACHER',
+  'ESTUDIANTE': 'STUDENT',
+  'PRIMARIA': 'PRIMARY',
+  'SECUNDARIA': 'SECONDARY',
+  'PRIMERO': 'FIRST',
+  'SEGUNDO': 'SECOND',
+  'TERCERO': 'THIRD',
+  'CUARTO': 'FOURTH',
+  'QUINTO': 'FIFTH',
+  'SEXTO': 'SIXTH',
+  'ACTIVO': 'ACTIVE',
+  'INACTIVO': 'INACTIVE',
+  'PLANIFICADO': 'PLANNED',
+  'CERRADO': 'CLOSED',
+  'FINALIZADO': 'FINISHED',
+  'COMPLETADO': 'COMPLETED',
+  'INICIADO': 'STARTED',
+  'PENDIENTE': 'PENDING',
 };
 
 @Pipe({
   name: 'translateEnum',
-  standalone: true
+  standalone: true,
+  pure: false,
 })
 export class TranslateEnumPipe implements PipeTransform {
-  transform(value: string | undefined | null, context?: string): string {
+  private readonly translocoService = inject(TranslocoService);
+
+  transform(value: string | undefined | null, context?: 'bimester'): string {
     if (!value) return '';
-    
-    const upperValue = value.toUpperCase();
 
-    if (context === 'bimester') {
-      const bimesterMap: Record<string, string> = {
-        'FIRST': '1er Bimestre',
-        'SECOND': '2do Bimestre',
-        'THIRD': '3er Bimestre',
-        'FOURTH': '4to Bimestre',
-        'FIFTH': '5to Bimestre',
-        'SIXTH': '6to Bimestre',
-        'BIMESTER_1': '1er Bimestre',
-        'BIMESTER_2': '2do Bimestre',
-        'BIMESTER_3': '3er Bimestre',
-        'BIMESTER_4': '4to Bimestre',
-      };
-      if (bimesterMap[upperValue]) {
-        return bimesterMap[upperValue];
-      }
+    const normalizedValue = VALUE_ALIASES[value.toUpperCase()] ?? value.toUpperCase();
+
+    if (context === 'bimester' && BIMESTER_VALUES.has(normalizedValue)) {
+      return this.translocoService.translate(`BIMESTERS.${normalizedValue}`);
     }
 
-    // Check direct match
-    if (DICTIONARY[value]) {
-      return DICTIONARY[value];
+    if (ENUM_VALUES.has(normalizedValue)) {
+      return this.translocoService.translate(`ENUM.${normalizedValue}`);
     }
 
-    // Try uppercase match
-    if (DICTIONARY[upperValue]) {
-      return DICTIONARY[upperValue];
-    }
-
-    // Return original if no translation found, perhaps capitalized
     return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
   }
 }

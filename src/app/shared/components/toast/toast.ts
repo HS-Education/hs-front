@@ -1,53 +1,68 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ToastService } from '../../services/toast.service';
 import { NgClass } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, TranslocoPipe],
   template: `
-    <div class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none">
+    <div
+      class="pointer-events-none fixed inset-x-4 bottom-4 z-[9999] flex flex-col items-stretch gap-3 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-[24rem]"
+      aria-live="polite"
+      aria-atomic="true">
       @for (toast of toastService.toasts(); track toast.id) {
-        <div 
-          class="pointer-events-auto flex items-start gap-3 rounded-2xl p-4 shadow-2xl border animate-slide-in-right max-w-sm backdrop-blur-md"
+        <div
+          class="animate-slide-in-right pointer-events-auto flex items-start gap-3 rounded-2xl border border-l-4 border-[var(--border)] bg-[var(--surface)]/95 p-4 text-[var(--text-primary)] shadow-2xl shadow-black/10 backdrop-blur-xl"
+          role="status"
           [ngClass]="{
-            'bg-[#f0fdf4]/95 text-[#166534] border-[#bbf7d0] shadow-[#166534]/10': toast.type === 'success',
-            'bg-[#fef2f2]/95 text-[#b91c1c] border-[#fecaca] shadow-[#b91c1c]/10': toast.type === 'error',
-            'bg-[#fefce8]/95 text-[#ca8a04] border-[#fef08a] shadow-[#ca8a04]/10': toast.type === 'warning',
-            'bg-[var(--surface)]/95 text-[var(--text-primary)] border-[var(--border)] shadow-black/5': toast.type === 'info'
+            'border-l-[var(--brand-forest)]': toast.type === 'success',
+            'border-l-[var(--brand-error)]': toast.type === 'error',
+            'border-l-[var(--brand-mustard)]': toast.type === 'warning',
+            'border-l-[var(--brand-primary)]': toast.type === 'info'
           }">
-          
-          <!-- Icon based on type -->
-          <div class="shrink-0 mt-0.5">
+
+          <div
+            class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
+            [ngClass]="{
+              'bg-[var(--brand-forest)]/15 text-[var(--brand-forest)]': toast.type === 'success',
+              'bg-[var(--brand-error)]/15 text-[var(--brand-error)]': toast.type === 'error',
+              'bg-[var(--brand-mustard)]/15 text-[var(--brand-mustard)]': toast.type === 'warning',
+              'bg-[var(--brand-primary-soft)] text-[var(--brand-primary)]': toast.type === 'info'
+            }">
             @switch (toast.type) {
               @case ('success') {
-                <svg class="h-5 w-5 text-[#166534]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               }
               @case ('error') {
-                <svg class="h-5 w-5 text-[#b91c1c]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               }
               @case ('warning') {
-                <svg class="h-5 w-5 text-[#ca8a04]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               }
               @case ('info') {
-                <svg class="h-5 w-5 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               }
             }
           </div>
 
-          <div class="flex-1 text-sm font-semibold tracking-wide leading-tight pt-0.5">{{ toast.message }}</div>
-          
-          <button (click)="toastService.remove(toast.id)" class="shrink-0 rounded-lg p-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors focus:outline-none">
-            <svg class="h-4.5 w-4.5 opacity-70 hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <div class="flex-1 pt-1.5 text-sm font-semibold leading-snug text-[var(--text-primary)]">{{ toast.message }}</div>
+
+          <button
+            type="button"
+            (click)="toastService.remove(toast.id)"
+            class="shrink-0 rounded-lg p-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]"
+            [attr.aria-label]="'COMMON.CLOSE' | transloco">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -62,6 +77,9 @@ import { NgClass } from '@angular/common';
     }
     .animate-slide-in-right {
       animation: slide-in-right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .animate-slide-in-right { animation: none; }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

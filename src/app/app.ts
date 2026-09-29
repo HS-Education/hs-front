@@ -1,3 +1,4 @@
+import { TranslocoPipe } from '@jsverse/transloco';
 import {Component, computed, effect, inject, OnInit, signal} from '@angular/core';
 import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import {Navbar} from './shared/components/navbar/navbar';
@@ -6,16 +7,19 @@ import {UserDataService} from './shared/services/user-data.service';
 import {ThemeService} from './shared/services/theme.service';
 import {OnboardingService} from './features/onboarding/data-access/onboarding.service';
 import {OnboardingModal} from './features/onboarding/onboarding-modal/onboarding-modal';
+import {SeryBubble} from './shared/components/sery-bubble/sery-bubble';
+import {SeryBubbleService} from './shared/components/sery-bubble/sery-bubble.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Navbar, Toast, OnboardingModal],
+  imports: [TranslocoPipe, RouterOutlet, Navbar, Toast, OnboardingModal, SeryBubble],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App implements OnInit {
   protected readonly userDataService = inject(UserDataService);
   protected readonly themeService = inject(ThemeService);
+  protected readonly seryBubbleService = inject(SeryBubbleService);
   private readonly router = inject(Router);
   private readonly onboardingService = inject(OnboardingService);
   protected readonly title = signal('HS');
@@ -26,6 +30,15 @@ export class App implements OnInit {
 
   readonly showNavbar = computed(() => {
     return this.userDataService.isAuthenticated() && !this.currentUrl().includes('/sign-in') && !this.currentUrl().includes('/update-password');
+  });
+
+  readonly showSeryBubble = computed(() => {
+    if (!this.userDataService.isAuthenticated()) return false;
+    const url = this.currentUrl();
+    if (url.includes('/chat') || url.includes('/sign-in') || url.includes('/update-password')) return false;
+    if (this.userDataService.isTakingQuiz()) return false;
+    if (this.seryBubbleService.isCourseFiltered()) return false;
+    return true;
   });
 
   readonly shouldShowSplash = computed(() => {

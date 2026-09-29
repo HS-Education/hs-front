@@ -4,237 +4,336 @@
 
 <!-- STATE 1: QUIZZES LIST -->
 @case ('LIST') {
+
 <div class="space-y-6 select-none animate-fade-in">
-  <div class="flex items-center justify-between border-b border-[var(--border)] pb-4">
-    <div>
-      <h2 class="text-lg font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.STUDENT_TITLE' | transloco }}</h2>
-      <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'CLASSROOMS.QUIZZES.STUDENT_SUBTITLE' | transloco }}</p>
-    </div>
-    <button type="button" (click)="loadAvailableQuizzes()" title="Recargar cuestionarios"
-      class="p-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] shadow-sm transition flex items-center justify-center">
-      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-      </svg>
-    </button>
+  <!-- Top Header Bar (No reload button as requested) -->
+  <div class="border-b border-[var(--border)] pb-4">
+    <h2 class="text-lg font-bold text-[var(--text-primary)] tracking-tight">{{ 'CLASSROOMS.QUIZZES.STUDENT_TITLE' | transloco }}</h2>
+    <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'CLASSROOMS.QUIZZES.STUDENT_SUBTITLE' | transloco }}</p>
   </div>
-  
+
   @if (showOnboardingBanner()) {
-  <div class="rounded-xl border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+  <div class="rounded-2xl border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
     <div class="flex items-start gap-3">
       <svg class="h-5 w-5 text-[var(--brand-primary)] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
-        <strong class="text-[var(--text-primary)]">¿Cómo funcionan los cuestionarios?</strong><br>
-        Sery genera automáticamente cuestionarios basados en los temas del curso. Responde las preguntas para evaluar tu conocimiento. Al finalizar, Sery te dará explicaciones detalladas para que puedas aprender de tus errores.
+        <strong class="text-[var(--text-primary)]">{{ 'UI_TEXT.HOW_DO_FORMATIVE_QUIZZES_WORK' | transloco }}</strong><br>
+        {{ 'UI_TEXT.SERY_GENERATES_ASSESSMENTS_BASED_ON_COURSE_TOPICS_ANSWER' | transloco }}
       </p>
     </div>
-    <button (click)="markOnboardingCompleted()" class="shrink-0 px-4 py-1.5 bg-[var(--brand-primary)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--brand-primary-dark)] transition">
-      Entendido
+    <button (click)="markOnboardingCompleted()" class="shrink-0 px-4 py-1.5 bg-[var(--button-primary-bg)] text-white text-xs font-semibold rounded-xl hover:bg-[var(--button-primary-hover)] transition">
+      {{ 'UI_TEXT.GOT_IT' | transloco }}
     </button>
   </div>
   }
 
-  <!-- Summary Cards Grid -->
+  <!-- Active / In-Progress Quiz Alert Banner (if any quiz is STARTED) -->
+  @if (activeStartedQuiz(); as inProg) {
+  <div class="rounded-2xl border border-[var(--color-warning-border)] bg-[var(--quiz-pending-soft)] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs animate-pulse-subtle">
+    <div class="flex items-center gap-3.5 min-w-0">
+      <div class="h-10 w-10 rounded-xl bg-[var(--brand-mustard)]/20 border border-[var(--brand-mustard)]/30 flex items-center justify-center text-[var(--quiz-pending)] shrink-0">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div class="min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-[var(--brand-mustard)] text-white">{{ 'CLASSROOMS.QUIZZES.STATUS_IN_PROGRESS' | transloco }}</span>
+          <span class="text-xs font-bold text-[var(--text-secondary)]">{{ 'PROGRESS.EXPLORER.WEEK' | transloco }} {{ inProg.weekNumber }} • {{ getBimesterNameForPeriod(inProg.gradingPeriodId) }}</span>
+        </div>
+        <h4 class="text-sm font-extrabold text-[var(--text-primary)] truncate mt-0.5">
+          {{ getTopicNameForQuiz(inProg) }}
+        </h4>
+      </div>
+    </div>
+    <button type="button"
+      (click)="resumeQuiz(inProg.activeInstanceId!, inProg.weekNumber)"
+      [disabled]="loadingResults()"
+      class="shrink-0 px-4 py-2.5 rounded-xl bg-[var(--brand-mustard)] hover:bg-[var(--brand-mustard)]/90 text-white font-bold text-xs shadow-xs transition active:scale-95 flex items-center gap-2">
+      @if (loadingResults()) {
+        <i class="bi bi-arrow-repeat animate-spin"></i>
+        <span>{{ 'PROGRESS.EXPLORER.LOADING' | transloco }}</span>
+      } @else {
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+        </svg>
+        <span>{{ 'UI_TEXT.CONTINUE_ASSESSMENT' | transloco }}</span>
+      }
+    </button>
+  </div>
+  }
+
+  <!-- Modern KPI Stat Cards Grid (3 cards) -->
   <div class="grid gap-4 sm:grid-cols-3">
-    <div class="rounded-lg border border-[#ca8a04]/20 bg-[#ca8a04]/5 p-5 shadow-sm">
-      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[#ca8a04]">{{ 'CLASSROOMS.QUIZZES.PENDING_QUIZ' | transloco }}</p>
-      <p class="text-3xl font-black text-[#ca8a04] mt-1.5">
-        {{ pendingQuizzesCount() > 0 ? 'Sí' : 'No' }}
-        @if (pendingQuizzesCount() > 0) {
-        <span class="text-xs font-semibold text-[var(--text-secondary)]">({{ pendingQuizzesCount() }})</span>
-        }
-      </p>
+    <!-- Card 1: Pendientes -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs flex items-center gap-3.5 transition hover:border-[var(--border-strong)]">
+      <div class="h-11 w-11 rounded-xl bg-[var(--quiz-pending-soft)] border border-[var(--color-warning-border)] text-[var(--quiz-pending)] flex items-center justify-center shrink-0">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'PROGRESS.EXPLORER.PENDING' | transloco }}</p>
+        <div class="flex items-baseline gap-2 mt-0.5">
+          <span class="text-2xl font-black text-[var(--text-primary)] tabular-nums">{{ pendingQuizzesCount() }}</span>
+          <span class="text-[10px] font-bold text-[var(--text-secondary)]">
+            @if (pendingQuizzesCount() > 0) { {{ 'UI_TEXT.TO_ANSWER' | transloco }} } @else { {{ 'UI_TEXT.UP_TO_DATE' | transloco }} }
+          </span>
+        </div>
+      </div>
     </div>
-    <div class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)]/40 p-5 shadow-sm">
-      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TOTAL_EVALUATIONS' | transloco }}</p>
-      <p class="text-3xl font-black text-[var(--text-primary)] mt-1.5">{{ totalQuizzesCount() }}</p>
+
+    <!-- Card 2: Evaluaciones Realizadas -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs flex flex-col justify-between transition hover:border-[var(--border-strong)]">
+      <div class="flex items-center gap-3.5">
+        <div class="h-11 w-11 rounded-xl bg-[var(--quiz-completed-soft)] border border-[var(--quiz-completed)]/20 text-[var(--quiz-completed)] flex items-center justify-center shrink-0">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'UI_TEXT.COMPLETED' | transloco }}</p>
+          <div class="flex items-baseline gap-1 mt-0.5">
+            <span class="text-2xl font-black text-[var(--text-primary)] tabular-nums">{{ completedQuizzesCount() }}</span>
+            <span class="text-xs font-semibold text-[var(--text-secondary)]">/ {{ totalQuizzesCount() }}</span>
+          </div>
+        </div>
+      </div>
+      <!-- Micro Progress Bar -->
+      @let compPct = totalQuizzesCount() > 0 ? (completedQuizzesCount() / totalQuizzesCount()) * 100 : 0;
+      <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5 overflow-hidden mt-2.5">
+        <div class="bg-[var(--quiz-completed)] h-full rounded-full transition-all duration-500" [style.width.%]="compPct"></div>
+      </div>
     </div>
-    <div class="rounded-lg border border-[var(--brand-forest)]/20 bg-[var(--brand-forest)]/5 p-5 shadow-sm">
-      <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--brand-forest)]">{{ 'CLASSROOMS.QUIZZES.COMPLETED' | transloco }}</p>
-      <p class="text-3xl font-black text-[var(--brand-forest)] mt-1.5">{{ completedQuizzesCount() }}</p>
+
+    <!-- Card 3: Promedio de Evaluaciones (No "promedio" badge as requested) -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs flex items-center gap-3.5 transition hover:border-[var(--border-strong)]">
+      <div class="h-11 w-11 rounded-xl bg-[var(--brand-primary-soft)] border border-[var(--brand-primary)]/20 text-[var(--brand-primary)] flex items-center justify-center shrink-0">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.504-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.496m5.007 0a3.75 3.75 0 003.743-3.75V5.25a2.25 2.25 0 00-2.25-2.25h-9a2.25 2.25 0 00-2.25 2.25v6.75a3.75 3.75 0 003.743 3.75" />
+        </svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'UI_TEXT.AVERAGE_SCORE' | transloco }}</p>
+        <div class="flex items-baseline gap-1 mt-0.5">
+          <span class="text-2xl font-black tabular-nums" [style.color]="completedQuizzesCount() > 0 ? scoreColor(+averageScore()) : 'var(--text-primary)'">
+            {{ completedQuizzesCount() > 0 ? averageScore() : '--' }}
+          </span>
+          <span class="text-xs font-semibold text-[var(--text-secondary)]">/ 20</span>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Quizzes Table / List -->
+  <!-- Bimester Filter Bar (Correctly ordered 1, 2, 3, 4; No status filter as requested) -->
+  <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1">
+    <button type="button"
+      (click)="studentBimesterFilter.set('all')"
+      [class.bg-[var(--brand-primary)]]="studentBimesterFilter() === 'all'"
+      [class.text-white]="studentBimesterFilter() === 'all'"
+      [class.bg-[var(--surface)]]="studentBimesterFilter() !== 'all'"
+      [class.text-[var(--text-secondary)]]="studentBimesterFilter() !== 'all'"
+      class="shrink-0 px-3 py-1.5 rounded-xl border border-[var(--border)] text-xs font-bold transition shadow-xs hover:border-[var(--border-strong)]">
+      {{ 'PROGRESS.EXPLORER.ALL_PERIODS' | transloco }}
+    </button>
+    @for (period of sortedGradingPeriods(); track period.id) {
+    <button type="button"
+      (click)="studentBimesterFilter.set(period.id)"
+      [class.bg-[var(--brand-primary)]]="studentBimesterFilter() === period.id"
+      [class.text-white]="studentBimesterFilter() === period.id"
+      [class.bg-[var(--surface)]]="studentBimesterFilter() !== period.id"
+      [class.text-[var(--text-secondary)]]="studentBimesterFilter() !== period.id"
+      class="shrink-0 px-3 py-1.5 rounded-xl border border-[var(--border)] text-xs font-bold transition shadow-xs hover:border-[var(--border-strong)]">
+      {{ getBimesterLabel(period.bimester) }}
+    </button>
+    }
+  </div>
+
+  <!-- Quizzes Grid (Organized in 3 columns for optimal space usage) -->
   @if (loadingQuizzes()) {
-  <div class="flex items-center justify-center py-20 rounded-lg border border-[var(--border)] bg-[var(--surface)]">
+  <div class="flex items-center justify-center py-20 rounded-2xl border border-[var(--border)] bg-[var(--surface)]">
     <div class="space-y-3 text-center">
-      <div
-        class="inline-flex h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]">
-      </div>
+      <div class="inline-flex h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]"></div>
       <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">{{ 'CLASSROOMS.QUIZZES.LOADING' | transloco }}</p>
     </div>
   </div>
   } @else if (displayedQuizzes().length === 0) {
-  <div class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] py-16 text-center shadow-sm">
-    <svg class="mx-auto h-12 w-12 text-[var(--text-secondary)]/40 mb-3" fill="none" viewBox="0 0 24 24"
-      stroke="currentColor" stroke-width="1.5">
-      <path stroke-linecap="round" stroke-linejoin="round"
-        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-    </svg>
+  <div class="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] py-16 text-center shadow-xs">
+    <div class="h-12 w-12 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center mx-auto mb-3 text-[var(--text-secondary)]">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    </div>
     <h4 class="text-sm font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.NO_SCHEDULED' | transloco }}</h4>
-    <p class="text-xs text-[var(--text-secondary)] mt-1 max-w-xs mx-auto">Tu profesor generará cuestionarios automáticos
-      utilizando la inteligencia artificial del sistema.</p>
+    <p class="text-xs text-[var(--text-secondary)] mt-1 max-w-xs mx-auto">
+      @if (studentBimesterFilter() !== 'all') {
+        {{ 'UI_TEXT.NO_QUIZZES_FOUND_FOR_THE_SELECTED_PERIOD' | transloco }}
+      } @else {
+        {{ 'CLASSROOMS.QUIZZES.NO_SCHEDULED_DESC' | transloco }}
+      }
+    </p>
   </div>
   } @else {
-  <div class="rounded-lg border border-[var(--border)]/70 bg-[var(--surface)] overflow-hidden">
-    <div class="divide-y divide-[var(--border)]/50">
-      @for (quiz of displayedQuizzes(); track quiz.id) {
-      <div class="border-b border-[var(--border)]/50 last:border-b-0">
-        <!-- Header: Click to Expand -->
-        <div (click)="toggleQuizExpand(quiz.id)"
-          class="p-5 flex items-center justify-between hover:bg-[var(--bg-secondary)]/40 transition duration-150 cursor-pointer select-none">
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <svg class="h-3 w-3 transform transition-transform duration-200 text-[var(--text-secondary)]"
-                [class.rotate-90]="expandedQuizId() === quiz.id" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-              <h4 class="text-xs font-bold text-[var(--text-primary)]">
-                @if (quiz.type === 'REMEDIAL') {
-                  {{ 'CLASSROOMS.QUIZZES.REMEDIAL_QUIZ' | transloco }} {{ quiz.weekNumber }}
-                } @else {
-                  {{ 'CLASSROOMS.QUIZZES.WEEKLY_QUIZ' | transloco }} {{ quiz.weekNumber }}
-                }
-              </h4>
-            </div>
-            <p class="text-[10px] text-[var(--text-secondary)] flex items-center gap-2">
-              <span>{{ getBimesterNameForPeriod(quiz.gradingPeriodId) }}</span>
-              <span class="text-[var(--border)]">•</span>
-              <span>{{ 'CLASSROOMS.QUIZZES.STATUS' | transloco }}</span>
-              <span class="font-bold" [class.text-[#ca8a04]]="quiz.status === 'PENDING'"
-                [class.text-[var(--brand-primary)]]="quiz.status === 'STARTED' || quiz.status === 'RETRY'"
-                [class.text-[#166534]]="quiz.status === 'COMPLETED'">
-                {{ quiz.status === 'PENDING' ? ('CLASSROOMS.QUIZZES.STATUS_PENDING' | transloco) : quiz.status === 'STARTED' ? ('CLASSROOMS.QUIZZES.STATUS_IN_PROGRESS' | transloco) : quiz.status === 'RETRY' ? ('CLASSROOMS.QUIZZES.STATUS_AVAILABLE' | transloco) : ('CLASSROOMS.QUIZZES.STATUS_COMPLETED' | transloco) }}
-              </span>
-              @if (quiz.maxAttempts > 0) {
-              <span class="text-[var(--border)]">•</span>
-              <span class="text-[var(--text-secondary)]/80">{{ 'CLASSROOMS.QUIZZES.ATTEMPTS_AVAILABLE' | transloco }} <strong
-                  class="text-[var(--text-primary)]">{{ quiz.attemptsLeft }}</strong> {{ 'CLASSROOMS.QUIZZES.OF' | transloco }} {{ quiz.maxAttempts }}</span>
-              }
-            </p>
-          </div>
-
-          <div>
-            @if (quiz.status === 'PENDING' || quiz.status === 'RETRY') {
-              <button type="button" (click)="$event.stopPropagation(); startQuiz(quiz.id, quiz.weekNumber)"
-                [disabled]="quiz.attemptsLeft === 0 || startingQuizId() === quiz.id"
-                class="rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 text-xs shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2">
-                @if (startingQuizId() === quiz.id) {
-                  <i class="bi bi-arrow-repeat animate-spin"></i>
-                  <span>{{ 'CLASSROOMS.QUIZZES.GENERATING' | transloco }}</span>
-                } @else {
-                  <i class="bi bi-hand-index-thumb"></i>
-                  <span>{{ quiz.status === 'RETRY' ? ('CLASSROOMS.QUIZZES.RETRY' | transloco) : ('CLASSROOMS.QUIZZES.START' | transloco) }}</span>
-                }
-              </button>
-            } @else if (quiz.status === 'STARTED' && quiz.activeInstanceId && quiz.activeInstanceId !== null) {
-              <button type="button"
-                (click)="$event.stopPropagation(); resumeQuiz(quiz.activeInstanceId!, quiz.weekNumber)"
-                [disabled]="loadingResults()"
-                class="rounded-lg bg-[var(--brand-mustard)] hover:bg-[var(--brand-mustard)]/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-4 py-2 text-xs shadow-sm transition active:scale-[0.98] flex items-center justify-center gap-2">
-                @if (loadingResults()) {
-                  <i class="bi bi-arrow-repeat animate-spin"></i>
-                  <span>Cargando...</span>
-                } @else {
-                  <i class="bi bi-hand-index-thumb"></i>
-                  <span>{{ 'CLASSROOMS.QUIZZES.RESUME' | transloco }}</span>
-                }
-              </button>
-            } @else if (quiz.status === 'COMPLETED') {
-            <span
-              class="inline-flex items-center rounded-lg border border-[#166534]/20 bg-[#166534]/10 px-3 py-1.5 text-xs font-bold text-[#166534]">
-              {{ 'CLASSROOMS.QUIZZES.FINISHED' | transloco }}
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    @for (quiz of displayedQuizzes(); track quiz.id) {
+    @let bestAttempt = getBestOrLatestAttempt(quiz);
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden">
+      <!-- Card Top Info -->
+      <div class="p-4 space-y-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            @if (studentBimesterFilter() === 'all') {
+            <span class="quiz-bimester-badge">
+              {{ getBimesterNameForPeriod(quiz.gradingPeriodId) }}
             </span>
             }
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[var(--bg-secondary)] text-[var(--text-secondary)]">
+              {{ 'PROGRESS.EXPLORER.WEEK' | transloco }} {{ quiz.weekNumber }}
+            </span>
           </div>
+          <span class="quiz-status-pill"
+            [ngClass]="{
+              'quiz-status-pill--pending': quiz.status === 'PENDING',
+              'quiz-status-pill--active': quiz.status === 'STARTED' || quiz.status === 'RETRY',
+              'quiz-status-pill--completed': quiz.status === 'COMPLETED'
+            }">
+            {{ quiz.status === 'PENDING' ? ('CLASSROOMS.QUIZZES.STATUS_PENDING' | transloco) : quiz.status === 'STARTED' ? ('CLASSROOMS.QUIZZES.STATUS_IN_PROGRESS' | transloco) : quiz.status === 'RETRY' ? ('CLASSROOMS.QUIZZES.STATUS_AVAILABLE' | transloco) : ('CLASSROOMS.QUIZZES.STATUS_COMPLETED' | transloco) }}
+          </span>
         </div>
 
-        <!-- Expanded Details & Attempts History -->
-        @if (expandedQuizId() === quiz.id) {
-        <div
-          class="px-5 pb-5 pt-1.5 border-t border-[var(--border)]/30 bg-[var(--bg-secondary)]/5 animate-fade-in space-y-4">
-          <!-- Grid Info Card -->
-          <div class="grid gap-3 sm:grid-cols-3 text-xs pt-1">
-            <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 shadow-xs">
-              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">{{ 'CLASSROOMS.QUIZZES.ACADEMIC_PERIOD' | transloco }}</span>
-              <span class="font-bold text-[var(--text-primary)] mt-0.5 block">{{
-                getBimesterNameForPeriod(quiz.gradingPeriodId) }}</span>
-            </div>
-            <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 shadow-xs">
-              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">{{ 'CLASSROOMS.QUIZZES.QUESTIONS_PER_ATTEMPT' | transloco }}</span>
-              <span class="font-bold text-[var(--text-primary)] mt-0.5 block">{{ quiz.questionsPerAttempt }}
-                {{ 'CLASSROOMS.QUIZZES.QUESTIONS' | transloco }}</span>
-            </div>
+        <!-- Topic Title (prominently surfaced!) -->
+        <div>
+          <h4 class="text-sm font-extrabold text-[var(--text-primary)] leading-snug line-clamp-2" [title]="getTopicNameForQuiz(quiz)">
+            {{ getTopicNameForQuiz(quiz) }}
+          </h4>
+          <p class="text-[11px] text-[var(--text-secondary)] mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span class="inline-flex items-center gap-1">
+              <svg class="h-3.5 w-3.5 text-[var(--text-secondary)] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ getTotalQuestionsForQuiz(quiz) }} {{ 'UI_TEXT.TOTAL_QUESTIONS' | transloco }}
+            </span>
+            <span class="inline-flex items-center gap-1">
+              <svg class="h-3.5 w-3.5 text-[var(--text-secondary)] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {{ quiz.attemptsLeft }} {{ 'CLASSROOMS.QUIZZES.OF' | transloco }} {{ quiz.maxAttempts }} {{ 'CLASSROOMS.QUIZZES.ATTEMPTS' | transloco }}
+            </span>
+            @if (bestAttempt) {
+            <span class="inline-flex items-center gap-1">
+              <svg class="h-3.5 w-3.5 text-[var(--text-secondary)] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+              </svg>
+              {{ bestAttempt.submittedAt | localizedDate:'dd/MM/yyyy' }}
+            </span>
+            }
+          </p>
+        </div>
 
-            <div class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 shadow-xs">
-              <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">{{ 'CLASSROOMS.QUIZZES.ALLOWED_ATTEMPTS' | transloco }}</span>
-              <span class="font-bold text-[var(--text-primary)] mt-0.5 block">{{ quiz.maxAttempts }} {{ 'CLASSROOMS.QUIZZES.ATTEMPTS' | transloco }}</span>
-            </div>
+        <!-- Score Row with compact Feedback button on the right -->
+        @if (bestAttempt) {
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/40 p-2.5 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-[11px] font-semibold text-[var(--text-secondary)]">{{ 'PROGRESS.STUDENT_STATS.GRADE' | transloco }}</span>
+            <span class="text-base font-black tabular-nums" [style.color]="scoreColor(bestAttempt.score)">
+              {{ bestAttempt.score }}/20
+            </span>
           </div>
-
-          <!-- Past Attempts Section -->
-          @if (quiz.status !== 'STARTED') {
-          <div class="space-y-2">
-            <h5 class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.ATTEMPTS_HISTORY' | transloco }}</h5>
-
-            @if (quiz.pastAttempts.length === 0) {
-            <div
-              class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] p-4 text-center text-xs text-[var(--text-secondary)]">
-              {{ 'CLASSROOMS.QUIZZES.NO_ATTEMPTS' | transloco }}
-            </div>
-            } @else {
-            <div class="grid gap-2">
-              @for (attempt of quiz.pastAttempts; track attempt.instanceId; let idx = $index) {
-              <div
-                class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 flex items-center justify-between gap-4 shadow-xs hover:border-[var(--brand-primary)]/20 transition duration-150">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
-                    <span class="text-xs font-bold">#{{ idx + 1 }}</span>
-                  </div>
-                  <div>
-                    <h6 class="text-xs font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.ATTEMPT' | transloco }} {{ idx + 1 }}</h6>
-                    <p class="text-[9px] text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.SUBMITTED_AT' | transloco }} {{ attempt.submittedAt |
-                      date:'dd/MM/yyyy, hh:mm a' }}</p>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-4 text-right">
-                  <div class="hidden sm:block">
-                    <span class="text-[9px] font-black text-[var(--text-secondary)] uppercase block tracking-wider">{{ 'CLASSROOMS.QUIZZES.GRADE' | transloco }}</span>
-                    <span class="text-sm font-black text-[var(--brand-primary)] block mt-0.5">
-                      {{ attempt.score }}
-                    </span>
-                  </div>
-
-                  <button type="button" (click)="viewResults(attempt.instanceId)"
-                    class="rounded-lg border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5 hover:bg-[var(--brand-primary)]/15 text-[var(--brand-primary)] font-bold px-3 py-1.5 text-[9px] transition active:scale-95 shadow-2xs">
-                    {{ 'CLASSROOMS.QUIZZES.REVIEW_GRADE' | transloco }}
-                  </button>
-                </div>
-              </div>
-              }
-            </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button"
+              (click)="viewResults(bestAttempt.instanceId)"
+              title="{{ 'UI_TEXT.VIEW_FEEDBACK_AND_ANSWERS' | transloco }}"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:border-[var(--brand-primary)]/50 hover:bg-[var(--brand-primary-soft)] hover:text-[var(--brand-primary)] text-[11px] font-bold transition-all shadow-xs active:scale-95">
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L14 15l-4.187.904zM19.047 8.825L18 12l-1.047-3.175L14 8l3.175-1.047L18 3l1.047 3.953L22 8l-2.953.825z" />
+              </svg>
+              <span>{{ 'UI_TEXT.FEEDBACK' | transloco }}</span>
+            </button>
+            @if (quiz.pastAttempts.length > 1) {
+              <button type="button"
+                (click)="toggleQuizExpand(quiz.id)"
+                title="{{ 'UI_TEXT.VIEW_ATTEMPT_HISTORY' | transloco }}"
+                class="p-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] transition text-[11px]">
+                <i class="bi bi-clock-history"></i>
+              </button>
             }
           </div>
-          } @else {
-          <div class="rounded-lg bg-[#ca8a04]/10 border border-[#ca8a04]/20 p-4 mt-2">
-             <p class="text-[11px] text-[#ca8a04] font-bold text-center">{{ 'CLASSROOMS.QUIZZES.FINISH_CURRENT_ATTEMPT' | transloco }}</p>
-          </div>
-          }
         </div>
         }
       </div>
+
+      <!-- Card Action Footer (Only needed when quiz can be started or resumed) -->
+      @if (quiz.status === 'PENDING' || quiz.status === 'RETRY') {
+        <div class="p-4 pt-0">
+          <button type="button" (click)="startQuiz(quiz.id, quiz.weekNumber)"
+            [disabled]="quiz.attemptsLeft === 0 || startingQuizId() === quiz.id"
+            class="w-full py-2 px-4 rounded-xl bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed text-white font-bold text-xs shadow-xs transition active:scale-[0.98] flex items-center justify-center gap-2">
+            @if (startingQuizId() === quiz.id) {
+              <i class="bi bi-arrow-repeat animate-spin"></i>
+              <span>{{ 'CLASSROOMS.QUIZZES.STARTING' | transloco }}</span>
+            } @else {
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />
+              </svg>
+              <span>{{ quiz.status === 'RETRY' ? ('CLASSROOMS.QUIZZES.RETRY' | transloco) : ('CLASSROOMS.QUIZZES.START' | transloco) }}</span>
+            }
+          </button>
+        </div>
+      } @else if (quiz.status === 'STARTED' && quiz.activeInstanceId) {
+        <div class="p-4 pt-0">
+          <button type="button"
+            (click)="resumeQuiz(quiz.activeInstanceId, quiz.weekNumber)"
+            [disabled]="loadingResults()"
+            class="w-full py-2 px-4 rounded-xl bg-[var(--brand-mustard)] hover:bg-[var(--brand-mustard)]/90 text-white font-bold text-xs shadow-xs transition active:scale-[0.98] flex items-center justify-center gap-2">
+            @if (loadingResults()) {
+              <i class="bi bi-arrow-repeat animate-spin"></i>
+              <span>{{ 'PROGRESS.EXPLORER.LOADING' | transloco }}</span>
+            } @else {
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              </svg>
+              <span>{{ 'CLASSROOMS.QUIZZES.RESUME' | transloco }}</span>
+            }
+          </button>
+        </div>
+      }
+
+      <!-- Expandable Attempt History when toggled -->
+      @if (expandedQuizId() === quiz.id && quiz.pastAttempts.length > 0) {
+      <div class="p-4 pt-0">
+        <div class="pt-2 border-t border-[var(--border)] space-y-1.5 animate-fade-in">
+          <p class="text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'UI_TEXT.ALL_ATTEMPTS' | transloco }}</p>
+          <div class="space-y-1">
+            @for (att of quiz.pastAttempts; track att.instanceId; let i = $index) {
+            <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--bg-secondary)]/50 text-xs">
+              <div>
+                <span class="font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.ATTEMPT' | transloco }} {{ i + 1 }}</span>
+                <span class="text-[10px] text-[var(--text-secondary)] ml-2">{{ att.submittedAt | localizedDate:'dd/MM/yyyy, hh:mm a' }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-black tabular-nums" [style.color]="scoreColor(att.score)">{{ att.score }}/20</span>
+                <button type="button" (click)="viewResults(att.instanceId)"
+                  class="px-2 py-0.5 rounded text-[10px] font-bold text-[var(--brand-primary)] hover:underline">
+                  {{ 'UI_TEXT.REVIEW' | transloco }}
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
       }
     </div>
+    }
   </div>
   }
 </div>
 }
+
 
 <!-- STATE 2: TAKING QUIZ (STEP-BY-STEP FLOW) -->
 @case ('TAKING_QUIZ') {
@@ -245,9 +344,11 @@
       <h2 class="text-base font-extrabold text-[var(--text-primary)]">{{ quizName() }}</h2>
       <p class="text-xs text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.INSTRUCTION' | transloco }}</p>
     </div>
-    <button type="button" (click)="goBackToList()"
-      class="rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] px-3.5 py-2 text-xs font-bold text-[var(--text-secondary)] transition shadow-sm">
-      {{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.EXIT' | transloco }}
+    <button type="button" (click)="goBackToList()" class="quiz-back-button">
+      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+      </svg>
+      <span>{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.EXIT' | transloco }}</span>
     </button>
   </div>
 
@@ -377,7 +478,7 @@
         <div class="space-y-4">
           <div class="flex justify-between items-center border-b border-[var(--border)]/50 pb-3">
             <span class="text-[11px] font-bold text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.MAX_SCORE' | transloco }}</span>
-            <span class="text-[11px] font-black text-[var(--text-primary)]">20 pts</span>
+            <span class="text-[11px] font-black text-[var(--text-primary)]">{{ 'UI_TEXT.20_PTS' | transloco }}</span>
           </div>
           <div class="flex justify-between items-center border-b border-[var(--border)]/50 pb-3">
             <span class="text-[11px] font-bold text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.REMAINING_ATTEMPTS' | transloco }}</span>
@@ -414,12 +515,13 @@
   <div class="flex items-center justify-between border-b border-[var(--border)] pb-4">
     <div class="space-y-1">
       <h2 class="text-base font-extrabold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.RESULTS.TITLE' | transloco }}</h2>
-      <p class="text-xs text-[var(--text-secondary)]">Revisa tu calificación y las explicaciones personalizadas del
-        tutor</p>
+      <p class="text-xs text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.RESULTS.SUBTITLE' | transloco }}</p>
     </div>
-    <button type="button" (click)="goBackToList()"
-      class="rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] px-4 py-2.5 text-xs font-bold text-[var(--text-secondary)] transition shadow-sm">
-      {{ 'CLASSROOMS.QUIZZES.RESULTS.BACK_TO_LIST' | transloco }}
+    <button type="button" (click)="goBackToList()" class="quiz-back-button">
+      <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+      </svg>
+      <span>{{ 'CLASSROOMS.QUIZZES.RESULTS.BACK_TO_LIST' | transloco }}</span>
     </button>
   </div>
 
@@ -429,8 +531,7 @@
       <div
         class="inline-flex h-8 w-8 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]">
       </div>
-      <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">Cargando resultados de la
-        evaluación...</p>
+      <p class="text-xs font-semibold text-[var(--text-secondary)] tracking-tight">{{ 'CLASSROOMS.QUIZZES.RESULTS.LOADING' | transloco }}</p>
     </div>
   </div>
   } @else if (results(); as sub) {
@@ -439,8 +540,7 @@
     class="rounded-lg border border-[var(--border)]/70 bg-[var(--bg-secondary)]/30 p-5 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6">
     <div class="space-y-2 text-center md:text-left">
       <h3 class="text-lg font-black text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.RESULTS.COMPLETED_TITLE' | transloco }}</h3>
-      <p class="text-xs text-[var(--text-secondary)] leading-relaxed max-w-md">Si hubo respuestas incorrectas, más abajo
-        encontrarás una explicación generada por Sery para ayudarte a comprenderlas mejor.</p>
+      <p class="text-xs text-[var(--text-secondary)] leading-relaxed max-w-md">{{ 'CLASSROOMS.QUIZZES.RESULTS.COMPLETED_DESC' | transloco }}</p>
     </div>
 
     <!-- Score badge -->
@@ -453,6 +553,20 @@
     </div>
   </div>
 
+  @if (sub.feedbackStatus === 'PENDING' || sub.feedbackStatus === 'PROCESSING') {
+    <p class="rounded-xl border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5 px-4 py-3 text-xs font-semibold text-[var(--text-secondary)]" role="status" aria-live="polite">
+      {{ 'CLASSROOMS.QUIZZES.RESULTS.FEEDBACK_PENDING' | transloco }}
+    </p>
+  } @else if (sub.feedbackStatus === 'FAILED') {
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--brand-error)]/25 bg-[var(--brand-error)]/5 px-4 py-3 text-xs text-[var(--text-secondary)]">
+      <span>{{ 'CLASSROOMS.QUIZZES.RESULTS.FEEDBACK_FAILED' | transloco }}</span>
+      <button type="button" (click)="retryFeedback()" [disabled]="retryingFeedback()"
+        class="rounded-lg border border-[var(--brand-primary)]/30 px-3 py-2 font-bold text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 disabled:opacity-50">
+        {{ retryingFeedback() ? ('CLASSROOMS.QUIZZES.RESULTS.FEEDBACK_PENDING' | transloco) : ('CLASSROOMS.QUIZZES.RESULTS.RETRY_FEEDBACK' | transloco) }}
+      </button>
+    </div>
+  }
+
   <!-- Answers and AI Explanations List (2-column Grid) -->
   <div class="pt-2">
     <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-6">{{ 'CLASSROOMS.QUIZZES.RESULTS.BREAKDOWN' | transloco }}</h4>
@@ -464,7 +578,7 @@
         <!-- Question line -->
         <div class="flex items-start justify-between gap-4 border-b border-[var(--border)]/50 pb-4 mb-4">
           <div class="space-y-1.5">
-            <span class="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-wider">Pregunta {{ idx + 1 }}</span>
+            <span class="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TAKING_QUIZ.QUESTION' | transloco }} {{ idx + 1 }}</span>
             <p class="text-sm font-bold text-[var(--text-primary)] leading-relaxed">{{ ans.questionText }}</p>
           </div>
           <!-- Status tag -->
@@ -542,7 +656,7 @@
               </div>
               <div class="grid gap-2">
                 @for (src of getSources(ans.aiFeedback); track src.documentId) {
-                <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--brand-primary)]/30 p-3 flex flex-col xl:flex-row xl:items-center justify-between gap-3 transition duration-150">
+                <div class="rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] p-3 flex flex-col xl:flex-row xl:items-center justify-between gap-3 transition duration-150">
                   <div class="flex items-center gap-2.5 min-w-0">
                     <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/15">
                       <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="25">
@@ -589,165 +703,420 @@
 }
 }
 } @else {
+
+
 <!-- ================= TEACHER / COORDINATOR VIEW ================= -->
-<div class="space-y-8 select-none animate-fade-in">
-  <div class="border-b border-[var(--border)] pb-4">
-    <h2 class="text-lg font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.TITLE' | transloco }}</h2>
-    <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'CLASSROOMS.QUIZZES.TEACHER.SUBTITLE' | transloco }}
-    </p>
-  </div>
-
-  <!-- IA Generator Section -->
-  <div
-    class="rounded-lg border border-[var(--border)]/70 bg-gradient-to-tr from-[var(--surface)] via-[var(--surface)] to-[var(--brand-primary)]/5 p-5 md:p-6 space-y-4">
-    <div class="space-y-1">
-      <h3 class="text-sm font-extrabold text-[var(--text-primary)] flex items-center gap-2">
-        <svg class="h-4 w-4 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-          stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L14 15l-4.187.904zM19.047 8.825L18 12l-1.047-3.175L14 8l3.175-1.047L18 3l1.047 3.953L22 8l-2.953.825z" />
-        </svg>
-        {{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATE_TITLE' | transloco }}
-      </h3>
-      <p class="text-xs text-[var(--text-secondary)] leading-relaxed" [innerHTML]="'CLASSROOMS.QUIZZES.TEACHER.GENERATE_DESC' | transloco"></p>
+<div class="space-y-6 select-none animate-fade-in">
+  @if (isClassroomTeacher() || userDataService.isCoordinator()) {
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
+      <div>
+        <h2 class="text-lg font-bold text-[var(--text-primary)] tracking-tight">{{ 'CLASSROOMS.QUIZZES.TEACHER.TITLE' | transloco }}</h2>
+        <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'CLASSROOMS.QUIZZES.TEACHER.SUBTITLE' | transloco }}</p>
+      </div>
     </div>
+  }
 
-    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 items-end pt-2">
-      <div class="space-y-2">
-        <label for="gen-bim"
-          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.BIMESTER' | transloco }}</label>
-        <select id="gen-bim" [(ngModel)]="genGradingPeriodId"
-          class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-xs font-bold text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--brand-primary)]">
-          @for (p of availableGradingPeriods(); track p.id) {
-          <option [value]="p.id">{{ getBimesterLabel(p.bimester) }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="space-y-2">
-        <label for="gen-week"
-          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.WEEK' | transloco }}</label>
-        <select id="gen-week" [(ngModel)]="genWeek"
-          class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-xs font-bold text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--brand-primary)]">
-          @for (w of availableWeeks(); track w.id) {
-          <option [value]="w.orderIndex">{{ 'CLASSROOMS.QUIZZES.TEACHER.WEEK' | transloco }} {{ w.orderIndex }}: {{ w.name }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="space-y-2">
-        <label for="gen-attempts"
-          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.MAX_ATTEMPTS' | transloco }}</label>
-        <div class="relative">
-          <input id="gen-attempts" type="number" min="1" max="3" [ngModel]="genAllowedAttempts()"
-            (ngModelChange)="genAllowedAttempts.set($event)"
-            class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-3 pr-8 py-2.5 text-xs font-bold text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--brand-primary)] hide-spin-button" />
-          <div
-            class="absolute inset-y-0 right-0 flex flex-col border-l border-[var(--border)] rounded-r-lg overflow-hidden">
-            <button type="button" (click)="increaseAttempts()"
-              class="flex-1 px-2 bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center">
-              <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+  @if (canTeacherGenerate()) {
+  <!-- ================= TEACHER KPI & AI GENERATOR GRID (4 Cards) ================= -->
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+    <!-- Card 1: Generar Cuestionario con Sery IA -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs flex flex-col justify-between min-h-[190px] transition hover:border-[var(--border-strong)]">
+      <div>
+        <!-- Card Header with Sery AI badge -->
+        <div class="flex items-center justify-between gap-2 mb-2.5">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--brand-primary)]/30 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
+              <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-            </button>
-            <div class="h-px bg-[var(--border)] w-full"></div>
-            <button type="button" (click)="decreaseAttempts()"
-              class="flex-1 px-2 bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center">
-              <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+            </div>
+            <h3 class="text-[10.5px] sm:text-[11px] font-extrabold uppercase tracking-normal text-[var(--text-primary)] leading-[1.25] cursor-default"
+              [title]="'CLASSROOMS.QUIZZES.TEACHER.GENERATE_TITLE' | transloco">
+              {{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATE_TITLE' | transloco }}
+            </h3>
           </div>
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/20 shrink-0">
+            <span class="relative flex h-1.5 w-1.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--brand-primary)] opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--brand-primary)]"></span>
+            </span>
+            {{ 'I18N.AI' | transloco }}
+          </span>
+        </div>
+
+        <!-- Form controls: Bimestre & Semana selects -->
+        <div class="space-y-1.5 my-2">
+          @if (!gradingPeriodsLoaded()) {
+            <p class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-2.5 py-2 text-[10px] leading-snug text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.LOADING_PERIODS' | transloco }}</p>
+          } @else if (!activeGradingPeriod()) {
+            <p class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-2.5 py-2 text-[10px] leading-snug text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.NO_ACTIVE_PERIOD' | transloco }}</p>
+          } @else {
+            <div>
+              <select id="gen-bim"
+                [ngModel]="genGradingPeriodId()"
+                (ngModelChange)="onGenPeriodChange($event)"
+                class="w-full h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] hover:border-[var(--border-strong)] focus:bg-[var(--bg-secondary)] focus:border-[var(--border-strong)] px-2.5 text-[11px] font-bold text-[var(--text-primary)] shadow-xs outline-none transition cursor-pointer">
+                @for (p of availableGradingPeriods(); track p.id) {
+                  <option [value]="p.id">{{ getBimesterLabel(p.bimester) }}</option>
+                }
+              </select>
+            </div>
+
+            @if (!topicsLoaded()) {
+              <p class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-2.5 py-2 text-[10px] leading-snug text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.LOADING_TOPICS' | transloco }}</p>
+            } @else if (!hasTopicsForSelectedPeriod()) {
+              <p class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-2.5 py-2 text-[10px] leading-snug text-[var(--text-secondary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.NO_TOPICS_FOR_PERIOD' | transloco }}</p>
+            } @else {
+            <div>
+              <select id="gen-week" [(ngModel)]="genWeek"
+                [disabled]="availableWeeks().length === 0"
+                class="w-full h-8 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)] hover:border-[var(--border-strong)] focus:bg-[var(--bg-secondary)] focus:border-[var(--border-strong)] disabled:bg-[var(--bg-secondary)] disabled:opacity-50 px-2.5 text-[11px] font-bold text-[var(--text-primary)] shadow-xs outline-none transition cursor-pointer">
+                <option [ngValue]="null" disabled>
+                  @if (availableWeeks().length === 0) {
+                    {{ 'CLASSROOMS.QUIZZES.TEACHER.ALL_WEEKS_GENERATED' | transloco }}
+                  } @else {
+                    {{ 'UI_TEXT.SELECT_A_WEEK' | transloco }}
+                  }
+                </option>
+                @for (w of availableWeeks(); track w.id) {
+                  <option [ngValue]="w.orderIndex">{{ 'PROGRESS.STUDENT_STATS.WEEK_ABBR' | transloco }} {{ w.orderIndex }}: {{ w.name }}</option>
+                }
+              </select>
+            </div>
+            }
+          }
         </div>
       </div>
 
-      <div class="space-y-2">
-        <label for="gen-questions"
-          class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.QUESTIONS' | transloco }}</label>
-        <div class="relative">
-          <input id="gen-questions" type="number" min="5" max="10" [ngModel]="genQuestionsPerAttempt()"
-            (ngModelChange)="genQuestionsPerAttempt.set($event)"
-            class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-3 pr-8 py-2.5 text-xs font-bold text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--brand-primary)] hide-spin-button" />
-          <div
-            class="absolute inset-y-0 right-0 flex flex-col border-l border-[var(--border)] rounded-r-lg overflow-hidden">
-            <button type="button" (click)="increaseQuestions()"
-              class="flex-1 px-2 bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center">
-              <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-              </svg>
-            </button>
-            <div class="h-px bg-[var(--border)] w-full"></div>
-            <button type="button" (click)="decreaseQuestions()"
-              class="flex-1 px-2 bg-[var(--surface)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center">
-              <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
+      <!-- Bottom action: Generate button & status message -->
+      <div class="mt-2.5 pt-2 border-t border-[var(--border)]/40 space-y-1">
+        <button type="button" (click)="generateQuiz()"
+          [disabled]="generating() || !activeGradingPeriod() || !genGradingPeriodId() || !topicsLoaded() || !hasTopicsForSelectedPeriod() || !genWeek() || availableWeeks().length === 0"
+          [class.rainbow-bg]="generating()"
+          class="w-full h-8 flex items-center justify-center gap-1.5 rounded-lg bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed px-3 text-[11px] font-bold text-white shadow-xs transition duration-200 active:scale-[0.98]">
+          @if (generating()) {
+            <i class="bi bi-arrow-repeat animate-spin"></i>
+            <span>{{ 'CLASSROOMS.QUIZZES.GENERATING' | transloco }}</span>
+          } @else {
+            <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>{{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATE_BTN' | transloco }}</span>
+          }
+        </button>
 
-      <button type="button" (click)="generateQuiz()" [disabled]="generating() || !genGradingPeriodId() || !genWeek()"
-        [class.rainbow-bg]="generating()"
-        class="flex items-center justify-center gap-2 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/50 disabled:cursor-not-allowed px-5 py-3 text-xs font-bold text-white shadow-sm transition duration-200 active:scale-[0.98]">
-        @if (generating()) {
-        Generando...
-        } @else {
-        <svg class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L14 15l-4.187.904zM19.047 8.825L18 12l-1.047-3.175L14 8l3.175-1.047L18 3l1.047 3.953L22 8l-2.953.825z" />
-        </svg>
-        {{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATE_BTN' | transloco }}
+        @if (activeGradingPeriod() && topicsLoaded() && hasTopicsForSelectedPeriod() && genGradingPeriodId() && availableWeeks().length === 0) {
+          <p class="text-[9px] font-semibold leading-tight text-[var(--color-success)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.ALL_WEEKS_GENERATED' | transloco }}</p>
         }
-      </button>
+      </div>
+    </div>
+
+    <!-- Card 2: Cuestionarios Creados -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs flex flex-col justify-between min-h-[190px] transition hover:border-[var(--border-strong)]">
+      <!-- Top Section: Icon & Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-info-soft)] border border-[var(--color-info-border)]/40 text-[var(--color-info)]">
+          <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-[10.5px] sm:text-[11px] font-extrabold uppercase tracking-normal text-[var(--text-primary)] leading-[1.25] cursor-default"
+          title="{{ 'UI_TEXT.QUIZZES_CREATED' | transloco }}">
+          {{ 'UI_TEXT.QUIZZES_CREATED' | transloco }}
+        </h3>
+      </div>
+
+      <!-- Center Section: Big Metric & Subtitle -->
+      <div class="my-auto py-2 text-center">
+        <span class="text-4xl sm:text-5xl font-black text-[var(--text-primary)] tabular-nums block tracking-tight">
+          {{ courseQuizzes().length }}
+        </span>
+        <span class="text-xs font-semibold text-[var(--text-secondary)] block mt-1">
+          {{ 'UI_TEXT.ACTIVE' | transloco }}
+        </span>
+      </div>
+
+      <!-- Bottom Section: Availability Status -->
+      <div class="pt-3 border-t border-[var(--border)]/50 flex items-center gap-2">
+        <span class="h-2 w-2 rounded-full bg-[var(--color-info)] shrink-0"></span>
+        <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'UI_TEXT.AVAILABLE_TO_THE_CLASSROOM' | transloco }}</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Periodos con Evaluación -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs flex flex-col justify-between min-h-[190px] transition hover:border-[var(--border-strong)]">
+      <!-- Top Section: Icon & Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="h-9 w-9 rounded-xl bg-[var(--brand-mustard)]/10 border border-[var(--brand-mustard)]/20 text-[var(--brand-mustard)] flex items-center justify-center shrink-0">
+          <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+        </div>
+        <h3 class="text-[10.5px] sm:text-[11px] font-extrabold uppercase tracking-normal text-[var(--text-primary)] leading-[1.25] cursor-default"
+          title="{{ 'UI_TEXT.ASSESSED_PERIODS' | transloco }}">
+          {{ 'UI_TEXT.ASSESSED_PERIODS' | transloco }}
+        </h3>
+      </div>
+
+      <!-- Center Section: Big Metric & Subtitle -->
+      <div class="my-auto py-2 text-center">
+        <span class="text-4xl sm:text-5xl font-black text-[var(--text-primary)] tabular-nums block tracking-tight">
+          {{ teacherActivePeriodsCount() }}
+        </span>
+        <span class="text-xs font-semibold text-[var(--text-secondary)] block mt-1">
+          / {{ sortedGradingPeriods().length || 4 }} {{ 'UI_TEXT.BIMESTERS' | transloco }}
+        </span>
+      </div>
+
+      <!-- Bottom Section: Progress Bar -->
+      @let periodPct = sortedGradingPeriods().length > 0 ? (teacherActivePeriodsCount() / sortedGradingPeriods().length) * 100 : 0;
+      <div class="pt-3 border-t border-[var(--border)]/50 space-y-1.5">
+        <div class="flex items-center justify-between text-xs font-bold text-[var(--text-primary)]">
+          <span>{{ 'UI_TEXT.ANNUAL_PROGRESS' | transloco }}</span>
+          <span>{{ periodPct | number:'1.0-0' }}%</span>
+        </div>
+        <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5 overflow-hidden">
+          <div class="bg-[var(--brand-mustard)] h-full rounded-full transition-all duration-500" [style.width.%]="periodPct"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Temas con Evaluación -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs flex flex-col justify-between min-h-[190px] transition hover:border-[var(--border-strong)]">
+      <!-- Top Section: Icon & Title -->
+      <div class="flex items-center gap-2.5">
+        <div class="h-9 w-9 rounded-xl bg-[var(--quiz-completed-soft)] border border-[var(--quiz-completed)]/20 text-[var(--quiz-completed)] flex items-center justify-center shrink-0">
+          <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18-3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+        </div>
+        <h3 class="text-[10.5px] sm:text-[11px] font-extrabold uppercase tracking-normal text-[var(--text-primary)] leading-[1.25] cursor-default"
+          title="{{ 'UI_TEXT.TOPICS_COVERED' | transloco }}">
+          {{ 'UI_TEXT.TOPICS_COVERED' | transloco }}
+        </h3>
+      </div>
+
+      <!-- Center Section: Big Metric & Subtitle -->
+      <div class="my-auto py-2 text-center">
+        <span class="text-4xl sm:text-5xl font-black text-[var(--text-primary)] tabular-nums block tracking-tight">
+          {{ teacherCoveredTopicsCount() }}
+        </span>
+        <span class="text-xs font-semibold text-[var(--text-secondary)] block mt-1">
+          @if (topics().length > 0) { / {{ topics().length }} {{ 'UI_TEXT.TOPICS' | transloco }} } @else { {{ 'UI_TEXT.4_TOPICS' | transloco }} }
+        </span>
+      </div>
+
+      <!-- Bottom Section: Progress Bar -->
+      @let topicPct = topics().length > 0 ? (teacherCoveredTopicsCount() / topics().length) * 100 : 0;
+      <div class="pt-3 border-t border-[var(--border)]/50 space-y-1.5">
+        <div class="flex items-center justify-between text-xs font-bold text-[var(--text-primary)]">
+          <span>{{ 'UI_TEXT.CURRICULUM_COVERAGE' | transloco }}</span>
+          <span>{{ topicPct | number:'1.0-0' }}%</span>
+        </div>
+        <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5 overflow-hidden">
+          <div class="bg-[var(--quiz-completed)] h-full rounded-full transition-all duration-500" [style.width.%]="topicPct"></div>
+        </div>
+      </div>
     </div>
   </div>
+  } @else {
+  <!-- ================= COORDINATOR KPI METRICS GRID (3 Cards, Proportional Centered Layout) ================= -->
+  <div class="grid gap-4 sm:grid-cols-3">
+    <!-- Card 1: Cuestionarios Creados -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs flex flex-col justify-between min-h-[190px] transition hover:border-[var(--border-strong)]">
+      <!-- Top Section: Icon & Title -->
+      <div class="flex items-center gap-3.5">
+        <div class="h-10 w-10 rounded-xl bg-[var(--brand-primary-soft)] border border-[var(--brand-primary)]/20 text-[var(--brand-primary)] flex items-center justify-center shrink-0">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 class="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
+          {{ 'UI_TEXT.QUIZZES_CREATED' | transloco }}
+        </h3>
+      </div>
 
-  <!-- Recent Quizzes Section -->
-  <div class="space-y-3 pt-4">
-    <div class="flex items-center justify-between border-b border-[var(--border)] pb-2">
-      <h3 class="text-sm font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.RECENT_QUIZZES' | transloco }}</h3>
+      <!-- Center Section: Big Metric & Subtitle -->
+      <div class="my-auto py-2 text-center">
+        <span class="text-4xl sm:text-5xl font-black text-[var(--text-primary)] tabular-nums block tracking-tight">
+          {{ courseQuizzes().length }}
+        </span>
+        <span class="text-xs font-semibold text-[var(--text-secondary)] block mt-1">
+          {{ 'UI_TEXT.ACTIVE' | transloco }}
+        </span>
+      </div>
+
+      <!-- Bottom Section: Availability Status -->
+      <div class="pt-3 border-t border-[var(--border)]/50 flex items-center gap-2">
+        <span class="h-2 w-2 rounded-full bg-[var(--brand-primary)] shrink-0"></span>
+        <span class="text-xs font-bold text-[var(--text-primary)]">{{ 'UI_TEXT.AVAILABLE_TO_THE_CLASSROOM' | transloco }}</span>
+      </div>
     </div>
 
-    @if (courseQuizzes().length === 0) {
-    <div
-      class="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface)] p-6 text-center text-xs text-[var(--text-secondary)]">
+    <!-- Card 2: Periodos con Evaluación -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs flex flex-col justify-between min-h-[190px] transition hover:border-[var(--border-strong)]">
+      <!-- Top Section: Icon & Title -->
+      <div class="flex items-center gap-3.5">
+        <div class="h-10 w-10 rounded-xl bg-[var(--brand-mustard)]/10 border border-[var(--brand-mustard)]/20 text-[var(--brand-mustard)] flex items-center justify-center shrink-0">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+        </div>
+        <h3 class="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
+          {{ 'UI_TEXT.ASSESSED_PERIODS' | transloco }}
+        </h3>
+      </div>
+
+      <!-- Center Section: Big Metric & Subtitle -->
+      <div class="my-auto py-2 text-center">
+        <span class="text-4xl sm:text-5xl font-black text-[var(--text-primary)] tabular-nums block tracking-tight">
+          {{ teacherActivePeriodsCount() }}
+        </span>
+        <span class="text-xs font-semibold text-[var(--text-secondary)] block mt-1">
+          / {{ sortedGradingPeriods().length || 4 }} {{ 'UI_TEXT.BIMESTERS' | transloco }}
+        </span>
+      </div>
+
+      <!-- Bottom Section: Progress Bar -->
+      @let periodPct = sortedGradingPeriods().length > 0 ? (teacherActivePeriodsCount() / sortedGradingPeriods().length) * 100 : 0;
+      <div class="pt-3 border-t border-[var(--border)]/50 space-y-1.5">
+        <div class="flex items-center justify-between text-xs font-bold text-[var(--text-primary)]">
+          <span>{{ 'UI_TEXT.ANNUAL_PROGRESS' | transloco }}</span>
+          <span>{{ periodPct | number:'1.0-0' }}%</span>
+        </div>
+        <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5 overflow-hidden">
+          <div class="bg-[var(--brand-mustard)] h-full rounded-full transition-all duration-500" [style.width.%]="periodPct"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Temas con Evaluación -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 shadow-xs flex flex-col justify-between min-h-[190px] transition hover:border-[var(--border-strong)]">
+      <!-- Top Section: Icon & Title -->
+      <div class="flex items-center gap-3.5">
+        <div class="h-10 w-10 rounded-xl bg-[var(--quiz-completed-soft)] border border-[var(--quiz-completed)]/20 text-[var(--quiz-completed)] flex items-center justify-center shrink-0">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18-3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+          </svg>
+        </div>
+        <h3 class="text-xs font-black uppercase tracking-wider text-[var(--text-primary)]">
+          {{ 'UI_TEXT.TOPICS_COVERED' | transloco }}
+        </h3>
+      </div>
+
+      <!-- Center Section: Big Metric & Subtitle -->
+      <div class="my-auto py-2 text-center">
+        <span class="text-4xl sm:text-5xl font-black text-[var(--text-primary)] tabular-nums block tracking-tight">
+          {{ teacherCoveredTopicsCount() }}
+        </span>
+        <span class="text-xs font-semibold text-[var(--text-secondary)] block mt-1">
+          @if (topics().length > 0) { / {{ topics().length }} {{ 'UI_TEXT.TOPICS' | transloco }} } @else { {{ 'UI_TEXT.4_TOPICS' | transloco }} }
+        </span>
+      </div>
+
+      <!-- Bottom Section: Progress Bar -->
+      @let topicPct = topics().length > 0 ? (teacherCoveredTopicsCount() / topics().length) * 100 : 0;
+      <div class="pt-3 border-t border-[var(--border)]/50 space-y-1.5">
+        <div class="flex items-center justify-between text-xs font-bold text-[var(--text-primary)]">
+          <span>{{ 'UI_TEXT.CURRICULUM_COVERAGE' | transloco }}</span>
+          <span>{{ topicPct | number:'1.0-0' }}%</span>
+        </div>
+        <div class="w-full bg-[var(--bg-secondary)] rounded-full h-1.5 overflow-hidden">
+          <div class="bg-[var(--quiz-completed)] h-full rounded-full transition-all duration-500" [style.width.%]="topicPct"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- Recent Quizzes Section with Filter -->
+  <div class="space-y-4 pt-2">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border)] pb-3">
+      <div>
+        <h3 class="text-sm font-extrabold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.RECENT_QUIZZES' | transloco }}</h3>
+        <p class="text-xs text-[var(--text-secondary)] mt-0.5">{{ 'UI_TEXT.QUIZZES_ASSIGNED_TO_THIS_GROUP_OF_STUDENTS' | transloco }}</p>
+      </div>
+
+      <!-- Bimester Filter Pills (Correctly ordered) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <button type="button"
+          (click)="teacherFilterBimester.set('all')"
+          [class.bg-[var(--brand-primary)]]="teacherFilterBimester() === 'all'"
+          [class.text-white]="teacherFilterBimester() === 'all'"
+          [class.bg-[var(--surface)]]="teacherFilterBimester() !== 'all'"
+          [class.text-[var(--text-secondary)]]="teacherFilterBimester() !== 'all'"
+          class="shrink-0 px-3 py-1 rounded-xl border border-[var(--border)] text-xs font-bold transition shadow-xs hover:border-[var(--border-strong)]">
+          {{ 'UI_TEXT.ALL' | transloco }}{{ courseQuizzes().length }})
+        </button>
+        @for (period of sortedGradingPeriods(); track period.id) {
+        <button type="button"
+          (click)="teacherFilterBimester.set(period.id)"
+          [class.bg-[var(--brand-primary)]]="teacherFilterBimester() === period.id"
+          [class.text-white]="teacherFilterBimester() === period.id"
+          [class.bg-[var(--surface)]]="teacherFilterBimester() !== period.id"
+          [class.text-[var(--text-secondary)]]="teacherFilterBimester() !== period.id"
+          class="shrink-0 px-3 py-1 rounded-xl border border-[var(--border)] text-xs font-bold transition shadow-xs hover:border-[var(--border-strong)]">
+          {{ getBimesterLabel(period.bimester) }}
+        </button>
+        }
+      </div>
+    </div>
+
+    @if (teacherFilteredQuizzes().length === 0) {
+    <div class="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-12 text-center text-xs text-[var(--text-secondary)] shadow-xs">
+      <svg class="mx-auto h-10 w-10 text-[var(--text-secondary)]/40 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
       {{ 'CLASSROOMS.QUIZZES.TEACHER.NO_RECENT_QUIZZES' | transloco }}
     </div>
     } @else {
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-      @for (quiz of courseQuizzes(); track quiz.id) {
-      <div
-        class="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm hover:shadow-md transition-shadow">
-        <div class="flex justify-between items-start mb-3">
-          <div>
-            <span
-              class="inline-block px-2 py-1 bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] text-[9px] font-black uppercase tracking-wider rounded-md mb-1">
-              {{ getBimesterNameForPeriod(quiz.gradingPeriodId) }}
-            </span>
-            <h4 class="text-sm font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.QUIZZES.TEACHER.WEEK' | transloco }} {{ quiz.weekNumber }}</h4>
-            @if (quiz.createdAt) {
-            <p class="text-[9px] text-[var(--text-secondary)] mt-0.5 font-medium">{{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATED_ON' | transloco }} {{ quiz.createdAt |
-              date:'dd MMM, yyyy - HH:mm' }}</p>
-            }
+      @for (quiz of teacherFilteredQuizzes(); track quiz.id) {
+      <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-xs hover:shadow-md hover:border-[var(--border-strong)] transition-all flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex justify-between items-start">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              @if (teacherFilterBimester() === 'all') {
+              <span class="quiz-bimester-badge">
+                {{ getBimesterNameForPeriod(quiz.gradingPeriodId) }}
+              </span>
+              }
+              <span class="inline-block px-2 py-0.5 bg-[var(--bg-secondary)] text-[var(--text-secondary)] text-[10px] font-bold rounded-md">
+                {{ 'PROGRESS.EXPLORER.WEEK' | transloco }} {{ quiz.weekNumber }}
+              </span>
+            </div>
+            <div class="h-7 w-7 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] shrink-0">
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
           </div>
-          <div class="h-8 w-8 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center">
-            <svg class="h-4 w-4 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-              stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
+
+          <!-- Topic Name -->
+          <div>
+            <h4 class="text-sm font-bold text-[var(--text-primary)] leading-snug line-clamp-2" [title]="getTopicNameForQuiz(quiz)">
+              {{ getTopicNameForQuiz(quiz) }}
+            </h4>
+            @if (quiz.createdAt) {
+            <p class="text-[10px] text-[var(--text-secondary)] mt-1 font-medium flex items-center gap-1">
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {{ 'CLASSROOMS.QUIZZES.TEACHER.GENERATED_ON' | transloco }} {{ quiz.createdAt | localizedDate:'dd MMM, yyyy - HH:mm' }}
+            </p>
+            }
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <div class="bg-[var(--bg-secondary)]/50 rounded-md p-2">
+        <div class="grid grid-cols-2 gap-2 text-xs pt-4 border-t border-[var(--border)]/60 mt-4">
+          <div class="bg-[var(--bg-secondary)]/50 rounded-xl p-2.5">
             <p class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.QUESTIONS' | transloco }}</p>
-            <p class="font-bold text-[var(--text-primary)]">{{ quiz.questionsPerAttempt }}</p>
+            <p class="font-bold text-[var(--text-primary)] mt-0.5">{{ quiz.questionsPerAttempt }}</p>
           </div>
-          <div class="bg-[var(--bg-secondary)]/50 rounded-md p-2">
+          <div class="bg-[var(--bg-secondary)]/50 rounded-xl p-2.5">
             <p class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.QUIZZES.TEACHER.MAX_ATTEMPTS' | transloco }}</p>
-            <p class="font-bold text-[var(--text-primary)]">{{ quiz.maxAttempts }}</p>
+            <p class="font-bold text-[var(--text-primary)] mt-0.5">{{ quiz.maxAttempts }}</p>
           </div>
         </div>
       </div>
@@ -757,6 +1126,7 @@
   </div>
 </div>
 }
+
 
 <!-- Document Preview Modal Overlay -->
 @if (previewSecureUrl() || previewLoading()) {
@@ -780,17 +1150,17 @@
           </svg>
         </div>
         <h3 class="text-sm font-extrabold text-[var(--text-primary)] truncate"
-          title="Previsualizando: {{ previewDocumentTitle() }}">
-          Previsualización: {{ previewDocumentTitle() }}
+          title="{{ 'CLASSROOMS.REPO.PREVIEW_TITLE' | transloco }} {{ previewDocumentTitle() }}">
+          {{ 'CLASSROOMS.REPO.PREVIEW_TITLE_LABEL' | transloco }} {{ previewDocumentTitle() }}
         </h3>
       </div>
       <button type="button"
         class="rounded-xl border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition active:scale-95"
-        (click)="closePreview()" aria-label="Cerrar Previsualización">
+        (click)="closePreview()" aria-label="{{ 'CLASSROOMS.REPO.CLOSE_ARIA' | transloco }}">
         <svg class="h-3.5 w-3.5 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
-        Cerrar
+        {{ 'PROGRESS.MODALS.CLOSE' | transloco }}
       </button>
     </header>
 
@@ -802,7 +1172,7 @@
         <div
           class="inline-flex h-9 w-9 animate-spin rounded-full border-4 border-[var(--border)] border-t-[var(--brand-primary)]">
         </div>
-        <p class="text-xs font-bold text-[var(--text-secondary)]">Obteniendo enlace de lectura seguro...</p>
+        <p class="text-xs font-bold text-[var(--text-secondary)]">{{ 'CHAT.PREVIEW.LOADING' | transloco }}</p>
       </div>
       }
 
@@ -820,3 +1190,16 @@
 <app-confirm-modal [isOpen]="confirmModalOpen()" [title]="confirmModalTitle()" [message]="confirmModalMessage()"
   [loading]="submitting()"
   [onCancel]="closeConfirmModal" [onConfirmCallback]="confirmAction()"></app-confirm-modal>
+
+<app-modal
+  [isOpen]="studentViewStartModalOpen()"
+  [onClose]="closeStudentViewStartModal"
+  [title]="'CLASSROOMS.QUIZZES.STUDENT_VIEW_START.TITLE' | transloco"
+  widthClass="max-w-md"
+>
+  <div>
+    <p class="text-sm leading-relaxed text-[var(--text-secondary)]">
+      {{ 'CLASSROOMS.QUIZZES.STUDENT_VIEW_START.MESSAGE' | transloco }}
+    </p>
+  </div>
+</app-modal>

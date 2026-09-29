@@ -1,0 +1,56 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'release/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - develop
+      - 'release/**'
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Frontend / Unit + build + i18n
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm 11 and Node.js 22
+        uses: pnpm/setup@v3
+        with:
+          version: 11.0.8
+          runtime: node@22
+          cache: true
+          install: false
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run frontend unit tests
+        run: pnpm test
+
+      - name: Validate English and Spanish dictionaries
+        run: node scripts/check-i18n.cjs
+
+      - name: Build production bundle
+        run: pnpm build

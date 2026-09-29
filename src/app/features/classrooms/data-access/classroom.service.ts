@@ -22,6 +22,13 @@ export class ClassroomService {
     );
   }
 
+  getAllClassrooms() {
+    return this.http.get<Classroom[]>(
+      `${this.baseUrl}/classrooms`,
+      { withCredentials: true }
+    );
+  }
+
   getClassroomById(classroomId: number) {
     return this.http.get<Classroom>(
       `${this.baseUrl}/classrooms/${classroomId}`,
@@ -39,6 +46,14 @@ export class ClassroomService {
   getDocumentDownloadUrl(courseId: number, documentId: number) {
     return this.http.get<{ url: string }>(
       `${this.baseUrl}/courses/${courseId}/documents/${documentId}/download`,
+      { withCredentials: true }
+    );
+  }
+
+  retryDocumentProcessing(courseId: number, documentId: number) {
+    return this.http.post<void>(
+      `${this.baseUrl}/courses/${courseId}/documents/${documentId}/retry-processing`,
+      {},
       { withCredentials: true }
     );
   }
@@ -123,7 +138,7 @@ export class ClassroomService {
   }
 
   getGradingPeriods(academicYearId: number) {
-    return this.http.get<Array<{ id: number; bimester: string }>>(
+    return this.http.get<Array<{ id: number; bimester: string; status?: 'PLANNED' | 'ACTIVE' | 'FINISHED' }>>(
       `${this.baseUrl}/academic-years/${academicYearId}/grading-periods`,
       { withCredentials: true }
     );

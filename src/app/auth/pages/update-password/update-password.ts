@@ -1,3 +1,4 @@
+import { TranslocoPipe , TranslocoService} from '@jsverse/transloco';
 import {ChangeDetectionStrategy, Component, inject, OnInit, signal} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
@@ -8,7 +9,7 @@ import {NgClass} from '@angular/common';
 
 @Component({
   selector: 'app-update-password',
-  imports: [
+  imports: [TranslocoPipe,
     ReactiveFormsModule,
     RouterLink
   ],
@@ -17,6 +18,7 @@ import {NgClass} from '@angular/common';
   styleUrl: './update-password.css',
 })
 export class UpdatePassword implements OnInit {
+  private readonly translocoService = inject(TranslocoService);
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
@@ -49,12 +51,12 @@ export class UpdatePassword implements OnInit {
 
   onSubmit(): void {
     if (this.form.invalid) {
-      this.errorMessage.set('Completa todos los campos correctamente.');
+      this.errorMessage.set(this.translocoService.translate('UI_TEXT.COMPLETE_ALL_FIELDS_CORRECTLY'));
       return;
     }
 
     if (this.form.controls.newPassword.value !== this.form.controls.confirmPassword.value) {
-      this.errorMessage.set('Las nuevas contraseñas no coinciden.');
+      this.errorMessage.set(this.translocoService.translate('UI_TEXT.THE_NEW_PASSWORDS_DO_NOT_MATCH'));
       return;
     }
 
@@ -74,24 +76,13 @@ export class UpdatePassword implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.successMessage.set('Contraseña actualizada correctamente. Redirigiendo...');
+          this.successMessage.set(this.translocoService.translate('UI_TEXT.PASSWORD_UPDATED_SUCCESSFULLY_REDIRECTING'));
           setTimeout(() => {
             void this.router.navigate(['/sign-in']);
           }, 2000);
         },
-        error: (err: unknown) => {
-          if (
-            typeof err === 'object' &&
-            err !== null &&
-            'error' in err &&
-            typeof (err as { error?: unknown }).error === 'object' &&
-            (err as { error?: { message?: string } }).error !== null &&
-            (err as any).error.message
-          ) {
-            this.errorMessage.set((err as any).error.message);
-          } else {
-            this.errorMessage.set('Error al actualizar la contraseña. Verifica tus datos e intenta nuevamente.');
-          }
+        error: () => {
+          this.errorMessage.set(this.translocoService.translate('UI_TEXT.UNABLE_TO_UPDATE_YOUR_PASSWORD_CHECK_YOUR_DETAILS'));
         },
       });
   }

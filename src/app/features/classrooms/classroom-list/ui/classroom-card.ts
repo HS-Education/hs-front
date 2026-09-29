@@ -1,109 +1,71 @@
 import {ChangeDetectionStrategy, Component, computed, input} from '@angular/core';
-import {Card} from '../../../../shared/components/card/card';
 import {Classroom} from '../../data-access/models/responses/classroom.model';
 import {TranslateEnumPipe} from '../../../../shared/pipes/translate-enum.pipe';
 import {TranslocoPipe} from '@jsverse/transloco';
 
 @Component({
   selector: 'app-classroom-card',
-  imports: [Card, TranslateEnumPipe, TranslocoPipe],
-  host: {
-    class: 'block h-full'
-  },
+  imports: [TranslateEnumPipe, TranslocoPipe],
+  host: { class: 'block h-full group' },
   template: `
     @if (classroom(); as c) {
-      <app-card>
-        <div card-header class="flex items-start gap-3 min-w-0 flex-1">
-          <!-- Course Initials Emblem -->
-          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/15 text-[var(--brand-primary)] font-black text-base uppercase">
-            {{ c.courseName.slice(0, 1) }}
-          </div>
-          <div class="space-y-1 min-w-0 flex-1">
-            <h3 class="text-sm font-extrabold text-[var(--text-primary)] leading-snug tracking-tight hover:text-[var(--brand-primary)] transition duration-150 break-normal line-clamp-2">
-              {{ c.courseName }}
-            </h3>
-            <p class="text-[10px] text-[var(--text-secondary)] font-semibold uppercase tracking-wider">
-              @if (c.section.gradeLevel && c.section.educationLevel) {
-                {{ c.section.gradeLevel | translateEnum }} {{ 'CLASSROOMS.CARD.OF' | transloco }} {{ c.section.educationLevel | translateEnum }}
-              } @else {
-                {{ 'CLASSROOMS.CARD.ACADEMIC_COURSE' | transloco }}
-              }
-            </p>
-          </div>
-        </div>
+      <article class="h-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-5 py-4 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[var(--border-strong)] hover:shadow-md">
+        <header class="flex min-w-0 items-center gap-2 text-[11px] font-medium text-[var(--text-secondary)]">
+          <span>{{ academicYear() }}</span>
+          @if (c.section.gradeLevel && c.section.educationLevel) {
+            <span class="text-[var(--border-strong)]">/</span>
+            <span class="truncate">{{ c.section.gradeLevel | translateEnum }} {{ 'CLASSROOMS.CARD.OF' | transloco }} {{ c.section.educationLevel | translateEnum }}</span>
+          }
+          <span class="text-[var(--border-strong)]">/</span>
+          <span class="shrink-0">{{ 'CLASSROOMS.CARD.SECTION' | transloco }} {{ sectionName() }}</span>
+          @if (statusColor() !== 'hidden') {
+            <span class="ml-auto block h-2 w-2 shrink-0 rounded-full border"
+              [class.bg-[var(--brand-forest)]]="statusColor() === 'blue'"
+              [class.border-[var(--brand-forest)]/30]="statusColor() === 'blue'"
+              [class.bg-[var(--brand-mustard)]]="statusColor() === 'yellow'"
+              [class.border-[var(--brand-mustard)]/30]="statusColor() === 'yellow'"
+              [title]="c.status === 'ACTIVE' || c.status === 'activo' ? ('CLASSROOMS.STATUS.ACTIVE' | transloco) : ('CLASSROOMS.STATUS.INACTIVE' | transloco)"></span>
+          }
+        </header>
 
-        <div card-meta class="flex items-center pt-1 pr-1">
-          <span
-            class="block h-2.5 w-2.5 rounded-full border transition duration-150"
-            [class.bg-[var(--brand-forest)]]="statusColor() === 'blue'"
-            [class.border-[var(--brand-forest)]/30]="statusColor() === 'blue'"
-            [class.bg-[var(--brand-mustard)]]="statusColor() === 'yellow'"
-            [class.border-[var(--brand-mustard)]/30]="statusColor() === 'yellow'"
-            [class.bg-[var(--brand-inactive)]]="statusColor() === 'gray'"
-            [class.border-[var(--brand-inactive)]/30]="statusColor() === 'gray'"
-            [title]="c.status === 'ACTIVE' || c.status === 'activo' ? ('CLASSROOMS.STATUS.ACTIVE' | transloco) : c.status === 'INACTIVE' || c.status === 'inactive' || c.status === 'inactivo' ? ('CLASSROOMS.STATUS.INACTIVE' | transloco) : ('CLASSROOMS.STATUS.ARCHIVED' | transloco)"
-          ></span>
-        </div>
-
-        <section class="mt-3">
-          <!-- Metadata grid: Section and Period -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[var(--text-secondary)]">
-            <div class="flex items-center gap-2 rounded-md bg-[var(--bg-secondary)]/50 border border-[var(--border)]/40 p-2 min-w-0">
-              <svg class="h-4 w-4 text-[var(--text-secondary)]/70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              <div class="overflow-hidden">
-                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider truncate">{{ 'CLASSROOMS.CARD.SECTION' | transloco }}</span>
-                <span class="font-bold text-[var(--text-primary)] text-[10px] truncate block">{{ sectionName() }}</span>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2 rounded-md bg-[var(--bg-secondary)]/50 border border-[var(--border)]/40 p-2 min-w-0">
-              <svg class="h-4 w-4 text-[var(--text-secondary)]/70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <div class="overflow-hidden">
-                <span class="block text-[8px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider truncate">{{ 'CLASSROOMS.CARD.PERIOD' | transloco }}</span>
-                <span class="font-bold text-[var(--text-primary)] text-[10px] truncate block">{{ academicYear() }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Subtle bottom identification meta info -->
-          <div class="flex items-center justify-between text-[9px] text-[var(--text-secondary)]/70 font-medium pt-2.5 border-t border-[var(--border)]/70 mt-3.5">
-            <span>{{ 'CLASSROOMS.CARD.CLASS_ID' | transloco: { id: c.id } }}</span>
-            <span>{{ 'CLASSROOMS.CARD.COURSE_ID' | transloco: { id: c.courseId } }}</span>
-          </div>
+        <section class="mt-4 min-w-0">
+          @if (c.areaName) {
+            <p class="truncate text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--brand-primary)]/85">{{ c.areaName }}</p>
+          }
+          <h3 class="mt-1 line-clamp-2 text-lg font-bold leading-tight tracking-tight text-[var(--text-primary)]">
+            {{ c.courseName }}
+          </h3>
         </section>
 
-      </app-card>
+        <footer class="mt-5 flex min-w-0 items-center gap-3 border-t border-[var(--border)] pt-3.5">
+          <span class="min-w-0 flex-1 truncate text-sm font-medium text-[var(--text-secondary)]">{{ c.teacherName ? ('CLASSROOMS.CARD.TEACHER' | transloco: { name: c.teacherName }) : ('CLASSROOMS.CARD.NO_TEACHER' | transloco) }}</span>
+          <svg class="h-4 w-4 shrink-0 text-[var(--text-secondary)] transition group-hover:translate-x-0.5 group-hover:text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+          </svg>
+        </footer>
+      </article>
     } @else {
-      <app-card>
-        <section class="text-xs text-[var(--text-secondary)] py-2 text-center">{{ 'CLASSROOMS.CARD.NO_INFO' | transloco }}</section>
-      </app-card>
+      <article class="h-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+        <section class="py-2 text-center text-xs text-[var(--text-secondary)]">{{ 'CLASSROOMS.CARD.NO_INFO' | transloco }}</section>
+      </article>
     }
   `,
-  styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClassroomCard {
-
   readonly classroom = input<Classroom | undefined>();
 
-  readonly sectionName = computed(() => {
-    const c = this.classroom();
-    return c?.section?.name ?? '—';
-  });
+  readonly sectionName = computed(() => this.classroom()?.section?.name ?? '—');
 
   readonly academicYear = computed(() => {
-    const c = this.classroom();
-    return c?.academicYearName != null ? String(c.academicYearName) : '—';
+    const classroom = this.classroom();
+    return classroom?.academicYearName != null ? String(classroom.academicYearName) : '—';
   });
 
   readonly statusColor = computed(() => {
-    const s = this.classroom()?.status?.toLowerCase() ?? '';
-    if (s === 'active' || s === 'activo') return 'blue';
-    if (s === 'inactive' || s === 'inactivo') return 'yellow';
-    return 'gray';
+    const status = this.classroom()?.status?.toLowerCase() ?? '';
+    if (status === 'active' || status === 'activo') return 'blue';
+    if (status === 'inactive' || status === 'inactivo') return 'yellow';
+    return 'hidden';
   });
 }

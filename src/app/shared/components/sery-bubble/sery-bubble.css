@@ -1,0 +1,59 @@
+/* Floating action button animations */
+@keyframes pulse-subtle {
+  0%, 100% {
+    box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--brand-primary) 35%, transparent), 0 8px 10px -6px color-mix(in srgb, var(--brand-primary) 25%, transparent);
+  }
+  50% {
+    box-shadow: 0 15px 30px -5px color-mix(in srgb, var(--brand-primary) 50%, transparent), 0 10px 15px -5px color-mix(in srgb, var(--brand-primary) 35%, transparent);
+  }
+}
+
+.sery-fab {
+  animation: pulse-subtle 4s infinite ease-in-out;
+}
+
+.sery-fab:hover {
+  animation: none;
+}
+
+.bubble-window--maximized {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: min(640px, calc(100vw - 3rem)) !important;
+  height: min(680px, calc(100vh - 3rem)) !important;
+  max-height: none !important;
+  margin: 0 !important;
+}
+
+/* Chat bubble styling */
+.user-bubble {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border-top-right-radius: 4px;
+}
+
+.assistant-bubble {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-top-left-radius: 4px;
+}
+
+/* Custom scrollbar */
+.bubble-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.bubble-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bubble-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+.bubble-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}

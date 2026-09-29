@@ -1,0 +1,17 @@
+.admin-classrooms-info {
+  background-color: color-mix(in srgb, var(--color-info-soft) 70%, var(--surface));
+  border-color: color-mix(in srgb, var(--color-info-border) 70%, var(--border));
+}
+
+.admin-classrooms-info p {
+  color: color-mix(in srgb, var(--color-info) 70%, var(--text-primary));
+}
+
+:host-context(.dark) .admin-classrooms-info {
+  background-color: #1b3346;
+  border-color: #447c9f;
+}
+
+:host-context(.dark) .admin-classrooms-info p {
+  color: #96c9ed;
+}
