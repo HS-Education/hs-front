@@ -472,6 +472,7 @@
     "SERY": "Sery",
     "SOURCES": "Fuentes consultadas",
     "SERY_THINKING": "Sery está pensando",
+    "STREAM_INTERRUPTED": "La respuesta se interrumpió y no se completó. Revisa la conexión e inténtalo de nuevo.",
     "INPUT_PLACEHOLDER": "Pregúntale a Sery sobre los materiales...",
     "BTN_SEND": "Enviar",
     "PREVIEW": {

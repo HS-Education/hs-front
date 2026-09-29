@@ -472,6 +472,7 @@
     "SERY": "Sery",
     "SOURCES": "Sources",
     "SERY_THINKING": "Sery is thinking",
+    "STREAM_INTERRUPTED": "The response was interrupted before it completed. Check your connection and try again.",
     "INPUT_PLACEHOLDER": "Ask Sery about the materials...",
     "BTN_SEND": "Send",
     "PREVIEW": {

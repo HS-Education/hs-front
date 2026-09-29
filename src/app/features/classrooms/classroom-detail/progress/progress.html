@@ -945,14 +945,23 @@
                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--button-primary-text)]/30 bg-[var(--button-primary-text)]/10">✦</span>
                 {{ 'PROGRESS.SERY.TITLE' | transloco }}
               </div>
+              @if (userDataService.isTeacher() && !userDataService.isCoordinator()) {
+                <button type="button" (click)="generateClassroomInsight()" [disabled]="isGeneratingClassroomInsight()"
+                  [attr.aria-label]="(isGeneratingClassroomInsight() ? 'PROGRESS.SERY.GENERATING' : 'PROGRESS.SERY.UPDATE_ANALYSIS') | transloco"
+                  [attr.title]="(isGeneratingClassroomInsight() ? 'PROGRESS.SERY.GENERATING' : 'PROGRESS.SERY.UPDATE_ANALYSIS') | transloco"
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 transition hover:bg-[var(--button-primary-text)]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--button-primary-text)] disabled:cursor-wait disabled:opacity-60">
+                  <svg class="h-4 w-4" [class.animate-spin]="isGeneratingClassroomInsight()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7v5h-5M4 17v-5h5M5.64 9A7 7 0 0118.36 7L20 12M4 12l1.64 5A7 7 0 0018.36 15" />
+                  </svg>
+                </button>
+              }
             </div>
-            <p class="mt-2 line-clamp-2 text-xs font-medium leading-snug text-[var(--button-primary-text)]/90">{{ getInsightExcerpt(data.latestInsight) }}</p>
-            @if (userDataService.isTeacher() && !userDataService.isCoordinator()) {
-              <button type="button" (click)="generateClassroomInsight()" [disabled]="isGeneratingClassroomInsight()"
-                class="mt-3 flex w-full items-center justify-center rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20 disabled:cursor-wait disabled:opacity-60">
-                {{ (isGeneratingClassroomInsight() ? 'PROGRESS.SERY.GENERATING' : 'PROGRESS.SERY.UPDATE_ANALYSIS') | transloco }}
-              </button>
+            @if (isGeneratingClassroomInsight()) {
+              <p role="status" class="mt-2 text-[10px] font-semibold text-[var(--button-primary-text)]/90">
+                {{ 'PROGRESS.SERY.GENERATING' | transloco }}
+              </p>
             }
+            <p class="mt-2 line-clamp-2 text-xs font-medium leading-snug text-[var(--button-primary-text)]/90">{{ getInsightExcerpt(data.latestInsight) }}</p>
             <button type="button" (click)="openClassroomInsightModal()" class="mt-3 flex w-full items-center justify-between rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20">
               {{ 'PROGRESS.DASHBOARD.VIEW_EXTENDED_REPORT' | transloco }}
               <span aria-hidden="true">→</span>
