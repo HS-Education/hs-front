@@ -56,6 +56,7 @@ export class Repository implements OnInit {
 
   readonly loadingClassrooms = signal(true);
   readonly loadingContent = signal(false);
+  readonly classroomsLoadFailed = signal(false);
   readonly downloadingId = signal<number | null>(null);
   readonly retryingDocumentId = signal<number | null>(null);
 
@@ -139,19 +140,7 @@ export class Repository implements OnInit {
 
     const user = this.userDataService.userProfile();
     if (user) {
-      this.classroomService.getClassrooms(user.id).subscribe({
-        next: (list) => {
-          this.classrooms.set(list);
-          this.loadingClassrooms.set(false);
-          if (list.length > 0) {
-            this.selectCourse(list[0].courseId);
-          }
-        },
-        error: (err: unknown) => {
-          console.error('Error al cargar aulas:', err);
-          this.loadingClassrooms.set(false);
-        }
-      });
+      this.loadClassrooms(user.id);
 
       this.classroomService.getAreas().subscribe({
         next: (areas) => {
@@ -166,6 +155,34 @@ export class Repository implements OnInit {
         }
       });
     }
+  }
+
+  retryLoadingClassrooms(): void {
+    const user = this.userDataService.userProfile();
+    if (user) this.loadClassrooms(user.id);
+  }
+
+  private loadClassrooms(userId: number): void {
+    this.loadingClassrooms.set(true);
+    this.classroomsLoadFailed.set(false);
+    this.classroomService.getClassrooms(userId).subscribe({
+      next: (list) => {
+        this.classrooms.set(list);
+        this.loadingClassrooms.set(false);
+        if (list.length > 0) {
+          this.selectCourse(list[0].courseId);
+        } else {
+          this.selectedCourseId.set(null);
+          this.topics.set([]);
+          this.documents.set([]);
+        }
+      },
+      error: (err: unknown) => {
+        console.error('Error al cargar aulas:', err);
+        this.classroomsLoadFailed.set(true);
+        this.loadingClassrooms.set(false);
+      }
+    });
   }
 
   selectCourse(courseId: number): void {
