@@ -13,6 +13,7 @@ import { weightedAverage } from '../../../shared/utils/performance-statistics';
 import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { StyledSelectDirective } from '../../../shared/directives/styled-select.directive';
 import { AreaTeacherComparison } from './area-teacher-comparison';
+import {ToastService} from '../../../shared/services/toast.service';
 
 interface AreaGradeNode {
   gradeLevel: string;
@@ -304,6 +305,7 @@ export class AreaMetrics implements OnInit, OnDestroy {
   private readonly achievementService = inject(AchievementService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly translocoService = inject(TranslocoService);
+  private readonly toastService = inject(ToastService);
 
   readonly isLoading = signal(true);
   readonly explorerView = signal(0);
@@ -341,6 +343,7 @@ export class AreaMetrics implements OnInit, OnDestroy {
   readonly coordinatorAreaId = signal<number | null>(null);
   readonly coordinatorAreaName = signal('');
   readonly areaData = signal<AreaAchievementResource | null>(null);
+  readonly isGeneratingAreaInsight = signal(false);
   readonly isAreaInsightModalOpen = signal(false);
   readonly selectedCourseId = signal<number | null>(1);
   readonly isTreeLoading = signal(false);
@@ -752,6 +755,26 @@ export class AreaMetrics implements OnInit, OnDestroy {
 
   openAreaInsightModal = (): void => this.isAreaInsightModalOpen.set(true);
   closeAreaInsightModal = (): void => this.isAreaInsightModalOpen.set(false);
+
+  generateAreaInsight(): void {
+    const areaId = this.coordinatorAreaId();
+    if (!areaId || this.isGeneratingAreaInsight()) return;
+    this.isGeneratingAreaInsight.set(true);
+    this.achievementService.generateAreaInsight(areaId).subscribe({
+      next: (response) => {
+        this.areaData.update(current => current ? {
+          ...current,
+          latestInsight: response.insightText,
+          latestInsightCreatedAt: new Date().toISOString()
+        } : current);
+        this.isGeneratingAreaInsight.set(false);
+      },
+      error: () => {
+        this.isGeneratingAreaInsight.set(false);
+        this.toastService.error(this.translocoService.translate('AREAS.INSIGHT_GENERATION_ERROR'));
+      }
+    });
+  }
 
   getInsightExcerpt(insight: string | null | undefined, maxChars = 150): string {
     if (!insight) return this.translocoService.translate('AREAS.INSIGHT_PENDING');

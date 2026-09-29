@@ -140,7 +140,10 @@
     "SERY": {
       "TITLE": "Resumen Inteligente de Sery",
       "NO_INSIGHT_STUDENT": "Aún no hay un resumen de Sery disponible para tu progreso.",
-      "NO_INSIGHT_TEACHER": "Aún no hay un resumen de Sery disponible para esta aula."
+      "NO_INSIGHT_TEACHER": "Aún no hay un resumen de Sery disponible para esta aula.",
+      "UPDATE_ANALYSIS": "Generar o actualizar resumen",
+      "GENERATING": "Generando resumen...",
+      "GENERATE_ERROR": "No se pudo generar el resumen del aula. Las métricas se conservaron."
     },
   "KPI": {
     "AVERAGE": "Promedio<br>del Aula",
@@ -607,7 +610,11 @@
         "REFERENCES": "Documentos de Referencia",
         "PREVIEW": "Previsualizar",
         "DOWNLOAD": "Descargar",
-        "CORRECT_ANSWER": "¡Respuesta Correcta!"
+        "CORRECT_ANSWER": "¡Respuesta Correcta!",
+        "FEEDBACK_PENDING": "Tu nota ya está guardada. Sery está preparando la retroalimentación; aparecerá aquí automáticamente.",
+        "FEEDBACK_FAILED": "Tu nota se guardó, pero no se pudo generar la retroalimentación.",
+        "RETRY_FEEDBACK": "Reintentar retroalimentación",
+        "FEEDBACK_RETRY_ERROR": "No se pudo volver a solicitar la retroalimentación."
       },
       "TEACHER": {
         "TITLE": "Gestión de Cuestionarios",
@@ -687,6 +694,11 @@
       "AREA": "Área",
       "COURSE": "Curso:",
       "NO_COURSES": "No hay cursos disponibles",
+      "NO_REPOSITORY_DATA": "Aún no hay datos en el repositorio",
+      "NO_REPOSITORY_DATA_DESC": "Todavía no hay cursos asignados a tu cuenta. Cuando se asignen, aquí aparecerán sus temas y materiales.",
+      "COURSES_LOAD_ERROR": "No se pudieron cargar los cursos del repositorio",
+      "COURSES_LOAD_ERROR_DESC": "No se pudieron cargar los cursos de este repositorio. Revisa tu conexión e inténtalo de nuevo.",
+      "RETRY_LOAD": "Reintentar",
       "READ_ONLY": "Periodo de solo lectura",
       "NOT_PLANNED_MSG": "El año académico actual no se encuentra en fase de planificación. Todas las acciones de creación, edición, reordenación o eliminación de temas y documentos están deshabilitadas.",
       "UPLOAD_MULTI": "Subir documento",
@@ -696,6 +708,12 @@
       "NO_DOCS": "No hay documentos vinculados a este tema.",
       "PROCESSING": "Procesando",
       "PROCESSING_FAILED": "No se pudo procesar",
+      "FILE_AVAILABLE": "Archivo disponible",
+      "AI_PENDING": "Pendiente para IA",
+      "READY_FOR_AI": "Listo para IA",
+      "RETRY_PROCESSING": "Reintentar procesamiento",
+      "RETRY_PROCESSING_QUEUED": "Se volvió a poner en cola el procesamiento del documento.",
+      "RETRY_PROCESSING_ERROR": "No se pudo reintentar el procesamiento del documento.",
       "DOC_TITLE": "Título",
       "DOC_FORMAT": "Formato",
       "DOC_FILE": "Archivo",
@@ -748,11 +766,12 @@
     "TOPIC_PERFORMANCE": "Rendimiento por tema",
     "TOPIC_PERFORMANCE_DESC": "Promedio de las evaluaciones registradas en cada tema.",
     "NO_TOPIC_DATA": "Todavía no hay temas evaluados para este periodo.",
-    "AUTO_WEEKLY": "Análisis automático semanal",
+    "AUTO_WEEKLY": "Generación manual de análisis",
     "UPDATED_AT": "Última actualización:",
-    "INSIGHT_PENDING": "Sery generará el primer análisis automáticamente cuando haya datos evaluables.",
+    "INSIGHT_PENDING": "Aún no hay un resumen del área. Usa el botón para generarlo cuando quieras.",
     "GENERATING_INSIGHT": "Generando Insight...",
     "UPDATE_ANALYSIS": "Actualizar Análisis",
+    "INSIGHT_GENERATION_ERROR": "No se pudo generar el resumen del área. Las métricas se conservaron.",
     "LOADING": "Cargando métricas del área...",
     "GENERAL_AVERAGE": "Promedio General",
     "SERY_ANALYSIS": "Análisis del Área (Sery)",
@@ -1119,7 +1138,7 @@
     },
     "SERY": {
       "TITLE": "Chat con Sery",
-      "DESC": "Sery es tu asistente de IA. Puedes consultarle dudas académicas y obtener explicaciones personalizadas en cualquier momento."
+      "DESC": "Abre Sery desde la burbuja flotante en la esquina inferior derecha. Puedes hacerle consultas académicas y recibir explicaciones cuando quieras."
     }
   },
   "COMMON": {

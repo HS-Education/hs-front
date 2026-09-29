@@ -277,6 +277,7 @@
   @if (!isOpen()) {
     <button
       type="button"
+      id="sery-bubble"
       (click)="toggleOpen()"
       [title]="'CHAT.BUBBLE_TOOLTIP' | transloco"
       class="pointer-events-auto sery-fab group relative flex h-14 w-14 items-center justify-center rounded-full bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] text-[var(--button-primary-text)] shadow-xl shadow-[var(--brand-primary)]/30 hover:shadow-2xl hover:shadow-[var(--brand-primary)]/40 hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer focus:outline-none"

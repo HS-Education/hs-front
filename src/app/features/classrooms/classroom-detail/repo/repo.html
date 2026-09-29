@@ -97,7 +97,18 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
-                    <p class="text-sm font-bold text-[var(--text-primary)] truncate group-hover/card:text-[var(--brand-primary)] transition-colors" [title]="doc.title">{{ doc.title }}</p>
+                    <div class="min-w-0">
+                      <p class="text-sm font-bold text-[var(--text-primary)] truncate group-hover/card:text-[var(--brand-primary)] transition-colors" [title]="doc.title">{{ doc.title }}</p>
+                      <div class="mt-1 flex flex-wrap items-center gap-1.5 text-[9px] font-semibold">
+                        <span class="rounded border border-[var(--brand-forest)]/30 px-1.5 py-0.5 text-[var(--brand-forest)]">{{ 'CLASSROOMS.REPO.FILE_AVAILABLE' | transloco }}</span>
+                        @switch (doc.document_status) {
+                          @case ('UPLOADED') { <span class="rounded border border-[var(--border)] px-1.5 py-0.5 text-[var(--text-secondary)]">{{ 'CLASSROOMS.REPO.AI_PENDING' | transloco }}</span> }
+                          @case ('PROCESSING') { <span class="rounded border border-[var(--brand-mustard)]/40 px-1.5 py-0.5 text-[var(--brand-mustard)]">{{ 'CLASSROOMS.REPO.PROCESSING' | transloco }}</span> }
+                          @case ('READY') { <span class="rounded border border-[var(--brand-forest)]/30 px-1.5 py-0.5 text-[var(--brand-forest)]">{{ 'CLASSROOMS.REPO.READY_FOR_AI' | transloco }}</span> }
+                          @case ('FAILED') { <span class="rounded border border-[var(--brand-error)]/40 px-1.5 py-0.5 text-[var(--brand-error)]">{{ 'CLASSROOMS.REPO.PROCESSING_FAILED' | transloco }}</span> }
+                        }
+                      </div>
+                    </div>
                   </div>
 
                   <!-- Actions -->

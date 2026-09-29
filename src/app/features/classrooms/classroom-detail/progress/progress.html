@@ -947,6 +947,12 @@
               </div>
             </div>
             <p class="mt-2 line-clamp-2 text-xs font-medium leading-snug text-[var(--button-primary-text)]/90">{{ getInsightExcerpt(data.latestInsight) }}</p>
+            @if (userDataService.isTeacher() && !userDataService.isCoordinator()) {
+              <button type="button" (click)="generateClassroomInsight()" [disabled]="isGeneratingClassroomInsight()"
+                class="mt-3 flex w-full items-center justify-center rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20 disabled:cursor-wait disabled:opacity-60">
+                {{ (isGeneratingClassroomInsight() ? 'PROGRESS.SERY.GENERATING' : 'PROGRESS.SERY.UPDATE_ANALYSIS') | transloco }}
+              </button>
+            }
             <button type="button" (click)="openClassroomInsightModal()" class="mt-3 flex w-full items-center justify-between rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20">
               {{ 'PROGRESS.DASHBOARD.VIEW_EXTENDED_REPORT' | transloco }}
               <span aria-hidden="true">→</span>
