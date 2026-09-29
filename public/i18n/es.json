@@ -694,6 +694,8 @@
       "NO_TOPICS_DESC": "Este curso no cuenta con temas configurados aún.",
       "ORDER": "Orden",
       "NO_DOCS": "No hay documentos vinculados a este tema.",
+      "PROCESSING": "Procesando",
+      "PROCESSING_FAILED": "No se pudo procesar",
       "DOC_TITLE": "Título",
       "DOC_FORMAT": "Formato",
       "DOC_FILE": "Archivo",

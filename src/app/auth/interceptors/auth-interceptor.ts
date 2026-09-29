@@ -11,17 +11,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const userDataService = inject(UserDataService);
 
-  const apiBase = (environment?.baseUrl ?? '').replace(/\/$/, '');
-  const isApiRequest = req.url.startsWith(apiBase) || req.url.includes('/api/v1/');
-  const isAuthEndpoint =
-    /\/api\/v1\/auth\/(sign-in|refresh-token|log-out)/.test(req.url);
+  const pageOrigin = typeof window === 'undefined' ? 'http://localhost' : window.location.origin;
+  const apiBase = new URL(environment.baseUrl, pageOrigin);
+  const target = new URL(req.url, pageOrigin);
+  const basePath = apiBase.pathname.replace(/\/$/, '');
+  const isApiRequest = target.origin === apiBase.origin &&
+    (target.pathname === basePath || target.pathname.startsWith(`${basePath}/`));
+  const isAuthEndpoint = isApiRequest &&
+    /\/auth\/(sign-in|refresh-token|log-out)$/.test(target.pathname);
 
   // For API requests use credentials so browser sends HttpOnly cookies
   const requestWithCredentials = isApiRequest ? req.clone({ withCredentials: true }) : req;
 
   return next(requestWithCredentials).pipe(
     catchError((err: unknown) => {
-      if (!(err instanceof HttpErrorResponse) || err.status !== 401) {
+      if (!isApiRequest || !(err instanceof HttpErrorResponse) || err.status !== 401) {
         return throwError(() => err);
       }
 

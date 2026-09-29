@@ -694,6 +694,8 @@
       "NO_TOPICS_DESC": "This course does not have configured topics yet.",
       "ORDER": "Order",
       "NO_DOCS": "No documents linked to this topic.",
+      "PROCESSING": "Processing",
+      "PROCESSING_FAILED": "Processing failed",
       "DOC_TITLE": "Title",
       "DOC_FORMAT": "Format",
       "DOC_FILE": "File",
