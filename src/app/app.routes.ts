@@ -53,11 +53,11 @@ export const routes: Routes = [
       import('./features/help/help').then((m) => m.HelpCenter),
     canActivate: [authGuard]
   },
+  // El chat completo ya no es una ruta pública; Sery se utiliza mediante el bubble.
   {
     path: 'chat',
-    loadComponent: () =>
-      import('./features/chat/chat').then((m) => m.Chat),
-    canActivate: [authGuard],
+    redirectTo: 'home',
+    pathMatch: 'full',
   },
   {
     path: 'classrooms/:id',

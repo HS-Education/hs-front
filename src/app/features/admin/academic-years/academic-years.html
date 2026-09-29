@@ -13,7 +13,7 @@
       <button
         (click)="requestGenerateYear()"
         [disabled]="isGenerating()"
-        class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--brand-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
+        class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--button-primary-bg)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[var(--button-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
         @if (isGenerating()) {
           <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -54,14 +54,13 @@
               <button 
                 (click)="selectYear(year)"
                 class="w-full text-left px-4 py-3 rounded-xl transition duration-200 border flex items-center justify-between"
-                [class.bg-[var(--brand-primary)]]="selectedYear()?.id === year.id"
-                [class.bg-opacity-10]="selectedYear()?.id === year.id"
+                [class.bg-[var(--brand-primary-soft)]]="selectedYear()?.id === year.id"
                 [class.border-[var(--brand-primary)]]="selectedYear()?.id === year.id"
                 [class.border-transparent]="selectedYear()?.id !== year.id"
                 [class.hover:bg-[var(--bg-secondary)]]="selectedYear()?.id !== year.id">
                 
                 <div>
-                  <div class="font-bold text-lg" [class.text-[var(--text-primary)]]="selectedYear()?.id !== year.id" [class.text-white]="selectedYear()?.id === year.id">{{ year.year }}</div>
+                  <div class="font-bold text-lg" [class.text-[var(--text-primary)]]="selectedYear()?.id !== year.id" [class.text-[var(--brand-primary)]]="selectedYear()?.id === year.id">{{ year.year }}</div>
                 </div>
                 
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border" [ngClass]="getStatusColor(year.status)">
@@ -113,24 +112,24 @@
                       <div class="flex flex-col gap-1 w-full sm:w-36">
                         <label class="text-[10px] font-bold text-[var(--brand-primary)] uppercase tracking-wider">{{ 'ADMIN.COMMON.START' | transloco }}</label>
                         <input type="date" [ngModel]="editStartDate()" (ngModelChange)="editStartDate.set($event)"
-                          class="block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] shadow-inner" />
+                          class="academic-period-date block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] shadow-sm" />
                       </div>
                       
                       <div class="flex flex-col gap-1 w-full sm:w-36">
                         <label class="text-[10px] font-bold text-[var(--brand-primary)] uppercase tracking-wider">{{ 'ADMIN.COMMON.END' | transloco }}</label>
                         <input type="date" [ngModel]="editEndDate()" (ngModelChange)="editEndDate.set($event)"
-                          class="block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] shadow-inner" />
+                          class="academic-period-date block w-full rounded-md border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm text-[var(--text-primary)] focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] shadow-sm" />
                       </div>
 
                       <div class="flex items-end gap-2 w-full sm:w-auto mt-2 sm:mt-0 pt-5">
                         <button (click)="saveEdit(period)" [disabled]="!editStartDate() || !editEndDate()" title="{{ 'ADMIN.ACADEMIC_YEARS.SAVE_DATES' | transloco }}"
-                          class="flex-1 sm:flex-none inline-flex items-center justify-center p-2 rounded-md bg-[#166534] text-white hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-600 transition-colors disabled:opacity-50 shadow-sm">
+                          class="flex-1 sm:flex-none inline-flex items-center justify-center p-2 rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-[var(--button-primary-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--brand-primary)] transition-colors disabled:opacity-50 shadow-sm">
                           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </button>
                         <button (click)="cancelEdit()" title="{{ 'ADMIN.COMMON.CANCEL' | transloco }}"
-                          class="flex-1 sm:flex-none inline-flex items-center justify-center p-2 rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border)] transition-colors shadow-sm">
+                          class="flex-1 sm:flex-none inline-flex items-center justify-center p-2 rounded-md bg-[var(--surface)] border border-[var(--border-strong)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--brand-primary)] transition-colors shadow-sm">
                           <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -143,21 +142,21 @@
                       
                       <div class="flex gap-6 sm:gap-8 flex-1">
                         <div>
-                          <p class="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Fecha de {{ 'ADMIN.COMMON.START_DATE' | transloco }}</p>
+                          <p class="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">{{ 'UI_TEXT.DATE_OF' | transloco }} {{ 'ADMIN.COMMON.START_DATE' | transloco }}</p>
                           <p class="text-sm font-semibold text-[var(--text-primary)] mt-0.5">
-                            {{ period.startDate ? (period.startDate | date:'dd/MM/yyyy') : ('ADMIN.COMMON.NOT_ASSIGNED' | transloco) }}
+                            {{ period.startDate ? (period.startDate | localizedDate:'dd/MM/yyyy') : ('ADMIN.COMMON.NOT_ASSIGNED' | transloco) }}
                           </p>
                         </div>
                         <div>
-                          <p class="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Fecha de {{ 'ADMIN.COMMON.END_DATE' | transloco }}</p>
+                          <p class="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">{{ 'UI_TEXT.DATE_OF' | transloco }} {{ 'ADMIN.COMMON.END_DATE' | transloco }}</p>
                           <p class="text-sm font-semibold text-[var(--text-primary)] mt-0.5">
-                            {{ period.endDate ? (period.endDate | date:'dd/MM/yyyy') : ('ADMIN.COMMON.NOT_ASSIGNED' | transloco) }}
+                            {{ period.endDate ? (period.endDate | localizedDate:'dd/MM/yyyy') : ('ADMIN.COMMON.NOT_ASSIGNED' | transloco) }}
                           </p>
                         </div>
                       </div>
 
                       <button (click)="startEdit(period)" title="{{ 'ADMIN.ACADEMIC_YEARS.CONFIG_DATES' | transloco }}"
-                        class="shrink-0 inline-flex items-center justify-center p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--brand-primary)]/10 hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition-all shadow-sm">
+                        class="shrink-0 inline-flex items-center justify-center p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--brand-primary-soft)] hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)]/30 focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] transition-all shadow-sm">
                         <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                         </svg>
@@ -200,7 +199,7 @@
         {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="confirmGenerateYear()"
-        class="rounded-xl bg-[var(--brand-primary)] px-4 py-2 font-medium text-white hover:bg-[var(--brand-primary-hover)] transition">
+        class="rounded-xl bg-[var(--button-primary-bg)] px-4 py-2 font-medium text-white hover:bg-[var(--button-primary-hover)] transition">
         {{ 'ADMIN.ACADEMIC_YEARS.YES_GENERATE' | transloco }}
       </button>
     </div>

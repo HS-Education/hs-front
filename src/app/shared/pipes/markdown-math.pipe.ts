@@ -1,30 +1,51 @@
-import { inject, Pipe, PipeTransform } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Pipe, PipeTransform } from '@angular/core';
+import DOMPurify from 'dompurify';
+import katex from 'katex';
+
+export function sanitizeRenderedHtml(html: string): string {
+  return DOMPurify.sanitize(html);
+}
 
 @Pipe({
   name: 'markdownMath',
   standalone: true
 })
 export class MarkdownMathPipe implements PipeTransform {
-  private readonly sanitizer = inject(DomSanitizer);
-
-  transform(value: string | null | undefined): SafeHtml {
-    const escaped = MarkdownMathPipe.process(value);
-    if (!escaped) return '';
-    return this.sanitizer.bypassSecurityTrustHtml(escaped);
+  transform(value: string | null | undefined): string {
+    return sanitizeRenderedHtml(MarkdownMathPipe.process(value));
   }
 
   static process(value: string | null | undefined): string {
     if (!value) return '';
 
+    // Render math before the legacy Markdown formatting touches LaTeX syntax.
+    // The completed HTML is sanitized at the final binding point.
+    const renderedMath: string[] = [];
+    const withMathPlaceholders = value.replace(
+      /\$\$([\s\S]*?)\$\$|\\\[([\s\S]*?)\\\]|\$([^$\n]+)\$|\\\(([\s\S]*?)\\\)/g,
+      (_match, displayDollar, displayBracket, inlineDollar, inlineBracket) => {
+        const displayMode = displayDollar !== undefined || displayBracket !== undefined;
+        const expression = displayDollar ?? displayBracket ?? inlineDollar ?? inlineBracket;
+        const html = katex.renderToString(expression, {
+          displayMode,
+          throwOnError: false,
+          trust: false,
+          maxExpand: 1000,
+          maxSize: 8,
+        });
+        renderedMath.push(html);
+        return `MATHRENDER${renderedMath.length - 1}END`;
+      }
+    );
+
     // 1. Escape basic HTML tags to prevent XSS
-    let escaped = value
+    let escaped = withMathPlaceholders
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
     // 1.5 Strip Source Badges completely (e.g. from RAG or internal Contexts)
-    escaped = escaped.replace(/(?:\*\*)?Fuente:(?:\*\*)?\s*(.*?)\s*(?:\*\*)?Enlace de descarga:(?:\*\*)?\s*([^\s]+)/gi, '');
+    escaped = escaped.replace(/(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*([^\s]+)/gi, '');
 
     // 1.8 Protect Math Pipes: escape '|' inside math blocks so it doesn't break Markdown tables
     escaped = escaped.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[^$\n]+\$|\\\([\s\S]*?\\\))/g, (match) => {
@@ -111,10 +132,10 @@ export class MarkdownMathPipe implements PipeTransform {
     escaped = escaped.replace(/^#\s+(.*)$/gim, '<h1 class="text-lg font-black text-[var(--text-primary)] mt-6 mb-3">$1</h1>');
 
     // Code blocks: ```code```
-    escaped = escaped.replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-900 text-slate-100 p-3.5 rounded-xl font-mono text-[11px] my-2 overflow-x-auto">$1</pre>');
+    escaped = escaped.replace(/```([\s\S]*?)```/g, '<pre class="bg-[var(--surface-muted)] text-[var(--text-primary)] border border-[var(--border)] p-3.5 rounded-xl font-mono text-[11px] my-2 overflow-x-auto">$1</pre>');
 
     // Inline code: `code`
-    escaped = escaped.replace(/`([^`]+)`/g, '<code class="bg-slate-100 text-rose-600 px-1.5 py-0.5 rounded-md font-semibold text-[11px]">$1</code>');
+    escaped = escaped.replace(/`([^`]+)`/g, '<code class="bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] px-1.5 py-0.5 rounded-md font-semibold text-[11px]">$1</code>');
 
     // Bold: **text**
     escaped = escaped.replace(/\*\*([\s\S]*?)\*\*/g, '<strong class="font-extrabold text-[var(--text-primary)]">$1</strong>');
@@ -127,8 +148,8 @@ export class MarkdownMathPipe implements PipeTransform {
     escaped = escaped.replace(/\\\[([\s\S]*?)\\\]/g, '<div class="math-block bg-[var(--brand-primary)]/5 border border-[var(--brand-primary)]/10 rounded-xl p-3 my-2.5 text-center font-serif text-sm text-[var(--text-primary)] font-semibold">$1</div>');
 
     // Inline Math: $ ... $ and \( ... \)
-    escaped = escaped.replace(/\$([^$]+)\$/g, '<span class="math-inline font-serif font-semibold text-[var(--brand-primary)] bg-[var(--brand-primary)]/10 px-1 py-0.5 rounded border border-[var(--brand-primary)]/20">$1</span>');
-    escaped = escaped.replace(/\\\(([\s\S]*?)\\\)/g, '<span class="math-inline font-serif font-semibold text-[var(--brand-primary)] bg-[var(--brand-primary)]/10 px-1 py-0.5 rounded border border-[var(--brand-primary)]/20">$1</span>');
+    escaped = escaped.replace(/\$([^$]+)\$/g, '<span class="math-inline font-serif font-semibold text-[var(--brand-primary)] bg-[var(--brand-primary-soft)] px-1 py-0.5 rounded border border-[var(--brand-primary)]/20">$1</span>');
+    escaped = escaped.replace(/\\\(([\s\S]*?)\\\)/g, '<span class="math-inline font-serif font-semibold text-[var(--brand-primary)] bg-[var(--brand-primary-soft)] px-1 py-0.5 rounded border border-[var(--brand-primary)]/20">$1</span>');
 
     // Restore escaped pipes for math blocks if they somehow survived (they should have been matched by the above regexes)
     escaped = escaped.replace(/&#124;/g, '|');
@@ -199,6 +220,6 @@ export class MarkdownMathPipe implements PipeTransform {
     // Convert newlines to breaks
     escaped = escaped.replace(/\n/g, '<br/>');
 
-    return escaped;
+    return escaped.replace(/MATHRENDER(\d+)END/g, (match, index) => renderedMath[Number(index)] ?? match);
   }
 }

@@ -22,6 +22,13 @@ export class ClassroomService {
     );
   }
 
+  getAllClassrooms() {
+    return this.http.get<Classroom[]>(
+      `${this.baseUrl}/classrooms`,
+      { withCredentials: true }
+    );
+  }
+
   getClassroomById(classroomId: number) {
     return this.http.get<Classroom>(
       `${this.baseUrl}/classrooms/${classroomId}`,
@@ -123,7 +130,7 @@ export class ClassroomService {
   }
 
   getGradingPeriods(academicYearId: number) {
-    return this.http.get<Array<{ id: number; bimester: string }>>(
+    return this.http.get<Array<{ id: number; bimester: string; status?: 'PLANNED' | 'ACTIVE' | 'FINISHED' }>>(
       `${this.baseUrl}/academic-years/${academicYearId}/grading-periods`,
       { withCredentials: true }
     );

@@ -16,12 +16,14 @@ type Tab = 'AREAS_COURSES' | 'SECTIONS' | 'STUDY_PLANS';
 import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { ConfirmModal } from '../../../shared/components/modal/confirm-modal';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { StyledSelectDirective } from '../../../shared/directives/styled-select.directive';
 
 @Component({
   selector: 'app-courses-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, Modal, ConfirmModal, TranslateEnumPipe, TranslocoPipe],
+  imports: [CommonModule, FormsModule, Modal, ConfirmModal, TranslateEnumPipe, TranslocoPipe, StyledSelectDirective],
   templateUrl: './courses-management.html',
+  styleUrl: './courses-management.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CoursesManagement implements OnInit {

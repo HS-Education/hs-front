@@ -11,7 +11,8 @@ import {Modal} from '../../shared/components/modal/modal';
 import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
 import {TranslateEnumPipe} from '../../shared/pipes/translate-enum.pipe';
 import {BIMESTER_OPTIONS, EDUCATION_LEVEL_OPTIONS, GRADE_LEVEL_OPTIONS} from '../../shared/models/academic-levels.model';
-import {TranslocoPipe} from '@jsverse/transloco';
+import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
+import {StyledSelectDirective} from '../../shared/directives/styled-select.directive';
 
 interface GradingPeriodResource {
   id: number;
@@ -28,12 +29,13 @@ interface UploadFileMetadata {
 
 @Component({
   selector: 'app-repository',
-  imports: [Modal, ConfirmModal, FormsModule, TranslateEnumPipe, TranslocoPipe],
+  imports: [Modal, ConfirmModal, FormsModule, TranslateEnumPipe, TranslocoPipe, StyledSelectDirective],
   templateUrl: './repository.html',
   styleUrl: './repository.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Repository implements OnInit {
+  private readonly translocoService = inject(TranslocoService);
   private readonly classroomService = inject(ClassroomService);
   protected readonly userDataService = inject(UserDataService);
   private readonly sanitizer = inject(DomSanitizer);
@@ -180,7 +182,7 @@ export class Repository implements OnInit {
         this.documents.set(documents);
         
         if (periods && periods.length > 0) {
-          this.gradingPeriods.set(periods);
+          this.gradingPeriods.set(this.sortGradingPeriods(periods));
         } else {
           this.useDefaultGradingPeriods();
         }
@@ -201,6 +203,23 @@ export class Repository implements OnInit {
       { id: 3, bimester: 'BIMESTER_3' },
       { id: 4, bimester: 'BIMESTER_4' }
     ]);
+  }
+
+  private sortGradingPeriods(periods: GradingPeriodResource[]): GradingPeriodResource[] {
+    const order = (value: string): number => {
+      const normalized = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+      const configuredIndex = BIMESTER_OPTIONS.findIndex(option => option.value === normalized);
+      if (configuredIndex >= 0) return configuredIndex + 1;
+
+      const numericOrder = normalized.match(/\d+/)?.[0];
+      if (numericOrder) return Number(numericOrder);
+
+      const ordinalNames = ['FIRST|PRIMER|PRIMERO', 'SECOND|SEGUNDO', 'THIRD|TERCER|TERCERO', 'FOURTH|CUARTO'];
+      const ordinalIndex = ordinalNames.findIndex(names => new RegExp(`\\b(${names})\\b`).test(normalized));
+      return ordinalIndex >= 0 ? ordinalIndex + 1 : Number.MAX_SAFE_INTEGER;
+    };
+
+    return [...periods].sort((a, b) => order(a.bimester) - order(b.bimester) || a.id - b.id);
   }
 
   getTopicBimester(gradingPeriodId: number): string {
@@ -251,7 +270,7 @@ export class Repository implements OnInit {
       error: (err) => {
         console.error('Error al obtener URL de previsualización:', err);
         this.previewLoading.set(false);
-        alert('No se pudo cargar la previsualización del documento.');
+        alert(this.translocoService.translate('UI_TEXT.UNABLE_TO_LOAD_THE_DOCUMENT_PREVIEW'));
       }
     });
   }
@@ -266,7 +285,7 @@ export class Repository implements OnInit {
     if (!courseId) return;
 
     this.confirmModalTitle.set('Eliminar Documento');
-    this.confirmModalMessage.set('¿Estás seguro de eliminar este documento?');
+    this.confirmModalMessage.set(this.translocoService.translate('UI_TEXT.ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS'));
     this.confirmAction.set(() => {
       this.classroomService.deleteDocument(courseId, documentId).subscribe({
         next: () => {
@@ -355,7 +374,7 @@ export class Repository implements OnInit {
     if (!courseId) return;
 
     this.confirmModalTitle.set('Eliminar Tema');
-    this.confirmModalMessage.set('¿Estás seguro de eliminar este tema? También se desvincularán los documentos.');
+    this.confirmModalMessage.set(this.translocoService.translate('UI_TEXT.ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_77'));
     this.confirmAction.set(() => {
       this.classroomService.deleteTopic(courseId, topicId).subscribe({
         next: () => {

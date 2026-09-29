@@ -1,9 +1,10 @@
+import { TranslocoPipe } from '@jsverse/transloco';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-not-found',
-  imports: [RouterLink],
+  imports: [TranslocoPipe, RouterLink],
   template: `
     <div class="min-h-screen flex flex-col items-center justify-center bg-[var(--bg-primary)] px-4">
       <div class="max-w-md w-full text-center space-y-6 bg-[var(--surface)] p-8 md:p-12 rounded-3xl border border-[var(--border)] shadow-sm">
@@ -19,19 +20,19 @@ import { RouterLink } from '@angular/router';
 
         <div class="space-y-2">
           <h1 class="text-4xl font-black text-[var(--text-primary)]">404</h1>
-          <h2 class="text-xl font-bold text-[var(--text-primary)]">Página no encontrada</h2>
+          <h2 class="text-xl font-bold text-[var(--text-primary)]">{{ 'UI_TEXT.PAGE_NOT_FOUND' | transloco }}</h2>
           <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Parece que te has perdido en los archivos. La página o el recurso que buscas no existe o ha sido movido.
+            {{ 'UI_TEXT.THE_PAGE_OR_RESOURCE_YOU_ARE_LOOKING_FOR' | transloco }}
           </p>
         </div>
 
         <div class="pt-4">
-          <a routerLink="/" class="inline-flex items-center justify-center px-6 py-3 bg-[#c2410c] text-white font-bold text-sm rounded-xl hover:bg-[#ea580c] transition-colors focus:outline-none focus:ring-2 focus:ring-[#c2410c] focus:ring-offset-2 w-full sm:w-auto">
+          <a routerLink="/" class="inline-flex items-center justify-center px-6 py-3 bg-[var(--button-primary-bg)] text-[var(--button-primary-text)] font-bold text-sm rounded-xl hover:bg-[var(--button-primary-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--focus-ring)] focus:ring-offset-2 w-full sm:w-auto">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
               <path d="m12 19-7-7 7-7"/>
               <path d="M19 12H5"/>
             </svg>
-            Volver al Inicio
+            {{ 'UI_TEXT.BACK_TO_HOME' | transloco }}
           </a>
         </div>
         

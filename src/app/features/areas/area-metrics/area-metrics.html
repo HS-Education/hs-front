@@ -1,16 +1,11 @@
-<div class="h-full flex flex-col bg-[var(--bg-primary)]">
-  <!-- Header -->
-  <div class="flex-none px-6 py-5 border-b border-[var(--border)] bg-[var(--bg-secondary)] relative overflow-hidden shrink-0">
-    <!-- Decorative background elements -->
-    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-[var(--brand-primary)] opacity-5 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute bottom-0 left-20 w-32 h-32 bg-[var(--brand-forest)] opacity-5 rounded-full blur-2xl pointer-events-none"></div>
-
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+<div class="flex h-full flex-col bg-[var(--bg-primary)]">
+  <header class="relative flex-none shrink-0 overflow-hidden border-b border-[var(--border)] bg-[var(--bg-secondary)] px-6 py-5">
+    <div class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[var(--brand-primary)] opacity-5 blur-3xl"></div>
+    <div class="pointer-events-none absolute -bottom-10 left-20 h-32 w-32 rounded-full bg-[var(--brand-forest)] opacity-5 blur-2xl"></div>
+    <div class="relative z-10 flex flex-col justify-between gap-4 md:flex-row md:items-center">
       <div>
-        <h1 class="text-2xl font-black text-[var(--text-primary)] tracking-tight font-['Plus_Jakarta_Sans']">
-          {{ 'AREAS.TITLE' | transloco }}
-        </h1>
-        <p class="text-sm font-medium text-[var(--text-secondary)] mt-1 max-w-2xl">
+        <h1 class="font-['Plus_Jakarta_Sans'] text-2xl font-black tracking-tight text-[var(--text-primary)]">{{ 'AREAS.TITLE' | transloco }}</h1>
+        <p class="mt-1 max-w-2xl text-sm font-medium text-[var(--text-secondary)]">
           @if (areaPerformance(); as area) {
             {{ 'AREAS.AREA_OF' | transloco }} {{ area.areaName }}
           } @else {
@@ -18,175 +13,423 @@
           }
         </p>
       </div>
-      
-      @if (areaPerformance()) {
-        <button (click)="generateAreaInsight()" 
-                [disabled]="isGeneratingInsight()"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] text-sm font-bold rounded-lg hover:bg-[var(--bg-primary)] hover:border-[var(--brand-primary)]/30 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-          @if (isGeneratingInsight()) {
-            <svg class="animate-spin h-4.5 w-4.5 text-[var(--brand-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {{ 'AREAS.GENERATING_INSIGHT' | transloco }}
-          } @else {
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {{ 'AREAS.UPDATE_ANALYSIS' | transloco }}
-          }
-        </button>
-      }
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold text-[var(--text-secondary)]">{{ 'AREAS.FILTER_PERIOD' | transloco }}</span>
+        <span class="annual-period-badge rounded-xl border border-[var(--border)] bg-[var(--surface)] text-sm font-semibold text-[var(--text-primary)]">
+          {{ 'PROGRESS.EXPLORER.ANNUAL' | transloco }}
+        </span>
+      </div>
     </div>
-  </div>
+  </header>
 
-  <!-- Content -->
-  <div class="flex-1 overflow-y-auto">
+  <main class="min-h-0 flex-1 overflow-y-auto">
     @if (isLoading()) {
-      <div class="flex flex-col items-center justify-center h-64 text-[var(--text-secondary)]">
-        <svg class="animate-spin h-8 w-8 text-[var(--brand-primary)] mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <div class="flex h-64 flex-col items-center justify-center text-[var(--text-secondary)]">
+        <svg class="mb-4 h-8 w-8 animate-spin text-[var(--brand-primary)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p class="font-medium text-sm">{{ 'AREAS.LOADING' | transloco }}</p>
+        <p class="text-sm font-medium">{{ 'AREAS.LOADING' | transloco }}</p>
       </div>
-    } @else if (areaPerformance(); as area) {
-      <div class="p-6 max-w-7xl mx-auto space-y-6">
-        
-        <!-- Summary Cards Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Area Average Score Card -->
-          <div class="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-center">
-            <div class="absolute -right-6 -bottom-6 opacity-5">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-40 w-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            
-            <div class="flex justify-between items-start mb-4 relative z-10">
-              <h3 class="text-sm font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'AREAS.GENERAL_AVERAGE' | transloco }}</h3>
-              <div class="px-2.5 py-1 rounded-md text-xs font-black uppercase tracking-wider"
-                   [ngClass]="getScoreBgClass(area.averageScore) + ' ' + getScoreColorClass(area.averageScore)">
-                {{ getGradeCategory(area.averageScore) }}
+    } @else if (areaPerformance()) {
+      <div class="w-full min-w-0 p-4 sm:p-6 md:p-10">
+        <section class="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm sm:p-6">
+        <div class="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3">
+          <!-- Resumen de Sery para el área, con la misma vista previa y modal de Progreso -->
+          <section class="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--brand-primary)]/35 bg-gradient-to-br from-[var(--progress-sery-start)] to-[var(--progress-sery-end)] p-4 text-[var(--button-primary-text)] shadow-sm">
+            <div>
+              <div class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider">
+                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--button-primary-text)]/30 bg-[var(--button-primary-text)]/10">✦</span>
+                {{ 'AREAS.SERY_ANALYSIS' | transloco }}
               </div>
+              @if (areaData()?.latestInsightCreatedAt) {
+                <p class="mt-2 text-[10px] text-[var(--button-primary-text)]/70">{{ 'AREAS.UPDATED_AT' | transloco }} {{ areaData()?.latestInsightCreatedAt | localizedDate:'mediumDate' }}</p>
+              }
+              <p class="mt-2 line-clamp-5 text-xs font-medium leading-relaxed text-[var(--button-primary-text)]/90">
+                {{ latestInsight() ? getInsightExcerpt(latestInsight(), 280) : ('AREAS.INSIGHT_PENDING' | transloco) }}
+              </p>
             </div>
-            
-            <div class="flex items-end gap-3 relative z-10">
-              <span class="text-5xl font-black font-['Plus_Jakarta_Sans'] tracking-tight" [ngClass]="getScoreColorClass(area.averageScore)">
-                {{ area.averageScore | number:'1.0-0' }}%
+            @if (latestInsight()) {
+              <button type="button" (click)="openAreaInsightModal()"
+                class="mt-auto flex w-full items-center justify-between rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-left text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20">
+                {{ 'PROGRESS.DASHBOARD.VIEW_EXTENDED_REPORT' | transloco }}
+                <span aria-hidden="true">→</span>
+              </button>
+            }
+          </section>
+
+          <!-- Promedio general del área -->
+          <section class="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+            <div class="flex items-start justify-between gap-2">
+              <p class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">{{ 'AREAS.GENERAL_AVERAGE' | transloco }}</p>
+              <span class="rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase"
+                [ngClass]="getScoreBgClass(areaSummary().averageScore * 5) + ' ' + getScoreColorClass(areaSummary().averageScore * 5)">
+                {{ getGradeCategory(areaSummary().averageScore * 5) }}
               </span>
             </div>
-            
-            <!-- Progress Bar -->
-            <div class="mt-5 relative z-10">
-              <div class="flex justify-between text-xs font-semibold text-[var(--text-secondary)] mb-2">
-                <span>0%</span>
-                <span>100%</span>
+            <div class="flex flex-1 flex-col justify-center py-2">
+              <h2 class="text-center text-5xl font-black leading-none tracking-tight sm:text-6xl" [style.color]="getScoreColor(areaSummary().averageScore * 5)">
+                {{ areaSummary().averageScore | number:'1.1-1' }}<span class="ml-1 text-lg font-bold text-[var(--text-secondary)]">/20</span>
+              </h2>
+            </div>
+            <div>
+              <div class="mb-1.5 flex justify-between text-xs font-semibold text-[var(--text-secondary)]"><span>0</span><span>20</span></div>
+              <div class="h-2 overflow-hidden rounded-full bg-[var(--bg-secondary)]">
+                <div class="h-full rounded-full transition-all duration-700" [ngClass]="getScoreProgressClass(areaSummary().averageScore * 5)" [style.width.%]="areaSummary().averageScore * 5"></div>
               </div>
-              <div class="h-2.5 w-full bg-[var(--bg-secondary)] rounded-full overflow-hidden border border-[var(--border)]">
-                <div class="h-full rounded-full transition-all duration-1000 ease-out"
-                     [ngClass]="getScoreProgressClass(area.averageScore)"
-                     [style.width.%]="area.averageScore"></div>
+              <p class="mt-2 text-xs font-medium text-[var(--text-secondary)]">{{ areaSummary().classroomCount }} {{ 'AREAS.CLASSROOMS' | transloco }}</p>
+            </div>
+          </section>
+
+          <!-- Distribución por niveles de logro -->
+          <section class="flex min-w-0 flex-col rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <h2 class="text-sm font-bold text-[var(--text-primary)]">{{ 'AREAS.LEVEL_DISTRIBUTION' | transloco }}</h2>
+                <p class="mt-1 text-[10px] leading-snug text-[var(--text-secondary)]">{{ 'AREAS.LEVEL_DISTRIBUTION_DESC' | transloco }}</p>
               </div>
             </div>
-          </div>
-          
-          <!-- AI Insight Card -->
-          <div class="bg-[var(--surface)] border border-[var(--brand-primary)]/20 rounded-2xl p-5 shadow-sm shadow-[var(--brand-primary)]/5 relative overflow-hidden flex flex-col">
-            <div class="flex items-center gap-2 mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--brand-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <h3 class="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">{{ 'AREAS.SERY_ANALYSIS' | transloco }}</h3>
+            <div class="mt-4 flex h-3 overflow-hidden rounded-full bg-[var(--bg-secondary)]">
+              @for (band of areaSummary().bands; track band.key) {
+                <span class="transition-all" [style.width.%]="areaSummary().evaluatedCount ? band.count / areaSummary().evaluatedCount * 100 : 0" [style.backgroundColor]="band.color"></span>
+              }
             </div>
-            
-            <div class="flex-1 bg-[var(--bg-primary)] rounded-xl p-4 border border-[var(--border)] relative overflow-hidden group">
-              @if (isGeneratingInsight()) {
-                <div class="absolute inset-0 flex items-center justify-center bg-[var(--surface)]/80 backdrop-blur-sm z-10">
-                  <div class="flex flex-col items-center">
-                    <svg class="animate-spin h-6 w-6 text-[var(--brand-primary)] mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span class="text-xs font-bold text-[var(--brand-primary)] animate-pulse">{{ 'AREAS.ANALYZING' | transloco }}</span>
+            <div class="mt-3 grid flex-1 grid-cols-2 gap-2">
+              @for (band of areaSummary().bands; track band.key) {
+                <div class="flex min-w-0 items-center gap-2 rounded-lg bg-[var(--bg-primary)] px-2.5 py-2">
+                  <span class="h-2 w-2 shrink-0 rounded-full" [style.backgroundColor]="band.color"></span>
+                  <div class="min-w-0">
+                    <p class="truncate text-[10px] font-semibold text-[var(--text-secondary)]">
+                      @switch (band.key) {
+                        @case ('CRITICAL') { {{ 'PROGRESS.DASHBOARD.CRITICAL' | transloco }} }
+                        @case ('BASIC') { {{ 'PROGRESS.DASHBOARD.BASIC' | transloco }} }
+                        @case ('INTERMEDIATE') { {{ 'PROGRESS.DASHBOARD.INTERMEDIATE' | transloco }} }
+                        @case ('ADVANCED') { {{ 'PROGRESS.DASHBOARD.ADVANCED' | transloco }} }
+                      }
+                    </p>
+                    <p class="text-sm font-bold text-[var(--text-primary)]">{{ band.count }}</p>
                   </div>
                 </div>
               }
-              
-              <div class="prose prose-sm prose-p:leading-relaxed prose-p:text-[var(--text-secondary)] prose-strong:text-[var(--text-primary)] prose-strong:font-bold max-w-none text-[13px] overflow-y-auto max-h-[140px] pr-2 custom-scrollbar" (click)="handleInsightClick($event, latestInsight())">
-                @if (latestInsight()) {
-                  <div [innerHTML]="renderInsightContent(latestInsight())"></div>
-                } @else {
-                  <p class="text-center text-[var(--text-secondary)] italic my-6">{{ 'AREAS.GENERATING_FIRST' | transloco }}</p>
-                }
-              </div>
             </div>
-          </div>
+          </section>
         </div>
 
-        <!-- Classrooms Comparison -->
-        <div>
-          <h2 class="text-lg font-bold text-[var(--text-primary)] mb-4 font-['Plus_Jakarta_Sans'] flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            {{ 'AREAS.CLASSROOMS_PERFORMANCE' | transloco }}
-          </h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            @for (classroom of sortedClassrooms(); track classroom.classroomId) {
-              <div class="bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col">
-                <div class="p-5 border-b border-[var(--border)] bg-[var(--bg-primary)]/50">
-                  <div class="flex justify-between items-start">
-                    <h3 class="font-bold text-[var(--text-primary)] text-base truncate pr-2">{{ classroom.classroomName }}</h3>
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border-2 border-[var(--surface)] shadow-sm shrink-0"
-                         [ngClass]="getScoreBgClass(classroom.averageScore)">
-                      <span class="text-xs font-black" [ngClass]="getScoreColorClass(classroom.averageScore)">
-                        {{ classroom.averageScore | number:'1.0-0' }}%
-                      </span>
+        <section class="metrics-explorer mt-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm" (wheel)="onExplorerWheel($event)">
+          <div class="mb-3 flex items-center justify-between gap-2">
+            <h2 class="text-base font-bold text-[var(--text-primary)]">{{ (explorerView() === 0 ? 'AREAS.COURSE_TREE_TITLE' : 'AREAS.COMPARISON.TITLE') | transloco }}</h2>
+          </div>
+          <div class="metrics-view" [hidden]="explorerView() !== 0">
+          @if (isTreeLoading()) {
+            <p class="py-10 text-center text-sm text-[var(--text-secondary)]" role="status">{{ 'AREAS.TREE_LOADING' | transloco }}</p>
+          } @else if (treeError()) {
+            <p class="py-10 text-center text-sm text-[var(--text-secondary)]" role="alert">{{ 'AREAS.TREE_LOAD_ERROR' | transloco }}</p>
+          } @else if (courseTree().length) {
+            <div class="tree-explorer" [class.is-split]="treeSelection() !== null">
+            <div class="tree-map-pane">
+            <div class="tree-map-content">
+            <div class="academic-tree-viewport">
+              <div class="academic-tree" [attr.aria-label]="'AREAS.COURSE_TREE_TITLE' | transloco">
+                <ul class="tree-root">
+                  <li>
+                    <div class="tree-node tree-course">
+                      <label for="diagram-course">{{ 'AREAS.COURSE_NODE' | transloco }}</label>
+                      <select id="diagram-course" class="w-full" data-accent="brand" [attr.aria-label]="'AREAS.COURSE_NODE' | transloco"
+                        [value]="selectedCourse()?.courseId" (change)="selectCourse(+$any($event.target).value)">
+                        @for (course of courseTree(); track course.courseId) {
+                          <option [value]="course.courseId">{{ course.courseName }}</option>
+                        }
+                      </select>
                     </div>
+                    @if (selectedCourse(); as course) {
+                      <ul>
+                        @for (grade of course.grades; track grade.educationLevel + ':' + grade.gradeLevel) {
+                          <li>
+                            <div class="grade-branch" [class.branch-selected]="isGradeSelected(grade)">
+                            <button type="button" class="tree-node tree-grade" [class.node-selected]="isGradeSelected(grade)"
+                              [attr.aria-pressed]="isGradeSelected(grade)" (click)="selectGrade(grade)" aria-controls="area-tree-detail">
+                              <strong>{{ grade.gradeLevel | translateEnum }}</strong>
+                            </button>
+                            <ul>
+                              @for (section of grade.sections; track section) {
+                                <li>
+                                  <button type="button" class="tree-node tree-section"
+                                    [class.node-selected]="isGradeSelected(grade) && treeSelection()?.section === section"
+                                    [attr.aria-pressed]="isGradeSelected(grade) && treeSelection()?.section === section"
+                                    [attr.aria-label]="(grade.gradeLevel | translateEnum) + ' · ' + ('AREAS.SECTION_NODE' | transloco) + ' ' + section"
+                                    (click)="selectSection(grade, section)" aria-controls="area-tree-detail">
+                                    <span class="tree-caption">{{ 'AREAS.SECTION_NODE' | transloco }}</span>
+                                    <strong>{{ section }}</strong>
+                                  </button>
+                                </li>
+                              }
+                            </ul>
+                            </div>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <p class="tree-map-hint">{{ 'AREAS.TREE_EXPLORER.HINT' | transloco }}</p>
+            </div>
+            </div>
+            @if (selectedGrade(); as grade) {
+              @for (scope of [treeSelection()]; track scope?.gradeLevel + ':' + scope?.educationLevel + ':' + scope?.section) {
+              <aside id="area-tree-detail" class="tree-detail" [class.is-closing]="isClosingTreeSummary()" [attr.aria-label]="'AREAS.TREE_EXPLORER.DETAILS' | transloco">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-[var(--brand-primary)]">{{ 'AREAS.TREE_EXPLORER.ANNUAL_SUMMARY' | transloco }}</p>
+                    <h3 class="mt-1 text-lg font-bold text-[var(--text-primary)]">{{ grade.gradeLevel | translateEnum }}@if (treeSelection()?.section; as section) { · {{ 'AREAS.SECTION_NODE' | transloco }} {{ section }} }</h3>
+                    <p class="mt-1 text-xs text-[var(--text-secondary)]">{{ selectedCourse()?.courseName }}</p>
                   </div>
-                  
-                  <div class="mt-4 h-2 w-full bg-[var(--surface)] border border-[var(--border)] rounded-full overflow-hidden">
-                    <div class="h-full rounded-full transition-all duration-1000"
-                         [ngClass]="getScoreProgressClass(classroom.averageScore)"
-                         [style.width.%]="classroom.averageScore"></div>
-                  </div>
-                </div>
-                
-                <div class="p-4 flex-1 flex flex-col justify-between gap-4">
-                  <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    <span>{{ classroom.students.length || 0 }} {{ 'AREAS.STUDENTS' | transloco }}</span>
-                  </div>
-                  
-                  <button (click)="navigateToClassroom(classroom.classroomId)"
-                          class="w-full py-2.5 px-4 bg-[var(--bg-primary)] hover:bg-[var(--brand-primary)] text-[var(--text-primary)] hover:text-white text-sm font-bold rounded-xl transition-colors duration-200 border border-[var(--border)] hover:border-transparent">
-                    {{ 'AREAS.VIEW_CLASSROOM' | transloco }}
+                  <button type="button" class="tree-detail-close flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border"
+                    [attr.aria-label]="'AREAS.TREE_EXPLORER.CLOSE' | transloco" (click)="closeTreeSummary()">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg>
                   </button>
                 </div>
-              </div>
-            } @empty {
-              <div class="col-span-full py-12 text-center text-[var(--text-secondary)] bg-[var(--surface)] rounded-2xl border border-[var(--border)] border-dashed">
-                <p class="font-medium">{{ 'AREAS.NO_CLASSROOMS' | transloco }}</p>
-              </div>
+                <div class="focus-tree">
+                  <button type="button" class="tree-node tree-grade focus-grade" (click)="selectGrade(grade)"
+                    [class.node-selected]="treeSelection()?.section === null" [attr.aria-pressed]="treeSelection()?.section === null">
+                    <strong>{{ grade.gradeLevel | translateEnum }}</strong>
+                  </button>
+                  <div class="focus-sections" [style.--section-count]="grade.sections.length">
+                    @for (section of selectedSections(); track section.name) {
+                      <button type="button" class="tree-node focus-section" (click)="selectSection(grade, section.name)"
+                        [class.node-selected]="treeSelection()?.section === section.name" [attr.aria-pressed]="treeSelection()?.section === section.name">
+                        <span class="tree-caption">{{ 'AREAS.SECTION_NODE' | transloco }}</span>
+                        <strong>{{ section.name }}</strong>
+                        @if (section.metrics.classroomCount === 0) {
+                          <span class="text-[9px] text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.NO_CLASSROOM_SHORT' | transloco }}</span>
+                        }
+                      </button>
+                    }
+                  </div>
+                </div>
+                @if (selectedMetrics(); as metrics) {
+                  @if (metrics.classroomCount > 0) {
+                    <div class="scope-metrics" [class.grade-scope]="treeSelection()?.section === null" [class.section-scope]="treeSelection()?.section !== null">
+                      <div class="scope-metric scope-metric-center scope-metric-average">
+                        <p class="scope-metric-label">{{ 'AREAS.TREE_EXPLORER.AVERAGE' | transloco }}</p>
+                        <strong [style.color]="metrics.averageScore !== null ? getScoreColor(metrics.averageScore * 5) : null">{{ metrics.averageScore !== null ? (metrics.averageScore | number:'1.1-1') : '—' }} <small>/20</small></strong>
+                      </div>
+                      <div class="scope-metric scope-metric-center">
+                        <p class="scope-metric-label">{{ 'AREAS.TREE_EXPLORER.EVALUATED' | transloco }}</p>
+                        <strong>{{ metrics.evaluatedCount }} <small>/ {{ metrics.studentCount }}</small></strong>
+                        <p class="mt-1 text-[10px]">{{ metrics.studentCount - metrics.evaluatedCount }} {{ 'AREAS.TREE_EXPLORER.PENDING_SHORT' | transloco }}</p>
+                      </div>
+                      @if (treeSelection()?.section === null) {
+                        <div class="scope-metric scope-metric-center">
+                          <p>{{ 'AREAS.TREE_EXPLORER.SECTIONS_EVALUATED' | transloco }}</p>
+                          <strong>{{ gradeSectionExtremes().sectionCount }} <small>/ {{ gradeSectionExtremes().linkedSectionCount }}</small></strong>
+                          <p class="mt-1 text-[10px]">{{ 'AREAS.TREE_EXPLORER.WITH_GRADES' | transloco }}</p>
+                        </div>
+                      } @else {
+                        <div class="scope-metric scope-metric-topics">
+                          @if (selectedTopicPeriodHighlights().length > 0) {
+                            <div class="topic-period-carousel" #topicPeriodCarousel (scroll)="onTopicPeriodScroll($event)" (wheel)="onTopicPeriodWheel($event)" aria-live="polite">
+                              @for (period of selectedTopicPeriodHighlights(); track period.periodId; let periodIndex = $index) {
+                                <div class="topic-period-page">
+                                  <div class="topic-period-header">
+                                    <p class="scope-metric-label topic-metric-label">{{ 'AREAS.TREE_EXPLORER.TOP_TOPICS_BY_BIMESTER' | transloco }}</p>
+                                    <span class="topic-period-label truncate font-semibold text-[var(--text-secondary)]">{{ getBimesterTranslationKey(period.bimesterNumber) | transloco }}</span>
+                                  </div>
+                                  <div class="topic-period-row">
+                                    <div class="topic-tie-list" [attr.aria-label]="'AREAS.TREE_EXPLORER.TOP_TIED_TOPICS' | transloco">
+                                      @for (topic of period.topics; track topic.topicName) {
+                                        <span class="topic-tie-chip" [title]="topic.topicName">{{ topic.topicName }}</span>
+                                      } @empty {
+                                        <span class="truncate text-[9px] text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.NO_TOPIC_SCORES' | transloco }}</span>
+                                      }
+                                    </div>
+                                    @if (period.averageScore !== null) {
+                                      <strong class="topic-period-score !mt-0" [style.color]="getScoreColor(period.averageScore * 5)">{{ period.averageScore | number:'1.0-1' }} <small>/20</small></strong>
+                                    } @else {
+                                      <strong class="topic-period-score !mt-0 text-[var(--text-secondary)]">—</strong>
+                                    }
+                                  </div>
+                                </div>
+                              }
+                            </div>
+                            @if (selectedTopicPeriodHighlights().length > 1) {
+                              <div class="topic-period-controls" [attr.aria-label]="'AREAS.TREE_EXPLORER.SELECT_BIMESTER' | transloco">
+                                <button type="button" class="topic-period-arrow" [class.is-hidden]="selectedTopicPeriodIndex() === 0"
+                                  [disabled]="selectedTopicPeriodIndex() === 0" [attr.aria-hidden]="selectedTopicPeriodIndex() === 0 ? 'true' : null"
+                                  [attr.aria-label]="'AREAS.TREE_EXPLORER.PREVIOUS_BIMESTER' | transloco" (click)="stepTopicPeriod(topicPeriodCarousel, -1)">
+                                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                                </button>
+                                <div class="topic-period-dots" aria-hidden="true">
+                                  @for (period of selectedTopicPeriodHighlights(); track period.periodId; let periodIndex = $index) {
+                                    <span class="topic-period-dot" [class.active]="selectedTopicPeriodIndex() === periodIndex"
+                                      [style.--period-color]="selectedTopicPeriodIndex() === periodIndex && period.averageScore !== null ? getScoreColor(period.averageScore * 5) : 'var(--border)'"
+                                      [attr.aria-current]="selectedTopicPeriodIndex() === periodIndex ? 'true' : null"></span>
+                                  }
+                                </div>
+                                <div class="topic-period-next-slot" [class.is-collapsed]="selectedTopicPeriodIndex() >= selectedTopicPeriodHighlights().length - 1">
+                                  <button type="button" class="topic-period-arrow" [class.is-hidden]="selectedTopicPeriodIndex() >= selectedTopicPeriodHighlights().length - 1"
+                                    [disabled]="selectedTopicPeriodIndex() >= selectedTopicPeriodHighlights().length - 1"
+                                    [attr.aria-hidden]="selectedTopicPeriodIndex() >= selectedTopicPeriodHighlights().length - 1 ? 'true' : null"
+                                    [attr.aria-label]="'AREAS.TREE_EXPLORER.NEXT_BIMESTER' | transloco" (click)="stepTopicPeriod(topicPeriodCarousel, 1)">
+                                    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                                  </button>
+                                </div>
+                              </div>
+                            }
+                          } @else {
+                            <div class="topic-period-header">
+                              <p class="scope-metric-label topic-metric-label">{{ 'AREAS.TREE_EXPLORER.TOP_TOPICS_BY_BIMESTER' | transloco }}</p>
+                            </div>
+                            <p class="mt-2 text-[10px] text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.NO_TOPIC_SCORES' | transloco }}</p>
+                          }
+                        </div>
+                      }
+                    </div>
+                    @if (metrics.evaluatedCount > 0) {
+                      @if (treeSelection()?.section !== null) {
+                      <div class="mt-4">
+                        <div class="mb-2 flex items-center justify-between text-xs"><h4 class="font-semibold text-[var(--text-primary)]">{{ 'AREAS.LEVEL_DISTRIBUTION' | transloco }}</h4><span class="text-[var(--text-secondary)]">{{ metrics.evaluatedCount }} {{ 'AREAS.TREE_EXPLORER.EVALUATED_SHORT' | transloco }}</span></div>
+                        <p class="mb-2 text-[10px] text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.CLICK_LEVEL' | transloco }}</p>
+                        <div class="flex h-2.5 overflow-hidden rounded-full bg-[var(--surface)]">
+                          @for (band of metrics.bands; track band.key) {
+                            @if (band.count > 0) {
+                              <button type="button" class="achievement-segment" [style.backgroundColor]="band.color"
+                                [style.width.%]="band.count / metrics.evaluatedCount * 100" (click)="selectAchievementLevel(band.key)"
+                                [attr.aria-pressed]="selectedAchievementLevel() === band.key" aria-controls="scope-level-students"
+                                [attr.aria-label]="(('PROGRESS.DASHBOARD.' + band.key) | transloco) + ': ' + band.count"></button>
+                            }
+                          }
+                        </div>
+                        <div class="mt-2 grid grid-cols-2 gap-1">
+                          @for (band of metrics.bands; track band.key) {
+                            <button type="button" class="achievement-level" [style.--level-color]="band.color"
+                              (click)="selectAchievementLevel(band.key)" [attr.aria-pressed]="selectedAchievementLevel() === band.key" aria-controls="scope-level-students">
+                              <span class="h-1.5 w-1.5 shrink-0 rounded-full" [style.backgroundColor]="band.color"></span>
+                              <span class="min-w-0">{{ ('PROGRESS.DASHBOARD.' + band.key) | transloco }}</span>
+                              <strong class="ml-auto text-[var(--text-primary)]">{{ band.count }}</strong>
+                            </button>
+                          }
+                        </div>
+                        @if (selectedLevel(); as level) {
+                          @for (levelKey of [level.key]; track levelKey) {
+                          <section id="scope-level-students" class="scope-level-panel" [class.is-closing]="isClosingAchievementPanel()" [attr.aria-label]="('PROGRESS.DASHBOARD.' + level.key) | transloco">
+                            <div class="flex items-center justify-between gap-2">
+                              <div>
+                                <h4 class="text-xs font-semibold text-[var(--text-primary)]">{{ ('PROGRESS.DASHBOARD.' + level.key) | transloco }} <span class="ml-1 text-[var(--text-secondary)]">({{ level.count }})</span></h4>
+                                @if (level.count > 4) { <p class="mt-0.5 text-[10px] text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.SCROLL_STUDENTS' | transloco }}</p> }
+                              </div>
+                              <button type="button" class="flex h-6 w-6 items-center justify-center rounded-md text-[var(--text-secondary)] hover:text-[var(--brand-primary)]"
+                                [attr.aria-label]="'AREAS.TREE_EXPLORER.CLOSE_LEVEL' | transloco" (click)="closeAchievementPanel()">
+                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg>
+                              </button>
+                            </div>
+                            @if (level.count > 0) {
+                              <div class="scope-level-carousel" role="region" tabindex="0" [attr.aria-label]="('PROGRESS.DASHBOARD.' + level.key) | transloco">
+                                <div class="scope-level-pages">
+                                  @for (page of selectedLevelStudentPages(); track $index) {
+                                    <ul class="scope-level-page" [class.single-student]="level.count === 1" [attr.aria-label]="('PROGRESS.DASHBOARD.' + level.key) | transloco">
+                                      @for (student of page; track student.studentId) {
+                                        <li class="scope-level-row">
+                                          <div class="min-w-0"><p class="break-words font-medium">{{ student.name }}</p>
+                                            @if (treeSelection()?.section === null) { <p class="mt-0.5 text-[9px] text-[var(--text-secondary)]">{{ 'AREAS.SECTION_NODE' | transloco }} {{ student.sections.join(', ') }}</p> }
+                                          </div>
+                                          <strong class="shrink-0 text-[11px]" [style.color]="getScoreColor((student.score ?? 0) * 5)">{{ student.score ?? 0 | number:'1.1-1' }} <span class="text-[9px] font-medium text-[var(--text-secondary)]">/20</span></strong>
+                                        </li>
+                                      }
+                                    </ul>
+                                  }
+                                </div>
+                              </div>
+                            } @else {
+                              <p class="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.NO_LEVEL_STUDENTS' | transloco }}</p>
+                            }
+                          </section>
+                          }
+                        }
+                      </div>
+                      }
+                      <div class="scope-students">
+                        <div class="scope-student-card">
+                          <h4 class="text-xs font-semibold text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.HIGHEST' | transloco }}</h4>
+                          <div class="scope-student-highlight">
+                            <div class="scope-name-list">@for (student of metrics.highest; track student.studentId) {
+                              <p>{{ student.name }}</p>
+                              @if (treeSelection()?.section === null) { <p class="!text-[9px] text-[var(--text-secondary)]">{{ 'AREAS.SECTION_NODE' | transloco }} {{ student.sections.join(', ') }}</p> }
+                            }</div>
+                            <p class="scope-student-score" [style.color]="getScoreColor(metrics.highest[0].score * 5)">{{ metrics.highest[0].score | number:'1.1-1' }}<span class="text-[10px] font-medium text-[var(--text-secondary)]"> /20</span></p>
+                          </div>
+                        </div>
+                        <div class="scope-student-card">
+                          <h4 class="text-xs font-semibold text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.LOWEST' | transloco }}</h4>
+                          @if (metrics.evaluatedCount === 1) {
+                            <p class="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.NO_COMPARISON' | transloco }}</p>
+                          } @else {
+                            <div class="scope-student-highlight">
+                              <div class="scope-name-list">@for (student of metrics.lowest; track student.studentId) {
+                                <p>{{ student.name }}</p>
+                                @if (treeSelection()?.section === null) { <p class="!text-[9px] text-[var(--text-secondary)]">{{ 'AREAS.SECTION_NODE' | transloco }} {{ student.sections.join(', ') }}</p> }
+                              }</div>
+                              <p class="scope-student-score" [style.color]="getScoreColor(metrics.lowest[0].score * 5)">{{ metrics.lowest[0].score | number:'1.1-1' }}<span class="text-[10px] font-medium text-[var(--text-secondary)]"> /20</span></p>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    } @else {
+                      <p class="mt-4 rounded-xl border border-[var(--border)] p-4 text-xs leading-relaxed text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.NO_GRADES' | transloco }}</p>
+                    }
+                  } @else {
+                    <div class="mt-4 rounded-xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-5 text-center">
+                      <h4 class="text-sm font-semibold text-[var(--text-primary)]">{{ 'AREAS.TREE_EXPLORER.NO_CLASSROOM' | transloco }}</h4>
+                      <p class="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">{{ 'AREAS.TREE_EXPLORER.EXAMPLE_BRANCH' | transloco }}</p>
+                    </div>
+                  }
+                }
+              </aside>
+              }
+            }
+            </div>
+          } @else {
+            <p class="py-10 text-center text-sm text-[var(--text-secondary)]">{{ 'AREAS.NO_COURSES_FOR_TREE' | transloco }}</p>
+          }
+          </div>
+          <div class="metrics-view" [hidden]="explorerView() !== 1">
+            @if (isTreeLoading()) {
+              <p class="py-10 text-center text-sm text-[var(--text-secondary)]" role="status">{{ 'AREAS.TREE_LOADING' | transloco }}</p>
+            } @else if (treeError()) {
+              <p class="py-10 text-center text-sm text-[var(--text-secondary)]" role="alert">{{ 'AREAS.TREE_LOAD_ERROR' | transloco }}</p>
+            } @else {
+              <app-area-teacher-comparison [classrooms]="currentAreaClassrooms()" [performance]="areaPerformance() ?? null" [areaName]="coordinatorAreaName()" />
             }
           </div>
-        </div>
-        
+          <nav class="metrics-view-navigation" [attr.aria-label]="'AREAS.COMPARISON.VIEWS' | transloco">
+            <span>{{ 'AREAS.COMPARISON.PAGE' | transloco: { current: explorerView() + 1, total: 2 } }}</span>
+            <button type="button" [disabled]="explorerView() === 0" (click)="setExplorerView(explorerView() - 1)" [attr.aria-label]="'AREAS.COMPARISON.PREVIOUS_VIEW' | transloco"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6" /></svg></button>
+            <button type="button" class="view-dot" [class.active]="explorerView() === 0" [attr.aria-current]="explorerView() === 0 ? 'page' : null" (click)="setExplorerView(0)" [attr.aria-label]="'AREAS.COURSE_TREE_TITLE' | transloco"></button>
+            <button type="button" class="view-dot" [class.active]="explorerView() === 1" [attr.aria-current]="explorerView() === 1 ? 'page' : null" (click)="setExplorerView(1)" [attr.aria-label]="'AREAS.COMPARISON.TITLE' | transloco"></button>
+            <button type="button" [disabled]="explorerView() === 1" (click)="setExplorerView(explorerView() + 1)" [attr.aria-label]="'AREAS.COMPARISON.NEXT_VIEW' | transloco"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg></button>
+          </nav>
+        </section>
+        </section>
       </div>
     } @else {
-      <div class="flex flex-col items-center justify-center h-full p-8 text-center">
-        <div class="w-16 h-16 rounded-full bg-[var(--brand-error)]/10 flex items-center justify-center mb-4">
+      <div class="flex h-full flex-col items-center justify-center p-8 text-center">
+        <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--brand-error)]/10">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[var(--brand-error)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>
-        <h3 class="text-lg font-bold text-[var(--text-primary)] mb-2">{{ 'AREAS.NOT_FOUND' | transloco }}</h3>
-        <p class="text-[var(--text-secondary)] text-sm max-w-md">{{ 'AREAS.NOT_FOUND_DESC' | transloco }}</p>
+        <h3 class="mb-2 text-lg font-bold text-[var(--text-primary)]">{{ 'AREAS.NOT_FOUND' | transloco }}</h3>
+        <p class="max-w-md text-sm text-[var(--text-secondary)]">{{ 'AREAS.NOT_FOUND_DESC' | transloco }}</p>
       </div>
     }
-  </div>
+  </main>
+
+  <app-modal [isOpen]="isAreaInsightModalOpen()" [title]="'AREAS.SERY_ANALYSIS' | transloco" [onClose]="closeAreaInsightModal" widthClass="max-w-3xl">
+    <div class="p-2">
+      @if (latestInsight(); as insight) {
+        <div class="max-h-[70vh] overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 text-sm leading-relaxed text-[var(--text-primary)]" [innerHTML]="renderInsightContent(insight)" (click)="handleInsightClick($event, insight)"></div>
+      }
+    </div>
+  </app-modal>
 </div>

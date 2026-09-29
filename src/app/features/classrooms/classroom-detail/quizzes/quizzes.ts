@@ -1,18 +1,23 @@
+import {LanguageService} from '../../../../core/i18n/language.service';
+import {LocalizedDatePipe} from '../../../../shared/pipes/localized-date.pipe';
 import {ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal, effect} from '@angular/core';
 import {UserDataService} from '../../../../shared/services/user-data.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {QuestionnaireService, AvailableQuestionnaire, Question, QuestionnaireSubmission} from '../../data-access/questionnaire.service';
+import {QuestionnaireService, AvailableQuestionnaire, Question, QuestionnaireSubmission, QuestionnaireAttempt} from '../../data-access/questionnaire.service';
 import {ClassroomService} from '../../data-access/classroom.service';
 import {Topic} from '../../data-access/models/responses/topic.model';
 import {BIMESTER_OPTIONS} from '../../../../shared/models/academic-levels.model';
 import {FormsModule} from '@angular/forms';
-import {NgClass, DatePipe} from '@angular/common';
+import {NgClass, DecimalPipe} from '@angular/common';
 import {MarkdownMathPipe} from '../../../../shared/pipes/markdown-math.pipe';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {ToastService} from '../../../../shared/services/toast.service';
 import {ConfirmModal} from '../../../../shared/components/modal/confirm-modal';
+import {Modal} from '../../../../shared/components/modal/modal';
 import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 import {OnboardingService} from '../../../onboarding/data-access/onboarding.service';
+import {AchievementService} from '../progress/services/achievement.service';
+import {StyledSelectDirective} from '../../../../shared/directives/styled-select.directive';
 
 interface MockStudentGrade {
   name: string;
@@ -22,12 +27,17 @@ interface MockStudentGrade {
 
 @Component({
   selector: 'app-quizzes',
-  imports: [FormsModule, NgClass, DatePipe, MarkdownMathPipe, ConfirmModal, TranslocoPipe],
+  imports: [FormsModule, NgClass, LocalizedDatePipe, DecimalPipe, MarkdownMathPipe, ConfirmModal, Modal, TranslocoPipe, StyledSelectDirective],
   templateUrl: './quizzes.html',
   styleUrl: './quizzes.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Quizzes implements OnInit {
+  private readonly language = inject(LanguageService);
+  private translate(key: string, params?: Record<string, unknown>): string {
+    this.language.activeLanguage();
+    return this.translocoService.translate(key, params);
+  }
   protected readonly userDataService = inject(UserDataService);
   private readonly questionnaireService = inject(QuestionnaireService);
   private readonly classroomService = inject(ClassroomService);
@@ -37,6 +47,7 @@ export class Quizzes implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly translocoService = inject(TranslocoService);
   private readonly onboardingService = inject(OnboardingService);
+  private readonly achievementService = inject(AchievementService);
 
   readonly courseId = input.required<number>();
   readonly classroomId = input.required<number>();
@@ -54,12 +65,20 @@ export class Quizzes implements OnInit {
   readonly selectedAnswers = signal<{[key: number]: number}>({});
   readonly answeredCount = computed(() => Object.keys(this.selectedAnswers()).length);
   readonly submitting = signal(false);
-  readonly quizName = signal<string>('');
+  private readonly quizWeek = signal<number | null>(null);
+  readonly quizName = computed(() => this.quizWeek() === null ? '' : this.translate('I18N.WEEK_QUIZ', {week: this.quizWeek()}));
 
   // Results Signals
   readonly results = signal<QuestionnaireSubmission | null>(null);
   readonly loadingResults = signal(false);
   readonly selectedResultIdx = signal<number>(0);
+
+  scoreColor(score: number): string {
+    if (score >= 18) return 'var(--progress-excellent)';
+    if (score >= 16) return 'var(--progress-achieved)';
+    if (score >= 13) return 'var(--progress-in-process)';
+    return 'var(--progress-reinforce)';
+  }
 
   // Expand State Signal
   readonly expandedQuizId = signal<number | null>(null);
@@ -69,6 +88,16 @@ export class Quizzes implements OnInit {
 
   // Loading state for starting/retrying a quiz
   readonly startingQuizId = signal<number | null>(null);
+  readonly studentViewStartModalOpen = signal(false);
+  readonly isClassroomTeacher = signal(false);
+  readonly isStudentViewSimulation = computed(() =>
+    !this.userDataService.isAdmin()
+    && (this.userDataService.isTeacher() || this.userDataService.isCoordinator())
+    && this.userDataService.teacherViewMode() === 'STUDENT'
+  );
+  readonly canTeacherGenerate = computed(() =>
+    this.isClassroomTeacher() && this.userDataService.isTeacher() && !this.userDataService.isCoordinator()
+  );
 
   // Confirm Modal signals
   readonly confirmModalOpen = signal(false);
@@ -76,7 +105,37 @@ export class Quizzes implements OnInit {
   readonly confirmModalMessage = signal('');
   readonly confirmAction = signal<() => void>(() => {});
 
+  private answersStorageKey(instanceId: number): string {
+    return `hs-quiz-answers-${instanceId}`;
+  }
+
+  private restoreAnswers(instanceId: number, questions: Question[]): void {
+    try {
+      const saved = localStorage.getItem(this.answersStorageKey(instanceId));
+      const answers = saved ? JSON.parse(saved) as Record<string, number> : {};
+      const validAnswers: {[key: number]: number} = {};
+      for (const question of questions) {
+        const answer = answers[String(question.id)];
+        if (Number.isInteger(answer) && answer >= 0 && answer < question.options.length) {
+          validAnswers[question.id] = answer;
+        }
+      }
+      this.selectedAnswers.set(validAnswers);
+    } catch {
+      this.selectedAnswers.set({});
+    }
+  }
+
+  private saveAnswers(instanceId: number, answers: {[key: number]: number}): void {
+    localStorage.setItem(this.answersStorageKey(instanceId), JSON.stringify(answers));
+  }
+
+  private clearSavedAnswers(instanceId: number): void {
+    localStorage.removeItem(this.answersStorageKey(instanceId));
+  }
+
   closeConfirmModal = (): void => this.confirmModalOpen.set(false);
+  closeStudentViewStartModal = (): void => this.studentViewStartModalOpen.set(false);
 
   toggleQuizExpand(quizId: number): void {
     this.expandedQuizId.update(id => id === quizId ? null : quizId);
@@ -84,42 +143,72 @@ export class Quizzes implements OnInit {
 
   getBimesterNameForPeriod(periodId: number): string {
     const period = this.gradingPeriods().find(p => p.id === periodId);
-    if (!period) return `Periodo ${periodId}`;
+    if (!period) return this.translate('I18N.PERIOD', {number: periodId});
     return this.getBimesterLabel(period.bimester);
+  }
+
+  getBimesterOrder(bimester: string): number {
+    if (!bimester) return 99;
+    const upper = bimester.toUpperCase();
+    if (upper.includes('1') || upper.includes('FIRST') || upper.includes('PRIMER')) return 1;
+    if (upper.includes('2') || upper.includes('SECOND') || upper.includes('SEGUND')) return 2;
+    if (upper.includes('3') || upper.includes('THIRD') || upper.includes('TERCER')) return 3;
+    if (upper.includes('4') || upper.includes('FOURTH') || upper.includes('CUART')) return 4;
+    return 99;
   }
 
   // Teacher / Generation Signals
   readonly generating = signal(false);
   readonly genGradingPeriodId = signal<number | null>(null);
   readonly genWeek = signal<number | null>(null);
-  readonly genAllowedAttempts = signal<number>(3);
-  readonly genQuestionsPerAttempt = signal<number>(5);
-  readonly gradingPeriods = signal<Array<{ id: number; bimester: string }>>([]);
+  readonly gradingPeriods = signal<Array<{ id: number; bimester: string; status?: 'PLANNED' | 'ACTIVE' | 'FINISHED' }>>([]);
+  readonly gradingPeriodsLoaded = signal(false);
   readonly topics = signal<Topic[]>([]);
+  readonly topicsLoaded = signal(false);
 
-  increaseAttempts() {
-    this.genAllowedAttempts.update(v => Math.min(3, v + 1));
-  }
-  decreaseAttempts() {
-    this.genAllowedAttempts.update(v => Math.max(1, v - 1));
-  }
-  increaseQuestions() {
-    this.genQuestionsPerAttempt.update(v => Math.min(10, v + 1));
-  }
-  decreaseQuestions() {
-    this.genQuestionsPerAttempt.update(v => Math.max(5, v - 1));
-  }
+  readonly sortedGradingPeriods = computed(() => {
+    return [...this.gradingPeriods()].sort((a, b) => this.getBimesterOrder(a.bimester) - this.getBimesterOrder(b.bimester));
+  });
+
+  readonly activeGradingPeriod = computed(() => this.sortedGradingPeriods().find(period => period.status === 'ACTIVE') ?? null);
 
   readonly availableGradingPeriods = computed(() => {
-    const allTopics = this.topics();
-    const periodsWithTopics = new Set(allTopics.map(t => t.gradingPeriodId));
-    return this.gradingPeriods().filter(p => periodsWithTopics.has(p.id));
+    const activePeriod = this.activeGradingPeriod();
+    return activePeriod ? [activePeriod] : [];
+  });
+
+  readonly hasTopicsForSelectedPeriod = computed(() => {
+    const periodId = this.genGradingPeriodId();
+    return periodId !== null && this.topics().some(topic => topic.gradingPeriodId === periodId);
   });
 
   readonly availableWeeks = computed(() => {
-    const periodId = this.genGradingPeriodId();
-    if (!periodId) return [];
-    return this.topics().filter(t => t.gradingPeriodId === periodId).sort((a, b) => a.orderIndex - b.orderIndex);
+    const periodId = Number(this.genGradingPeriodId());
+    if (!periodId || periodId !== this.activeGradingPeriod()?.id || !this.topicsLoaded()) return [];
+    const existingWeekNumbers = new Set(
+      this.courseQuizzes()
+        .filter(q => q.gradingPeriodId === periodId)
+        .map(q => q.weekNumber)
+    );
+    return this.topics()
+      .filter(t => t.gradingPeriodId === periodId && !existingWeekNumbers.has(t.orderIndex))
+      .sort((a, b) => a.orderIndex - b.orderIndex);
+  });
+
+  onGenPeriodChange(newPeriodId: number | string | null): void {
+    const requestedId = newPeriodId ? Number(newPeriodId) : null;
+    const id = requestedId === this.activeGradingPeriod()?.id ? requestedId : null;
+    this.genGradingPeriodId.set(id);
+    this.genWeek.set(null);
+  }
+
+  readonly questionnaireExistsForSelection = computed(() => {
+    const periodId = Number(this.genGradingPeriodId());
+    const week = Number(this.genWeek());
+    if (!periodId || !week) return false;
+    return this.courseQuizzes().some(quiz =>
+      quiz.gradingPeriodId === periodId && quiz.weekNumber === week
+    );
   });
 
   // Filtered quizzes for active course
@@ -127,21 +216,84 @@ export class Quizzes implements OnInit {
     return this.allQuizzes().filter(q => q.courseId === this.courseId());
   });
 
-  readonly displayedQuizzes = computed(() => {
-    const quizzes = this.courseQuizzes();
-    const active = quizzes.find(q => q.status === 'STARTED');
-    return active ? [active] : quizzes;
+  // Student filtering & display state
+  readonly studentBimesterFilter = signal<number | 'all'>('all');
+  readonly studentStatusFilter = signal<'ALL' | 'PENDING' | 'COMPLETED'>('ALL');
+
+  readonly activeStartedQuiz = computed(() => {
+    return this.courseQuizzes().find(q => q.status === 'STARTED') || null;
   });
+
+  readonly filteredStudentQuizzes = computed(() => {
+    let list = this.courseQuizzes();
+    const bim = this.studentBimesterFilter();
+    if (bim !== 'all') {
+      list = list.filter(q => q.gradingPeriodId === bim);
+    }
+    return list;
+  });
+
+  readonly displayedQuizzes = computed(() => {
+    return this.filteredStudentQuizzes();
+  });
+
+  getTopicNameForQuiz(quiz: AvailableQuestionnaire): string {
+    const topic = this.topics().find(t => t.gradingPeriodId === quiz.gradingPeriodId && t.orderIndex === quiz.weekNumber);
+    return topic?.name ?? (this.translate('I18N.WEEK_TOPIC', {week: quiz.weekNumber}));
+  }
+
+  getBestOrLatestAttempt(quiz: AvailableQuestionnaire): QuestionnaireAttempt | null {
+    if (!quiz.pastAttempts || quiz.pastAttempts.length === 0) return null;
+    return [...quiz.pastAttempts].sort((a, b) => b.score - a.score)[0];
+  }
+
+  getTotalQuestionsForQuiz(quiz: AvailableQuestionnaire): number {
+    const best = this.getBestOrLatestAttempt(quiz);
+    if (best?.totalQuestions) return best.totalQuestions;
+    return quiz.questionsPerAttempt ?? 5;
+  }
 
   // Calculate statistics for student view
   readonly totalQuizzesCount = computed(() => this.courseQuizzes().length);
   readonly completedQuizzesCount = computed(() => this.courseQuizzes().filter(q => q.status === 'COMPLETED').length);
   readonly pendingQuizzesCount = computed(() => this.courseQuizzes().filter(q => q.status === 'PENDING' || q.status === 'STARTED' || q.status === 'RETRY').length);
+  readonly studentCalculatedAverage = computed<number | null>(() => {
+    const completed = this.courseQuizzes().filter(q => q.status === 'COMPLETED' && q.pastAttempts && q.pastAttempts.length > 0);
+    if (completed.length === 0) return null;
+    let sum = 0;
+    for (const q of completed) {
+      const best = Math.max(...q.pastAttempts.map(a => a.score));
+      sum += best;
+    }
+    return sum / completed.length;
+  });
   readonly averageScore = computed(() => {
-    // Note: Since submissions list is filtered on backend by session-level queries,
-    // we compute student statistics based on mock scores or completed scores.
-    // For this client test, we can calculate an average of 16.5 if they have completed quizzes, or 0 if none.
-    return this.completedQuizzesCount() > 0 ? '16.5' : '0.0';
+    const avg = this.studentCalculatedAverage();
+    return avg !== null ? avg.toFixed(1) : (this.completedQuizzesCount() > 0 ? '16.5' : '0.0');
+  });
+
+  // Teacher filtering & statistics
+  readonly teacherFilterBimester = signal<number | 'all'>('all');
+  readonly teacherFilteredQuizzes = computed(() => {
+    const bim = this.teacherFilterBimester();
+    if (bim === 'all') return this.courseQuizzes();
+    return this.courseQuizzes().filter(q => q.gradingPeriodId === bim);
+  });
+  readonly teacherActivePeriodsCount = computed(() => {
+    return new Set(this.courseQuizzes().map(q => q.gradingPeriodId)).size;
+  });
+  readonly teacherCoveredTopicsCount = computed(() => {
+    return new Set(this.courseQuizzes().map(q => `${q.gradingPeriodId}-${q.weekNumber}`)).size;
+  });
+  readonly teacherPendingTopicsCount = computed(() => {
+    const total = this.topics().length;
+    const covered = this.teacherCoveredTopicsCount();
+    return Math.max(0, total - covered);
+  });
+  readonly teacherRemainingPeriodsCount = computed(() => {
+    const total = this.sortedGradingPeriods().length || 4;
+    const active = this.teacherActivePeriodsCount();
+    return Math.max(0, total - active);
   });
 
   // Teacher view computed stats and mock data based on actual quizzes
@@ -186,13 +338,15 @@ export class Quizzes implements OnInit {
     this.loadAvailableQuizzes();
     this.loadClassroomInfo();
 
-    this.onboardingService.getStatus().subscribe({
-      next: (status) => {
-        if (!status.quizzesCompleted) {
-          this.showOnboardingBanner.set(true);
+    if (!this.isStudentViewSimulation()) {
+      this.onboardingService.getStatus().subscribe({
+        next: (status) => {
+          if (!status.quizzesCompleted) {
+            this.showOnboardingBanner.set(true);
+          }
         }
-      }
-    });
+      });
+    }
 
     // Check if there is an instanceId in the route
     this.route.paramMap.subscribe(params => {
@@ -243,6 +397,15 @@ export class Quizzes implements OnInit {
   loadClassroomInfo(): void {
     const user = this.userDataService.userProfile();
     if (user) {
+      this.classroomService.getClassroomMembers(this.classroomId()).subscribe({
+        next: (members) => {
+          this.isClassroomTeacher.set(members.some(member =>
+            member.userId === user.id && member.roleInClassroom.toUpperCase() === 'TEACHER'
+          ));
+        },
+        error: () => this.isClassroomTeacher.set(false)
+      });
+
       this.classroomService.getClassrooms(user.id).subscribe({
         next: (list) => {
           const match = list.find(c => c.courseId === this.courseId());
@@ -258,9 +421,11 @@ export class Quizzes implements OnInit {
       this.classroomService.getClassroomTopics(this.courseId()).subscribe({
         next: (topicsList) => {
           this.topics.set(topicsList);
+          this.topicsLoaded.set(true);
         },
         error: (err: unknown) => {
           console.error('Error al cargar temas del curso:', err);
+          this.topicsLoaded.set(true);
         }
       });
     }
@@ -269,31 +434,40 @@ export class Quizzes implements OnInit {
   loadGradingPeriods(yearId: number): void {
     this.classroomService.getGradingPeriods(yearId).subscribe({
       next: (list) => {
-        this.gradingPeriods.set(list);
-        if (list.length > 0) {
-          this.genGradingPeriodId.set(list[0].id);
-        }
+        const sorted = [...list].sort((a, b) => this.getBimesterOrder(a.bimester) - this.getBimesterOrder(b.bimester));
+        this.gradingPeriods.set(sorted);
+        this.gradingPeriodsLoaded.set(true);
+        this.genGradingPeriodId.set(sorted.find(period => period.status === 'ACTIVE')?.id ?? null);
+        this.genWeek.set(null);
       },
       error: () => {
-        // Fallback options
-        const fallback = [
-          { id: 1, bimester: 'BIMESTER_1' },
-          { id: 2, bimester: 'BIMESTER_2' },
-          { id: 3, bimester: 'BIMESTER_3' },
-          { id: 4, bimester: 'BIMESTER_4' }
-        ];
-        this.gradingPeriods.set(fallback);
-        this.genGradingPeriodId.set(1);
+        this.gradingPeriods.set([]);
+        this.genGradingPeriodId.set(null);
+        this.gradingPeriodsLoaded.set(true);
       }
     });
   }
 
   getBimesterLabel(bimester: string): string {
-    return this.translocoService.translate('BIMESTERS.' + bimester.toUpperCase());
+    if (!bimester) return '';
+    const key = bimester.toUpperCase();
+    const translated = this.translate('BIMESTERS.' + key);
+    if (translated && !translated.startsWith('BIMESTERS.')) return translated;
+    if (key.includes('1') || key.includes('FIRST')) return this.translate('BIMESTERS.FIRST');
+    if (key.includes('2') || key.includes('SECOND')) return this.translate('BIMESTERS.SECOND');
+    if (key.includes('3') || key.includes('THIRD')) return this.translate('BIMESTERS.THIRD');
+    if (key.includes('4') || key.includes('FOURTH')) return this.translate('BIMESTERS.FOURTH');
+    return bimester;
   }
 
   startQuiz(questionnaireId: number, weekNumber: number): void {
     if (!questionnaireId || (questionnaireId as any) === 'null' || (questionnaireId as any) === 'undefined') return;
+
+    if (this.isStudentViewSimulation()) {
+      this.studentViewStartModalOpen.set(true);
+      return;
+    }
+
     this.startingQuizId.set(questionnaireId);
     
     // Añadir un pequeño retraso de 2 segundos para que se aprecie la animación de carga
@@ -303,7 +477,7 @@ export class Quizzes implements OnInit {
           this.currentQuizInstanceId.set(instanceId);
           const q = this.allQuizzes().find(x => x.id === questionnaireId) || null;
           this.activeQuiz.set(q);
-          this.quizName.set(`Cuestionario - Semana ${weekNumber}`);
+          this.quizWeek.set(weekNumber);
           this.startingQuizId.set(null);
           this.loadQuestions(instanceId);
         },
@@ -320,7 +494,7 @@ export class Quizzes implements OnInit {
     this.currentQuizInstanceId.set(instanceId);
     const q = this.allQuizzes().find(x => x.activeInstanceId === instanceId) || null;
     this.activeQuiz.set(q);
-    this.quizName.set(`Cuestionario - Semana ${weekNumber}`);
+    this.quizWeek.set(weekNumber);
     this.loadQuestions(instanceId);
   }
 
@@ -332,7 +506,7 @@ export class Quizzes implements OnInit {
       next: (questions) => {
         this.quizQuestions.set(questions);
         this.currentQuestionIndex.set(0);
-        this.selectedAnswers.set({});
+        this.restoreAnswers(instanceId, questions);
         this.viewState.set('TAKING_QUIZ');
         this.userDataService.setTakingQuiz(true);
         this.loadingResults.set(false);
@@ -352,6 +526,8 @@ export class Quizzes implements OnInit {
       } else {
         next[questionId] = optionIndex;
       }
+      const instanceId = this.currentQuizInstanceId();
+      if (instanceId) this.saveAnswers(instanceId, next);
       return next;
     });
   }
@@ -389,19 +565,26 @@ export class Quizzes implements OnInit {
 
     if (!this.isAllQuestionsAnswered()) {
       this.confirmModalTitle.set('Preguntas sin responder');
-      this.confirmModalMessage.set('¿Estás seguro de entregar el cuestionario? Tienes preguntas sin marcar.');
+      this.confirmModalMessage.set(this.translate('UI_TEXT.ARE_YOU_SURE_YOU_WANT_TO_SUBMIT_THE'));
     } else {
       this.confirmModalTitle.set('Enviar Respuestas');
-      this.confirmModalMessage.set('¿Estás seguro de enviar tus respuestas?');
+      this.confirmModalMessage.set(this.translate('UI_TEXT.ARE_YOU_SURE_YOU_WANT_TO_SUBMIT_YOUR'));
     }
 
     this.confirmAction.set(() => {
       this.submitting.set(true);
       this.questionnaireService.submitQuestionnaire(instanceId, this.selectedAnswers()).subscribe({
         next: () => {
+          this.clearSavedAnswers(instanceId);
           this.confirmModalOpen.set(false);
           this.submitting.set(false);
           this.userDataService.setTakingQuiz(false);
+          const student = this.userDataService.userProfile();
+          if (student?.id) {
+            this.achievementService.generateStudentPerformanceInsight(student.id, student.name || this.translate('ENUM.STUDENT')).subscribe({
+              error: (error: unknown) => console.error('Error al actualizar análisis del estudiante:', error)
+            });
+          }
           this.viewResults(instanceId);
         },
         error: (err: unknown) => {
@@ -451,23 +634,32 @@ export class Quizzes implements OnInit {
   generateQuiz(): void {
     const periodId = this.genGradingPeriodId();
     const week = this.genWeek();
-    const allowedAttempts = this.genAllowedAttempts();
-    const questionsPerAttempt = this.genQuestionsPerAttempt();
-    if (!periodId || !week || this.generating()) return;
+    const weekIsAvailable = this.availableWeeks().some(topic => topic.orderIndex === week);
+    if (!periodId || periodId !== this.activeGradingPeriod()?.id || !week || !weekIsAvailable
+      || this.generating() || this.questionnaireExistsForSelection()) return;
 
     this.generating.set(true);
-    this.questionnaireService.generateQuestionnaire(this.courseId(), periodId, week, allowedAttempts, questionsPerAttempt).subscribe({
+    this.questionnaireService.generateQuestionnaire(this.courseId(), periodId, week, 5).subscribe({
       next: () => {
         this.generating.set(false);
-        this.toastService.success('Cuestionario generado exitosamente con Inteligencia Artificial.');
+        this.genWeek.set(null);
+        this.toastService.success(this.translate('CLASSROOMS.QUIZZES.GENERATE_SUCCESS'));
         this.loadAvailableQuizzes();
       },
       error: (err: any) => {
         console.error('Error al generar cuestionario:', err);
         this.generating.set(false);
-        this.toastService.error('La Inteligencia Artificial tardó demasiado o el documento es muy extenso. Por favor, intenta de nuevo.');
+        this.toastService.error(this.translate('CLASSROOMS.QUIZZES.GENERATE_ERROR'));
       }
     });
+  }
+
+  getTopicName(topicId: number): string {
+    return this.topics().find(topic => topic.id === topicId)?.name ?? this.translate('I18N.TOPIC', {number: topicId});
+  }
+
+  getDifficultyLabel(difficulty: Question['difficulty']): string {
+    return difficulty === 'LOW' ? this.translate('UI_TEXT.LOW_DIFFICULTY') : this.translate('UI_TEXT.MEDIUM_DIFFICULTY');
   }
 
   // Preview Signals
@@ -478,7 +670,7 @@ export class Quizzes implements OnInit {
   getSources(content: string | null | undefined): any[] {
     if (!content) return [];
     const sources: any[] = [];
-    const regex = /Fuente:\s*([^\r\n]+)\s*[\r\n]+\s*Enlace de descarga:\s*.*?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+    const regex = /(?:Fuente|Source):\s*([^\r\n]+)\s*[\r\n]+\s*(?:Enlace de descarga|Download link):\s*.*?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
     let match;
     while ((match = regex.exec(content)) !== null) {
       sources.push({
@@ -502,7 +694,7 @@ export class Quizzes implements OnInit {
 
   cleanMessageContent(content: string | null | undefined): string {
     if (!content) return '';
-    const cleaned = content.replace(/Fuente:\s*[^\r\n]+\s*[\r\n]+\s*Enlace de descarga:\s*[^\r\n\s]+/gi, '');
+    const cleaned = content.replace(/(?:Fuente|Source):\s*[^\r\n]+\s*[\r\n]+\s*(?:Enlace de descarga|Download link):\s*[^\r\n\s]+/gi, '');
     return cleaned.trim();
   }
 
@@ -520,7 +712,7 @@ export class Quizzes implements OnInit {
       error: (err) => {
         console.error('Error al obtener URL de previsualización:', err);
         this.previewLoading.set(false);
-        alert('No se pudo cargar la previsualización del documento.');
+        alert(this.translate('UI_TEXT.UNABLE_TO_LOAD_THE_DOCUMENT_PREVIEW'));
       }
     });
   }
@@ -553,10 +745,10 @@ export class Quizzes implements OnInit {
     this.onboardingService.completeQuizzes().subscribe({
       next: () => {
         this.showOnboardingBanner.set(false);
-        this.toastService.success(this.translocoService.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_SUCCESS'));
+        this.toastService.success(this.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_SUCCESS'));
       },
       error: () => {
-        this.toastService.error('Error al guardar el progreso');
+        this.toastService.error(this.translate('CLASSROOMS.QUIZZES.ONBOARDING_COMPLETED_ERROR'));
       }
     });
   }

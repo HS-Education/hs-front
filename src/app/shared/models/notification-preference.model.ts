@@ -1,14 +1,12 @@
 export interface NotificationPreference {
   userId: number;
-  notifyQuizResults: boolean;
-  notifyRelevantActivity: boolean;
-  notifyNewDocument: boolean;
-  notifyUnresolvedQuizzes: boolean;
+  notifyNewQuestionnaire: boolean;
+  notifyNewTutorial: boolean;
+  notifyLowPerformance: boolean;
 }
 
 export interface UpdateNotificationPreference {
-  notifyQuizResults: boolean;
-  notifyRelevantActivity: boolean;
-  notifyNewDocument: boolean;
-  notifyUnresolvedQuizzes: boolean;
+  notifyNewQuestionnaire: boolean;
+  notifyNewTutorial: boolean;
+  notifyLowPerformance: boolean;
 }

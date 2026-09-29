@@ -4,5 +4,6 @@ export interface Document {
   topicId: number;
   format: string;
   originalFileName: string;
+  createdAt?: string;
   topicName?: string;
 }

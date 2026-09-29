@@ -8,6 +8,7 @@ import {responseInterceptor} from './shared/interceptors/response.interceptor';
 import {UserDataService} from './shared/services/user-data.service';
 import {provideTransloco} from '@jsverse/transloco';
 import {TranslocoHttpLoader} from './core/i18n/transloco.loader';
+import {LanguageService, storedLanguage} from './core/i18n/language.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,11 +22,12 @@ export const appConfig: ApplicationConfig = {
     provideTransloco({
       config: {
         availableLangs: ['es', 'en'],
-        defaultLang: localStorage.getItem('appLang') || 'es',
+        defaultLang: storedLanguage(),
         reRenderOnLangChange: true,
         prodMode: !isDevMode(),
       },
       loader: TranslocoHttpLoader
-    })
+    }),
+    provideAppInitializer(() => inject(LanguageService).initialize())
   ]
 };

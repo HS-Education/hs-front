@@ -32,10 +32,6 @@ import { TranslocoPipe } from '@jsverse/transloco';
             <span class="h-2 w-2 rounded-full bg-[var(--brand-mustard)]"></span>
             <span>{{ 'CLASSROOMS.STATUS.INACTIVE' | transloco }}</span>
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="h-2 w-2 rounded-full bg-[var(--brand-inactive)]"></span>
-            <span>{{ 'CLASSROOMS.STATUS.ARCHIVED' | transloco }}</span>
-          </div>
         </div>
       </div>
 

@@ -11,7 +11,7 @@
         </p>
       </div>
       <button (click)="openModal()"
-        class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--brand-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2 transition-colors">
+        class="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--button-primary-bg)] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[var(--button-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:ring-offset-2 transition-colors">
         <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -33,7 +33,7 @@
       </div>
 
       <div>
-        <select [ngModel]="filterRole()" (ngModelChange)="filterRole.set($event)"
+        <select [ngModel]="filterRole()" (ngModelChange)="filterRole.set($event)" data-accent="brand"
           class="block w-full px-3 py-2 pr-8 text-sm text-[var(--text-primary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg appearance-none focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] transition-colors shadow-sm bg-no-repeat bg-[right_0.5rem_center] bg-[length:1em_1em]"
           style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E');">
           <option value="" disabled hidden>{{ 'ADMIN.USERS.ROLE' | transloco }}</option>
@@ -44,10 +44,11 @@
       </div>
 
       @if (filterName() || filterRole()) {
-        <button (click)="clearFilters()" title="{{ 'ADMIN.COMMON.REMOVE_FILTERS' | transloco }}"
-          class="inline-flex items-center justify-center p-2 text-[var(--text-secondary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500">
+        <button (click)="clearFilters()" [title]="'ADMIN.COMMON.REMOVE_FILTERS' | transloco" [attr.aria-label]="'ADMIN.COMMON.REMOVE_FILTERS' | transloco"
+          class="inline-flex items-center justify-center p-2 text-[var(--text-secondary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)] hover:bg-[var(--brand-primary-soft)] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
           <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5Z" />
+            <path stroke-linecap="round" d="M3 21 21 3" />
           </svg>
         </button>
       }
@@ -64,7 +65,7 @@
                 {{ 'ADMIN.COMMON.NAME' | transloco }}
               </th>
               <th scope="col"
-                class="px-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                class="pl-10 pr-6 py-4 text-left text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">
                 {{ 'ADMIN.USERS.ROLES' | transloco }}
               </th>
               <th scope="col"
@@ -99,11 +100,11 @@
                 <div class="text-sm font-bold text-[var(--text-primary)]">{{ user.name }}</div>
                 <div class="text-xs font-medium text-[var(--text-secondary)] mt-0.5">{{ user.username }}</div>
               </td>
-              <td class="px-6 py-4">
-                <div class="flex flex-wrap gap-2">
+              <td class="pl-10 pr-6 py-4">
+                <div class="flex flex-col items-start gap-1.5">
                   @for (role of user.roles; track role) {
                   <span
-                    class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
+                    class="user-role-badge inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
                     {{ role | translateEnum }}
                   </span>
                   }
@@ -112,12 +113,12 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 @if (user.isActive) {
                 <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#f0fdf4] text-[#166534] border border-[#bbf7d0]">
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[var(--color-success-soft)] text-[var(--color-success)] border border-[var(--color-success-border)]">
                   {{ 'ADMIN.USERS.ACTIVE_USER' | transloco }}
                 </span>
                 } @else {
                 <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#fef2f2] text-[#b91c1c] border border-[#fecaca]">
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[var(--color-danger-soft)] text-[var(--color-danger)] border border-[var(--color-danger-border)]">
                   {{ 'ADMIN.USERS.INACTIVE_USER' | transloco }}
                 </span>
                 }
@@ -125,7 +126,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-right">
                 @if (!user.roles.includes('STUDENT')) {
                 <button type="button" (click)="openModal(user)"
-                  class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 transition">
+                  class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-[var(--text-primary)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary-soft)] transition">
                   <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -172,24 +173,24 @@
           <span class="text-sm font-bold hidden sm:inline">{{ 'ADMIN.USERS.GENERATE' | transloco }}</span>
         </button>
       </div>
-      <p class="text-[10px] text-[var(--text-secondary)] mt-1.5 ml-1">{{ 'ADMIN.USERS.PASSWORD_REQ' | transloco }}</p>
     </div>
     }
 
     <!-- Roles Checkboxes -->
     <div>
       <label class="block text-sm font-bold text-[var(--text-secondary)] mb-3">{{ 'ADMIN.USERS.USER_ROLES' | transloco }}</label>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         @for (role of availableRoles; track role.id) {
         <label class="relative flex items-center p-3 rounded-xl border cursor-pointer transition-colors"
-          [ngClass]="selectedRoles().includes(role.id) ? 'border-[var(--brand-primary)] bg-[var(--brand-primary)]/5' : 'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)]'">
+          [ngClass]="selectedRoles().includes(role.id) ? 'border-[var(--brand-primary)] bg-[var(--brand-primary-soft)]' : 'border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--bg-secondary)]'">
           <div class="flex items-center h-5">
             <input type="checkbox" [checked]="selectedRoles().includes(role.id)" (change)="toggleRole(role.id)"
-              class="w-4 h-4 text-[var(--brand-primary)] bg-[var(--surface)] border-[var(--border)] rounded focus:ring-[var(--brand-primary)] focus:ring-2" />
+              class="w-4 h-4 bg-[var(--surface)] border-[var(--border)] rounded-none focus:ring-[var(--border-strong)] focus:ring-2"
+              [style.accent-color]="selectedRoles().includes(role.id) ? 'var(--brand-primary)' : 'var(--border-strong)'"
+              [style.border-color]="selectedRoles().includes(role.id) ? 'var(--brand-primary)' : 'var(--border)'" />
           </div>
           <div class="ml-3 text-sm">
-            <span class="font-medium"
-              [ngClass]="selectedRoles().includes(role.id) ? 'text-[var(--brand-primary)] font-bold' : 'text-[var(--text-primary)]'">
+            <span [ngClass]="selectedRoles().includes(role.id) ? 'text-[var(--brand-primary)] font-bold' : 'text-[var(--text-primary)] font-medium'">
               {{ role.label }}
             </span>
           </div>
@@ -205,7 +206,7 @@
         {{ 'ADMIN.COMMON.CANCEL' | transloco }}
       </button>
       <button type="button" (click)="submitUser()" [disabled]="!isFormValid() || isSubmitting()"
-        class="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--brand-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed">
+        class="inline-flex items-center gap-2 rounded-xl bg-[var(--button-primary-bg)] px-5 py-2.5 font-bold text-white shadow-sm hover:bg-[var(--button-primary-hover)] transition disabled:opacity-50 disabled:cursor-not-allowed">
         @if (isSubmitting()) {
         <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

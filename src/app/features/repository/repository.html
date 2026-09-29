@@ -5,7 +5,7 @@
       <div class="flex items-center gap-3 flex-wrap">
         <h1 class="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">{{ 'CLASSROOMS.REPO.TITLE' | transloco }}</h1>
         @if (coordinatorArea()) {
-          <span class="inline-flex items-center rounded-lg bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 px-2.5 py-1 text-xs font-bold text-[var(--brand-primary)] uppercase tracking-wide">
+          <span class="inline-flex items-center rounded-lg bg-[var(--surface-muted)] border border-[var(--border)] px-2.5 py-1 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide">
             {{ 'CLASSROOMS.REPO.AREA' | transloco }}: {{ coordinatorArea() }}
           </span>
         }
@@ -46,7 +46,7 @@
     } @else if (selectedCourseId() !== null) {
       <!-- Block/Restriction Banner if not PLANNED -->
     @if (!isAcademicYearPlanned()) {
-      <div class="flex items-start gap-3.5 rounded-2xl border border-[var(--brand-mustard)]/20 bg-[var(--brand-mustard)]/10 p-4 text-[var(--brand-mustard)] shadow-sm mb-4">
+      <div class="flex items-start gap-3.5 rounded-2xl border border-[var(--brand-mustard)]/20 bg-[var(--color-warning-soft)] p-4 text-[var(--brand-mustard)] shadow-sm mb-4">
         <svg class="h-5 w-5 text-[var(--brand-mustard)] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
@@ -66,7 +66,7 @@
         type="button"
         (click)="openTopicModal()"
         [disabled]="!isAcademicYearPlanned()"
-        class="flex items-center gap-2 rounded-xl border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/10 hover:bg-[var(--brand-primary)]/20 disabled:opacity-40 disabled:hover:bg-[var(--brand-primary)]/10 disabled:cursor-not-allowed px-4 py-3 text-xs font-bold text-[var(--brand-primary)] transition duration-200 active:scale-[0.98]"
+        class="flex items-center gap-2 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] disabled:opacity-40 disabled:cursor-not-allowed px-4 py-3 text-xs font-bold text-[var(--text-primary)] transition duration-200 active:scale-[0.98]"
       >
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -79,7 +79,7 @@
         type="button"
         (click)="openUploadModal()"
         [disabled]="!isAcademicYearPlanned()"
-        class="flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 disabled:text-[var(--text-secondary)]/50 disabled:cursor-not-allowed px-4 py-3 text-xs font-bold text-white shadow-sm transition-all duration-200 active:scale-[0.98]"
+        class="flex items-center gap-2 rounded-xl bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 disabled:text-[var(--text-secondary)]/50 disabled:cursor-not-allowed px-4 py-3 text-xs font-bold text-white shadow-sm transition-all duration-200 active:scale-[0.98]"
       >
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -101,11 +101,11 @@
       <div class="space-y-6">
         @for (topic of topics(); track topic.id; let idx = $index) {
           <!-- Topic Group Container -->
-          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-200">
+          <div class="rounded-2xl border border-l-2 border-l-[var(--brand-primary)] border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-200">
             <!-- Topic Header -->
             <div class="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-4">
               <div class="flex items-center gap-3">
-                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 text-[var(--brand-primary)] font-extrabold text-xs">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--brand-primary-soft)] border border-[var(--brand-primary)]/30 text-[var(--brand-primary)] font-extrabold text-xs shadow-sm">
                   {{ idx + 1 }}
                 </span>
                 <div>
@@ -117,7 +117,7 @@
                       </svg>
                       {{ 'CLASSROOMS.REPO.ORDER' | transloco }} {{ topic.orderIndex }}
                     </span>
-                    <span class="inline-flex items-center gap-1 rounded-md bg-[var(--brand-primary)]/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
+                    <span class="inline-flex items-center gap-1 rounded-md bg-[var(--surface-muted)] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--text-secondary)] border border-[var(--border)]">
                       <svg class="h-3 w-3 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
@@ -175,10 +175,10 @@
               </div>
             } @else {
               <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs text-[var(--text-primary)]">
+                <table class="w-full table-fixed text-left text-xs text-[var(--text-primary)]">
                   <thead>
                     <tr class="text-[9px] font-extrabold uppercase tracking-wider text-[var(--text-secondary)]">
-                      <th class="py-2.5">{{ 'CLASSROOMS.REPO.DOC_TITLE' | transloco }}</th>
+                      <th class="w-[38%] py-2.5">{{ 'CLASSROOMS.REPO.DOC_TITLE' | transloco }}</th>
                       <th class="py-2.5 w-24">{{ 'CLASSROOMS.REPO.DOC_FORMAT' | transloco }}</th>
                       <th class="py-2.5">{{ 'CLASSROOMS.REPO.DOC_FILE' | transloco }}</th>
                       <th class="py-2.5 w-32 text-right">{{ 'CLASSROOMS.REPO.ACTIONS' | transloco }}</th>
@@ -187,13 +187,13 @@
                   <tbody class="divide-y divide-[var(--border)] font-medium text-[var(--text-primary)]">
                     @for (doc of docs; track doc.id) {
                       <tr class="hover:bg-[var(--bg-secondary)]/30 transition-colors">
-                        <td class="py-3 font-bold text-[var(--text-primary)]">{{ doc.title }}</td>
+                        <td class="max-w-0 truncate py-3 font-bold text-[var(--text-primary)]" [title]="doc.title">{{ doc.title }}</td>
                         <td class="py-3">
-                          <span class="inline-flex items-center rounded-md bg-[var(--brand-primary)]/10 border border-[var(--brand-primary)]/20 px-2 py-0.5 text-[10px] font-bold text-[var(--brand-primary)]">
+                          <span class="inline-flex items-center rounded-md bg-[var(--surface-muted)] border border-[var(--border)] px-2 py-0.5 text-[10px] font-bold text-[var(--text-secondary)]">
                             {{ doc.format.toUpperCase() }}
                           </span>
                         </td>
-                        <td class="py-3 text-[var(--text-secondary)]">{{ doc.originalFileName }}</td>
+                        <td class="max-w-0 truncate py-3 text-[var(--text-secondary)]" [title]="doc.originalFileName">{{ doc.originalFileName }}</td>
                         <td class="py-3 text-right">
                           <div class="flex items-center justify-end gap-2.5">
                             <!-- Download button -->
@@ -203,7 +203,7 @@
                                 (click)="previewDocument(doc.id, doc.originalFileName || doc.title)"
                                 [disabled]="downloadingId() === doc.id"
                                 title="{{ 'CLASSROOMS.REPO.PREVIEW_PDF' | transloco }}"
-                                class="text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] transition disabled:opacity-50"
+                                class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition disabled:opacity-50"
                               >
                                 <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -217,7 +217,7 @@
                               (click)="downloadDocument(doc.id, doc.originalFileName || doc.title)"
                               [disabled]="downloadingId() === doc.id"
                               title="{{ 'CLASSROOMS.REPO.DOWNLOAD_DOC' | transloco }}"
-                              class="text-[var(--brand-primary)] hover:text-[var(--brand-primary-hover)] transition disabled:opacity-50"
+                              class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition disabled:opacity-50"
                             >
                               <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -230,7 +230,7 @@
                               (click)="openEditModal(doc)"
                               [disabled]="!isAcademicYearPlanned()"
                               title="{{ 'CLASSROOMS.REPO.EDIT_DOCUMENT' | transloco }}"
-                              class="text-[var(--brand-mustard)] hover:text-[var(--brand-mustard)] disabled:opacity-40 disabled:cursor-not-allowed transition"
+                              class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] disabled:opacity-40 disabled:cursor-not-allowed transition"
                             >
                               <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -271,7 +271,7 @@
           id="topic-name"
           type="text"
           [(ngModel)]="newTopicName"
-          placeholder="Ej. Ecuaciones de primer grado"
+          placeholder="{{ 'UI_TEXT.E_G_LINEAR_EQUATIONS' | transloco }}"
           class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-primary)] focus:bg-[var(--surface)]"
         />
       </div>
@@ -301,7 +301,7 @@
           type="button"
           (click)="addTopic()"
           [disabled]="!newTopicName().trim()"
-          class="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
+          class="rounded-xl bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
         >
           {{ 'CLASSROOMS.REPO.SAVE_TOPIC' | transloco }}
         </button>
@@ -327,17 +327,21 @@
         </div>
  
         <div>
-          <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.DOC_FILE' | transloco }}s PDF</label>
+          <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'I18N.PDF_FILES' | transloco }}</label>
           <input
             type="file"
             accept="application/pdf"
             multiple
             (change)="onFilesSelected($event)"
-            class="w-full text-xs text-[var(--text-secondary)] file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[var(--brand-primary)]/10 file:text-[var(--brand-primary)] hover:file:bg-[var(--brand-primary)]/20 cursor-pointer"
+            class="w-full text-xs text-[var(--text-secondary)] file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[var(--brand-primary-soft)] file:text-[var(--brand-primary)] hover:file:bg-[var(--brand-primary-soft)] cursor-pointer"
           />
         </div>
       </div>
- 
+
+      <p class="text-xs text-[var(--text-secondary)]">
+        {{ 'UI_TEXT.MAXIMUM_OF_3_DOCUMENTS_PER_TOPIC_INCLUDING_DOCUMENTS' | transloco }}
+      </p>
+
       <!-- Selected files configuration -->
       @if (selectedFiles().length > 0) {
         <div class="space-y-3 pt-3 border-t border-[var(--border)] max-h-80 overflow-y-auto pr-1">
@@ -347,7 +351,7 @@
             <div class="rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)]/50 p-3.5 space-y-3">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <span class="flex h-5 w-5 items-center justify-center rounded bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] font-extrabold text-[10px]">
+                  <span class="flex h-5 w-5 items-center justify-center rounded bg-[var(--surface-muted)] text-[var(--text-secondary)] font-extrabold text-[10px]">
                     {{ idx + 1 }}
                   </span>
                   <span class="text-xs font-bold text-[var(--text-primary)] truncate max-w-[200px]" [title]="item.file.name">
@@ -424,23 +428,24 @@
                     class="w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-primary)]"
                   >
                     @for (level of educationLevelOptions; track level) {
-                      <option [value]="level">{{ level }}</option>
+                      <option [value]="level">{{ level | translateEnum }}</option>
                     }
                   </select>
                 </div>
  
                 <div>
                   <label class="block text-[10px] font-bold text-[var(--text-secondary)] uppercase mb-1">{{ 'CLASSROOMS.REPO.ALLOWED_GRADES' | transloco }}</label>
-                  <div class="flex gap-2 mt-1">
+                  <div class="grade-options mt-1">
                     @for (grade of gradeLevelOptions; track grade) {
-                      <label class="inline-flex items-center gap-1 cursor-pointer">
+                      <label class="grade-option" [class.grade-option-selected]="item.gradeLevels.includes(grade)">
                         <input
                            type="checkbox"
                            [checked]="item.gradeLevels.includes(grade)"
                            (change)="toggleFileGradeLevel(idx, grade)"
-                           class="rounded border-[var(--border)] text-[var(--brand-primary)] focus:ring-[var(--brand-primary)]"
+                           class="grade-option-input"
                         />
-                        <span class="text-[10px] text-[var(--text-secondary)] font-semibold">{{ grade }}</span>
+                        <span class="grade-option-indicator" aria-hidden="true"></span>
+                        <span class="grade-option-label">{{ grade | translateEnum }}</span>
                       </label>
                     }
                   </div>
@@ -463,7 +468,7 @@
           type="button"
           (click)="uploadBulk()"
           [disabled]="isUploading() || selectedFiles().length === 0 || topicsForBimester().length === 0"
-          class="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
+          class="rounded-xl bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
         >
           @if (isUploading()) {
             {{ 'CLASSROOMS.REPO.UPLOADING' | transloco }}
@@ -510,23 +515,24 @@
             class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-primary)] focus:bg-[var(--surface)]"
           >
             @for (level of educationLevelOptions; track level) {
-              <option [value]="level">{{ level }}</option>
+              <option [value]="level">{{ level | translateEnum }}</option>
             }
           </select>
         </div>
  
         <div>
           <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'CLASSROOMS.REPO.ALLOWED_GRADES' | transloco }}</label>
-          <div class="flex gap-2 mt-2">
+          <div class="grade-options mt-2">
             @for (grade of gradeLevelOptions; track grade) {
-              <label class="inline-flex items-center gap-1 cursor-pointer">
+              <label class="grade-option" [class.grade-option-selected]="editGradeLevels().includes(grade)">
                 <input
                   type="checkbox"
                   [checked]="editGradeLevels().includes(grade)"
                   (change)="toggleEditGradeLevel(grade)"
-                  class="rounded border-[var(--border)] text-[var(--brand-primary)] focus:ring-[var(--brand-primary)]"
+                  class="grade-option-input"
                 />
-                <span class="text-xs text-[var(--text-secondary)] font-semibold">{{ grade }}</span>
+                <span class="grade-option-indicator" aria-hidden="true"></span>
+                <span class="grade-option-label">{{ grade | translateEnum }}</span>
               </label>
             }
           </div>
@@ -534,12 +540,12 @@
       </div>
  
       <div>
-        <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Reemplazar {{ 'CLASSROOMS.REPO.DOC_FILE' | transloco }} PDF (Opcional)</label>
+        <label class="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">{{ 'UI_TEXT.REPLACE' | transloco }} {{ 'CLASSROOMS.REPO.DOC_FILE' | transloco }} {{ 'UI_TEXT.PDF_OPTIONAL' | transloco }}</label>
         <input
           type="file"
           accept="application/pdf"
           (change)="onEditFileSelected($event)"
-          class="w-full text-xs text-[var(--text-secondary)] file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[var(--brand-primary)]/10 file:text-[var(--brand-primary)] hover:file:bg-[var(--brand-primary)]/20 cursor-pointer"
+          class="w-full text-xs text-[var(--text-secondary)] file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[var(--brand-primary-soft)] file:text-[var(--brand-primary)] hover:file:bg-[var(--brand-primary-soft)] cursor-pointer"
         />
       </div>
  
@@ -555,7 +561,7 @@
           type="button"
           (click)="saveEdit()"
           [disabled]="isSavingEdit() || !editTitle().trim() || !editTopicId()"
-          class="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
+          class="rounded-xl bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
         >
           @if (isSavingEdit()) {
             {{ 'CLASSROOMS.REPO.SAVING' | transloco }}
@@ -595,7 +601,7 @@
         <!-- Header -->
         <header class="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 bg-[var(--bg-secondary)]/30">
           <div class="flex items-center gap-2.5 min-w-0">
-            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary)]/10 text-[var(--brand-primary)]">
+            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary-soft)] text-[var(--brand-primary)]">
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -608,7 +614,7 @@
             type="button"
             class="rounded-xl border border-[var(--border)] hover:bg-[var(--bg-secondary)] px-3 py-1.5 text-xs font-bold text-[var(--text-secondary)] transition active:scale-95 cursor-pointer"
             (click)="closePreview()"
-            aria-label="Cerrar Previsualización"
+            aria-label="{{ 'CLASSROOMS.REPO.CLOSE_ARIA' | transloco }}"
           >
             ✕ {{ 'CLASSROOMS.REPO.CLOSE' | transloco }}
           </button>

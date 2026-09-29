@@ -39,7 +39,7 @@ export class Members {
           this.loading.set(false);
         },
         error: (err) => {
-          this.error.set(this.translocoService.translate('CLASSROOMS.MEMBERS.ERROR_FETCH'));
+          this.error.set('CLASSROOMS.MEMBERS.ERROR_FETCH');
           this.loading.set(false);
           console.error(err);
         },

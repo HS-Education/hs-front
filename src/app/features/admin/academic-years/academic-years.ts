@@ -1,7 +1,8 @@
+import {LocalizedDatePipe} from '../../../shared/pipes/localized-date.pipe';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { AcademicYearService } from './services/academic-year.service';
 import { AcademicYear, GradingPeriod } from './models/academic-year.model';
-import { DatePipe, NgClass } from '@angular/common';
+import {NgClass} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -12,7 +13,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 @Component({
   selector: 'app-academic-years',
   standalone: true,
-  imports: [DatePipe, NgClass, FormsModule, Modal, TranslateEnumPipe, TranslocoPipe],
+  imports: [LocalizedDatePipe, NgClass, FormsModule, Modal, TranslateEnumPipe, TranslocoPipe],
   templateUrl: './academic-years.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -132,7 +133,7 @@ export class AcademicYears implements OnInit {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'ACTIVE': return 'bg-[#166534] text-white border-[#166534]';
+      case 'ACTIVE': return 'bg-[var(--color-success)] text-[var(--text-inverse)] border-[var(--color-success)]';
       case 'FINISHED':
       case 'CLOSED': return 'bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)]';
       case 'PLANNED': return 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border)]';

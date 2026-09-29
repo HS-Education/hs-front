@@ -6,3 +6,38 @@
   transform: translateY(-4px);
   box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.08);
 }
+
+/* Quick actions use one neutral repository-like treatment for every shortcut. */
+.quick-access-panel > .relative > a > span:first-child,
+.quick-access-panel > .flex > .quick-access-icon {
+  background-color: var(--brand-primary-soft) !important;
+  border-color: color-mix(in srgb, var(--brand-primary) 20%, transparent) !important;
+  color: var(--brand-primary) !important;
+}
+
+.quick-access-panel > .relative > a:hover > span:first-child,
+.quick-access-panel > .flex > .quick-access-icon {
+  color: var(--brand-primary) !important;
+}
+
+.quick-access-panel > .relative > a {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
+}
+
+.quick-access-panel > .relative > a:hover {
+  background-color: var(--surface) !important;
+  border-color: color-mix(in srgb, var(--brand-primary) 40%, var(--border)) !important;
+}
+
+.quick-access-panel > .relative > a > span:nth-child(2) {
+  color: var(--text-primary) !important;
+}
+
+.quick-access-panel > .relative > a > span:nth-child(2) > span {
+  color: var(--text-primary) !important;
+}
+
+.quick-access-panel .quick-access-repository > span:last-child {
+  transform: none;
+}
