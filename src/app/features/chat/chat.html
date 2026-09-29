@@ -188,7 +188,7 @@
       } @else {
       <!-- Loop messages -->
       @for (msg of messages(); track msg.id) {
-      @if (msg.role.toUpperCase() === 'USER' || msg.content) {
+      @if (msg.role.toUpperCase() === 'USER' || (msg.content || '').trim()) {
       <div class="flex w-full" [class.justify-end]="msg.role.toUpperCase() === 'USER'">
         <div class="max-w-[75%] space-y-1">
           <!-- Avatar label -->
@@ -201,7 +201,13 @@
           <div
             class="rounded-2xl px-4 py-3.5 text-xs font-medium leading-relaxed shadow-sm transition-all duration-150 border border-[var(--border)]"
             [class.user-bubble]="msg.role.toUpperCase() === 'USER'"
-            [class.assistant-bubble]="msg.role.toUpperCase() !== 'USER'" (click)="handleMessageClick($event, msg)">
+            [class.assistant-bubble]="msg.role.toUpperCase() !== 'USER'"
+            [class.sery-response-enter]="
+              msg.role.toUpperCase() !== 'USER' &&
+              streamingAssistantId() === msg.id &&
+              !!(msg.content || '').trim()
+            "
+            (click)="handleMessageClick($event, msg)">
             <div [innerHTML]="renderMessageContent(msg)"></div>
           </div>
 
@@ -216,7 +222,7 @@
       }
 
       <!-- Loading AI response state -->
-      @if (sendingMessage()) {
+      @if (sendingMessage() && !streamingResponse()) {
       <div class="flex w-full justify-start">
         <div class="max-w-[75%] space-y-1">
           <span class="text-[9px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-wider block">{{ 'CHAT.SERY' | transloco }}</span>

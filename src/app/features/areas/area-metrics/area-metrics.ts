@@ -14,6 +14,7 @@ import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { StyledSelectDirective } from '../../../shared/directives/styled-select.directive';
 import { AreaTeacherComparison } from './area-teacher-comparison';
 import {ToastService} from '../../../shared/services/toast.service';
+import { SeryGenerationStateService } from '../../../shared/services/sery-generation-state.service';
 import {finalize, timeout, TimeoutError} from 'rxjs';
 
 interface AreaGradeNode {
@@ -307,6 +308,7 @@ export class AreaMetrics implements OnInit, OnDestroy {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly translocoService = inject(TranslocoService);
   private readonly toastService = inject(ToastService);
+  private readonly seryGenerationState = inject(SeryGenerationStateService);
 
   readonly isLoading = signal(true);
   readonly explorerView = signal(0);
@@ -344,7 +346,10 @@ export class AreaMetrics implements OnInit, OnDestroy {
   readonly coordinatorAreaId = signal<number | null>(null);
   readonly coordinatorAreaName = signal('');
   readonly areaData = signal<AreaAchievementResource | null>(null);
-  readonly isGeneratingAreaInsight = signal(false);
+  readonly isGeneratingAreaInsight = computed(() => {
+    const areaId = this.coordinatorAreaId();
+    return areaId !== null && this.seryGenerationState.isGenerating('area', areaId);
+  });
   readonly areaInsightError = signal<string | null>(null);
   readonly isAreaInsightModalOpen = signal(false);
   readonly selectedCourseId = signal<number | null>(1);
@@ -760,12 +765,11 @@ export class AreaMetrics implements OnInit, OnDestroy {
 
   generateAreaInsight(): void {
     const areaId = this.coordinatorAreaId();
-    if (!areaId || this.isGeneratingAreaInsight()) return;
+    if (!areaId || !this.seryGenerationState.begin('area', areaId)) return;
     this.areaInsightError.set(null);
-    this.isGeneratingAreaInsight.set(true);
     this.achievementService.generateAreaInsight(areaId).pipe(
       timeout({first: 130_000}),
-      finalize(() => this.isGeneratingAreaInsight.set(false))
+      finalize(() => this.seryGenerationState.finish('area', areaId))
     ).subscribe({
       next: (response) => {
         const insightText = response?.insightText?.trim();

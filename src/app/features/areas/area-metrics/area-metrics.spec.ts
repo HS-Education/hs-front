@@ -57,6 +57,23 @@ describe('AreaMetrics insight refresh', () => {
     expect(success).toHaveBeenCalledOnce();
   });
 
+  it('keeps the coordinator refresh active when the view is recreated for the same area', () => {
+    component.generateAreaInsight();
+
+    const returningView = TestBed.runInInjectionContext(() => new AreaMetrics());
+    returningView.coordinatorAreaId.set(1);
+
+    expect(returningView.isGeneratingAreaInsight()).toBe(true);
+    returningView.generateAreaInsight();
+    expect(generateAreaInsight).toHaveBeenCalledTimes(1);
+
+    response.next({insightText: 'Updated analysis'});
+    response.complete();
+
+    expect(returningView.isGeneratingAreaInsight()).toBe(false);
+    returningView.ngOnDestroy();
+  });
+
   it('ends a stalled request and preserves the previous summary', async () => {
     vi.useFakeTimers();
     component.generateAreaInsight();

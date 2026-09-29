@@ -22,6 +22,8 @@ import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-brows
 import { AvailableQuestionnaire, QuestionnaireService } from '../../data-access/questionnaire.service';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { StyledSelectDirective } from '../../../../shared/directives/styled-select.directive';
+import { SeryGenerationStateService } from '../../../../shared/services/sery-generation-state.service';
+import { finalize, timeout } from 'rxjs';
 
 export interface AnnualBimesterSummary {
   period: { id: number; bimester: string };
@@ -155,10 +157,14 @@ export class Progress {
   private readonly toastService = inject(ToastService);
   private readonly translocoService = inject(TranslocoService);
   private readonly questionnaireService = inject(QuestionnaireService);
+  private readonly seryGenerationState = inject(SeryGenerationStateService);
 
   readonly classroomId = input.required<number>();
   readonly courseId = input.required<number>();
   readonly academicYearId = input.required<number>();
+  readonly isGeneratingClassroomInsight = computed(() =>
+    this.seryGenerationState.isGenerating('classroom', this.classroomId())
+  );
 
   protected readonly sanitizer = inject(DomSanitizer);
 
@@ -178,7 +184,6 @@ export class Progress {
   readonly isLoading = signal(false);
   readonly isLoadingSummary = signal(false);
   readonly isGeneratingInsight = signal(false);
-  readonly isGeneratingClassroomInsight = signal(false);
   readonly hideSimulatedStudentInsightReferences = computed(() => {
     const user = this.userDataService.userProfile();
     return this.userDataService.isStudentView()
@@ -1113,19 +1118,20 @@ export class Progress {
   }
 
   generateClassroomInsight(): void {
-    if (this.isGeneratingClassroomInsight()) return;
-    this.isGeneratingClassroomInsight.set(true);
-    this.achievementService.generateClassroomInsight(this.classroomId()).subscribe({
+    const classroomId = this.classroomId();
+    if (!this.seryGenerationState.begin('classroom', classroomId)) return;
+    this.achievementService.generateClassroomInsight(classroomId).pipe(
+      timeout({first: 130_000}),
+      finalize(() => this.seryGenerationState.finish('classroom', classroomId))
+    ).subscribe({
       next: response => {
         this.classroomData.update(current => current ? {
           ...current,
           latestInsight: response.insightText,
           latestInsightCreatedAt: new Date().toISOString()
         } : current);
-        this.isGeneratingClassroomInsight.set(false);
       },
       error: () => {
-        this.isGeneratingClassroomInsight.set(false);
         this.toastService.error(this.translate('PROGRESS.SERY.GENERATE_ERROR'));
       }
     });

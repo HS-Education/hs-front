@@ -47,48 +47,90 @@ export class ChatService {
   }
 
   async sendMessageStream(sessionId: number, question: string, onChunk: (text: string) => void): Promise<void> {
-    const startTime = performance.now();
-    let isFirstToken = true;
-
     const response = await fetch(`${this.baseUrl}/chat/sessions/${sessionId}/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
       },
       body: JSON.stringify({ question }),
       credentials: 'include'
     });
 
     if (!response.ok) {
-      throw new Error(`Error en la solicitud: ${response.statusText}`);
+      throw new Error(`Chat stream request failed (${response.status})`);
     }
 
     if (!response.body) {
       throw new Error('El entorno no soporta streaming (response.body es nulo).');
     }
 
+    if (!response.headers.get('content-type')?.toLowerCase().includes('text/event-stream')) {
+      throw new Error('El servidor devolvió un formato de streaming inesperado.');
+    }
+
     const reader = response.body.getReader();
     const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let completed = false;
+
+    const consumeEvent = (frame: string): void => {
+      let eventType = 'message';
+      const dataLines: string[] = [];
+
+      for (const line of frame.split('\n')) {
+        if (line.startsWith(':')) continue;
+        if (line.startsWith('event:')) {
+          eventType = line.slice(6).trim();
+        } else if (line.startsWith('data:')) {
+          dataLines.push(line.slice(5).replace(/^ /, ''));
+        }
+      }
+
+      if (dataLines.length === 0) return;
+      const payload = JSON.parse(dataLines.join('\n')) as { text?: unknown };
+
+      if (eventType === 'token') {
+        if (typeof payload.text !== 'string') throw new Error('Invalid chat token event.');
+        onChunk(payload.text);
+      } else if (eventType === 'done') {
+        completed = true;
+      } else if (eventType === 'error') {
+        throw new Error('The chat stream reported an incomplete response.');
+      }
+    };
 
     try {
       while (true) {
         const { value, done } = await reader.read();
-        if (done) break;
-        if (value) {
-          onChunk(decoder.decode(value, { stream: true }));
+        if (value) buffer += decoder.decode(value, { stream: true });
+        if (done) buffer += decoder.decode();
+
+        buffer = buffer.replace(/\r\n/g, '\n');
+        let separator = buffer.indexOf('\n\n');
+        while (separator >= 0) {
+          const frame = buffer.slice(0, separator);
+          buffer = buffer.slice(separator + 2);
+          consumeEvent(frame);
+          if (completed) break;
+          separator = buffer.indexOf('\n\n');
         }
-      }
-      // Flush any remaining bytes in the decoder
-      const remaining = decoder.decode();
-      if (remaining) {
-        onChunk(remaining);
+
+        if (completed) {
+          await reader.cancel().catch(() => undefined);
+          break;
+        }
+        if (done) break;
       }
     } catch (streamError) {
-      // When Spring closes the connection, the reader may throw.
-      // This is expected behavior — the data was already delivered.
-      console.warn('Stream ended:', streamError);
+      await reader.cancel().catch(() => undefined);
+      throw streamError;
     } finally {
       reader.releaseLock();
+    }
+
+    if (!completed) {
+      throw new Error('El flujo de Sery terminó sin una señal de finalización.');
     }
   }
 

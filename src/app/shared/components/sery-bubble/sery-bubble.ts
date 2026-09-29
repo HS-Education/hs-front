@@ -62,6 +62,7 @@ export class SeryBubble implements OnInit {
   readonly loadingMessages = signal(false);
   readonly sendingMessage = signal(false);
   readonly streamingResponse = signal(false);
+  readonly streamingAssistantId = signal<number | null>(null);
   readonly questionText = signal('');
   readonly showSessionMenu = signal(false);
   readonly showCreateMenu = signal(false);
@@ -300,6 +301,7 @@ export class SeryBubble implements OnInit {
     if (!sessionId) return;
 
     this.sendingMessage.set(true);
+    this.streamingResponse.set(false);
     this.questionText.set('');
 
     const userMsg: ChatMessage = {
@@ -316,40 +318,40 @@ export class SeryBubble implements OnInit {
       content: '',
       createdAt: new Date().toISOString(),
     };
+    this.streamingAssistantId.set(assistantId);
 
     this.messages.update((prev) => [...prev, userMsg, assistantMsg]);
     this.scrollToBottom();
 
     try {
-      let firstChunk = true;
-      this.streamingResponse.set(true);
       await this.chatService.sendMessageStream(sessionId, text, (chunk) => {
-        if (firstChunk) {
-          this.sendingMessage.set(false);
-          firstChunk = false;
-        }
+        let hasVisibleText = false;
         this.messages.update((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantId ? { ...msg, content: (msg.content || '') + chunk } : msg
-          )
+          prev.map((msg) => {
+            if (msg.id !== assistantId) return msg;
+            const content = (msg.content || '') + chunk;
+            hasVisibleText = content.trim().length > 0;
+            return { ...msg, content };
+          })
         );
+        if (hasVisibleText) this.streamingResponse.set(true);
         this.scrollToBottom();
       });
       this.sendingMessage.set(false);
       this.streamingResponse.set(false);
+      this.streamingAssistantId.set(null);
     } catch (err) {
       console.error('Error al enviar mensaje en bubble (stream):', err);
       this.sendingMessage.set(false);
       this.streamingResponse.set(false);
+      this.streamingAssistantId.set(null);
+      this.questionText.set(text);
       this.messages.update((prev) =>
         prev.map((msg) =>
           msg.id === assistantId
             ? {
                 ...msg,
-                content:
-                  (msg.content || '') +
-                  '\n\n**Error:** ' +
-                  this.translate('CHAT.ERROR_RESPONSE'),
+                content: '**Error:** ' + this.translate('CHAT.STREAM_INTERRUPTED'),
               }
             : msg
         )
