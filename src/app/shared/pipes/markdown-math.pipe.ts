@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import DOMPurify from 'dompurify';
 import katex from 'katex';
 
@@ -11,8 +12,14 @@ export function sanitizeRenderedHtml(html: string): string {
   standalone: true
 })
 export class MarkdownMathPipe implements PipeTransform {
-  transform(value: string | null | undefined): string {
-    return sanitizeRenderedHtml(MarkdownMathPipe.process(value));
+  constructor(private readonly sanitizer: DomSanitizer) {}
+
+  transform(value: string | null | undefined): SafeHtml {
+    const sanitizedHtml = sanitizeRenderedHtml(MarkdownMathPipe.process(value));
+
+    // Angular's innerHTML sanitizer removes KaTeX's layout-critical inline styles.
+    // Trust only the complete output after DOMPurify has sanitized it.
+    return this.sanitizer.bypassSecurityTrustHtml(sanitizedHtml);
   }
 
   static process(value: string | null | undefined): string {
@@ -21,21 +28,31 @@ export class MarkdownMathPipe implements PipeTransform {
     // Render math before the legacy Markdown formatting touches LaTeX syntax.
     // The completed HTML is sanitized at the final binding point.
     const renderedMath: string[] = [];
-    const withMathPlaceholders = value.replace(
+    const renderExpression = (expression: string, displayMode: boolean): string => {
+      const html = katex.renderToString(expression, {
+        displayMode,
+        throwOnError: false,
+        trust: false,
+        maxExpand: 1000,
+        maxSize: 8,
+      });
+      renderedMath.push(html);
+      return `MATHRENDER${renderedMath.length - 1}END`;
+    };
+
+    let withMathPlaceholders = value.replace(
       /\$\$([\s\S]*?)\$\$|\\\[([\s\S]*?)\\\]|\$([^$\n]+)\$|\\\(([\s\S]*?)\\\)/g,
       (_match, displayDollar, displayBracket, inlineDollar, inlineBracket) => {
         const displayMode = displayDollar !== undefined || displayBracket !== undefined;
         const expression = displayDollar ?? displayBracket ?? inlineDollar ?? inlineBracket;
-        const html = katex.renderToString(expression, {
-          displayMode,
-          throwOnError: false,
-          trust: false,
-          maxExpand: 1000,
-          maxSize: 8,
-        });
-        renderedMath.push(html);
-        return `MATHRENDER${renderedMath.length - 1}END`;
+        return renderExpression(expression, displayMode);
       }
+    );
+    // Legacy model responses may emit a fraction without $...$ delimiters.
+    // Render it through KaTeX instead of hand-building stacked HTML that can overlap.
+    withMathPlaceholders = withMathPlaceholders.replace(
+      /\\d?frac\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}/g,
+      (expression) => renderExpression(expression, false)
     );
 
     // 1. Escape basic HTML tags to prevent XSS
@@ -202,10 +219,6 @@ export class MarkdownMathPipe implements PipeTransform {
       .replace(/\\displaystyle\s*/g, '')
       .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
       .replace(/\\overline\{([^}]+)\}/g, '<span style="text-decoration: overline;">$1</span>')
-      // \frac with up to 2 levels of nested braces: \frac{ A { B {C} } }{ D }
-      .replace(/\\d?frac\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}/g, '<span style="display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 4px; font-size: 0.95em;"><span style="border-bottom: 1.5px solid var(--border); padding: 0 4px; display: block; line-height: 1.15; font-weight: bold;">$1</span><span style="padding: 0 4px; display: block; line-height: 1.15; font-weight: bold;">$2</span></span>')
-      // Run it a second time just in case there are nested \frac inside \frac that were just exposed
-      .replace(/\\d?frac\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}/g, '<span style="display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 4px; font-size: 0.95em;"><span style="border-bottom: 1.5px solid var(--border); padding: 0 4px; display: block; line-height: 1.15; font-weight: bold;">$1</span><span style="padding: 0 4px; display: block; line-height: 1.15; font-weight: bold;">$2</span></span>')
       .replace(/\\binom\{((?:[^{}]|\{[^{}]*\})*)\}\{((?:[^{}]|\{[^{}]*\})*)\}/g, '<span style="display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 4px; font-size: 0.95em;"><span style="padding: 0 4px; display: block; line-height: 1.15; font-weight: bold;">$1</span><span style="padding: 0 4px; display: block; line-height: 1.15; font-weight: bold;">$2</span></span>')
       .replace(/_\{([^}]+)\}/g, '<sub>$1</sub>')
       .replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>')
