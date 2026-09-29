@@ -4,3 +4,5 @@ allowBuilds:
   lmdb: true
   msgpackr-extract: true
 virtualStoreDir: node_modules/.pnpm-fresh
+overrides:
+  js-yaml: 4.3.2

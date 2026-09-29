@@ -187,7 +187,14 @@
                   <tbody class="divide-y divide-[var(--border)] font-medium text-[var(--text-primary)]">
                     @for (doc of docs; track doc.id) {
                       <tr class="hover:bg-[var(--bg-secondary)]/30 transition-colors">
-                        <td class="max-w-0 truncate py-3 font-bold text-[var(--text-primary)]" [title]="doc.title">{{ doc.title }}</td>
+                        <td class="max-w-0 truncate py-3 font-bold text-[var(--text-primary)]" [title]="doc.title">
+                          {{ doc.title }}
+                          @if (doc.status === 'FAILED') {
+                            <span class="ml-2 rounded border border-[var(--brand-error)]/40 px-1.5 py-0.5 text-[10px] text-[var(--brand-error)]">{{ 'CLASSROOMS.REPO.PROCESSING_FAILED' | transloco }}</span>
+                          } @else if (doc.status === 'PROCESSING') {
+                            <span class="ml-2 rounded border border-[var(--brand-mustard)]/40 px-1.5 py-0.5 text-[10px] text-[var(--brand-mustard)]">{{ 'CLASSROOMS.REPO.PROCESSING' | transloco }}</span>
+                          }
+                        </td>
                         <td class="py-3">
                           <span class="inline-flex items-center rounded-md bg-[var(--surface-muted)] border border-[var(--border)] px-2 py-0.5 text-[10px] font-bold text-[var(--text-secondary)]">
                             {{ doc.format.toUpperCase() }}
@@ -201,7 +208,7 @@
                               <button
                                 type="button"
                                 (click)="previewDocument(doc.id, doc.originalFileName || doc.title)"
-                                [disabled]="downloadingId() === doc.id"
+                                [disabled]="downloadingId() === doc.id || doc.status === 'FAILED'"
                                 title="{{ 'CLASSROOMS.REPO.PREVIEW_PDF' | transloco }}"
                                 class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition disabled:opacity-50"
                               >
@@ -215,7 +222,7 @@
                             <button
                               type="button"
                               (click)="downloadDocument(doc.id, doc.originalFileName || doc.title)"
-                              [disabled]="downloadingId() === doc.id"
+                              [disabled]="downloadingId() === doc.id || doc.status === 'FAILED'"
                               title="{{ 'CLASSROOMS.REPO.DOWNLOAD_DOC' | transloco }}"
                               class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition disabled:opacity-50"
                             >
