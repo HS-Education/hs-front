@@ -43,7 +43,7 @@ interface OnboardingStep {
       <!-- Modal Card -->
       <div 
         class="absolute bg-[var(--surface)] rounded-2xl shadow-2xl shadow-black/20 border border-[var(--border)] overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto"
-        [style.width.px]="340"
+        [style.width.px]="cardWidth"
         [style.top.px]="cardTop()"
         [style.left.px]="cardLeft()"
         [style.transform]="targetRect() ? 'none' : 'translate(-50%, -50%)'"
@@ -129,6 +129,7 @@ export class OnboardingModal implements OnInit, AfterViewInit {
   readonly windowWidth = signal(0);
   readonly windowHeight = signal(0);
   readonly targetRect = signal<DOMRect | null>(null);
+  readonly cardWidth = 340;
 
   // Steps vary by role
   readonly steps = computed<OnboardingStep[]>(() => {
@@ -203,7 +204,13 @@ export class OnboardingModal implements OnInit, AfterViewInit {
     if (!rect) {
       return w / 2; // Centered
     }
-    return rect.right + 24;
+    const gap = 24;
+    const rightPosition = rect.right + gap;
+    const leftPosition = rect.left - this.cardWidth - gap;
+    const preferredPosition = rightPosition + this.cardWidth <= w - gap
+      ? rightPosition
+      : leftPosition;
+    return Math.min(Math.max(preferredPosition, gap), Math.max(gap, w - this.cardWidth - gap));
   });
 
   ngOnInit() {
