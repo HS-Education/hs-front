@@ -37,22 +37,38 @@
         <div class="grid grid-cols-1 items-stretch gap-4 md:grid-cols-3">
           <!-- Resumen de Sery para el área, con la misma vista previa y modal de Progreso -->
           <section class="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[var(--brand-primary)]/35 bg-gradient-to-br from-[var(--progress-sery-start)] to-[var(--progress-sery-end)] p-4 text-[var(--button-primary-text)] shadow-sm">
-            <div>
-              <div class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--button-primary-text)]/30 bg-[var(--button-primary-text)]/10">✦</span>
-                {{ 'AREAS.SERY_ANALYSIS' | transloco }}
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider">
+                  <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--button-primary-text)]/30 bg-[var(--button-primary-text)]/10">✦</span>
+                  {{ 'AREAS.SERY_ANALYSIS' | transloco }}
+                </div>
+                @if (areaData()?.latestInsightCreatedAt) {
+                  <p class="mt-2 text-[10px] text-[var(--button-primary-text)]/70">{{ 'AREAS.UPDATED_AT' | transloco }} {{ areaData()?.latestInsightCreatedAt | localizedDate:'mediumDate' }}</p>
+                }
               </div>
-              @if (areaData()?.latestInsightCreatedAt) {
-                <p class="mt-2 text-[10px] text-[var(--button-primary-text)]/70">{{ 'AREAS.UPDATED_AT' | transloco }} {{ areaData()?.latestInsightCreatedAt | localizedDate:'mediumDate' }}</p>
-              }
-              <p class="mt-2 line-clamp-5 text-xs font-medium leading-relaxed text-[var(--button-primary-text)]/90">
-                {{ latestInsight() ? getInsightExcerpt(latestInsight(), 280) : ('AREAS.INSIGHT_PENDING' | transloco) }}
-              </p>
+              <button type="button" (click)="generateAreaInsight()" [disabled]="isGeneratingAreaInsight()"
+                [attr.aria-label]="(isGeneratingAreaInsight() ? 'AREAS.GENERATING_INSIGHT' : 'AREAS.UPDATE_ANALYSIS') | transloco"
+                [attr.title]="(isGeneratingAreaInsight() ? 'AREAS.GENERATING_INSIGHT' : 'AREAS.UPDATE_ANALYSIS') | transloco"
+                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 transition hover:bg-[var(--button-primary-text)]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--button-primary-text)] disabled:cursor-wait disabled:opacity-60">
+                <svg class="h-4 w-4" [class.animate-spin]="isGeneratingAreaInsight()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7v5h-5M4 17v-5h5M5.64 9A7 7 0 0118.36 7L20 12M4 12l1.64 5A7 7 0 0018.36 15" />
+                </svg>
+              </button>
             </div>
-            <button type="button" (click)="generateAreaInsight()" [disabled]="isGeneratingAreaInsight()"
-              class="mt-3 flex w-full items-center justify-center rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20 disabled:cursor-wait disabled:opacity-60">
-              {{ (isGeneratingAreaInsight() ? 'AREAS.GENERATING_INSIGHT' : 'AREAS.UPDATE_ANALYSIS') | transloco }}
-            </button>
+            @if (isGeneratingAreaInsight()) {
+              <p role="status" class="mt-2 text-[10px] font-semibold text-[var(--button-primary-text)]/90">
+                {{ 'AREAS.INSIGHT_GENERATION_WAIT' | transloco }}
+              </p>
+            }
+            @if (areaInsightError(); as errorKey) {
+              <p role="alert" class="mt-2 text-[10px] font-semibold text-[var(--button-primary-text)]">
+                {{ errorKey | transloco }}
+              </p>
+            }
+            <p class="mt-2 line-clamp-5 text-xs font-medium leading-relaxed text-[var(--button-primary-text)]/90">
+              {{ latestInsight() ? getInsightExcerpt(latestInsight(), 280) : ('AREAS.INSIGHT_PENDING' | transloco) }}
+            </p>
             @if (latestInsight()) {
               <button type="button" (click)="openAreaInsightModal()"
                 class="mt-auto flex w-full items-center justify-between rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-left text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20">

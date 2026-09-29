@@ -14,6 +14,7 @@ import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { StyledSelectDirective } from '../../../shared/directives/styled-select.directive';
 import { AreaTeacherComparison } from './area-teacher-comparison';
 import {ToastService} from '../../../shared/services/toast.service';
+import {finalize, timeout, TimeoutError} from 'rxjs';
 
 interface AreaGradeNode {
   gradeLevel: string;
@@ -344,6 +345,7 @@ export class AreaMetrics implements OnInit, OnDestroy {
   readonly coordinatorAreaName = signal('');
   readonly areaData = signal<AreaAchievementResource | null>(null);
   readonly isGeneratingAreaInsight = signal(false);
+  readonly areaInsightError = signal<string | null>(null);
   readonly isAreaInsightModalOpen = signal(false);
   readonly selectedCourseId = signal<number | null>(1);
   readonly isTreeLoading = signal(false);
@@ -759,19 +761,29 @@ export class AreaMetrics implements OnInit, OnDestroy {
   generateAreaInsight(): void {
     const areaId = this.coordinatorAreaId();
     if (!areaId || this.isGeneratingAreaInsight()) return;
+    this.areaInsightError.set(null);
     this.isGeneratingAreaInsight.set(true);
-    this.achievementService.generateAreaInsight(areaId).subscribe({
+    this.achievementService.generateAreaInsight(areaId).pipe(
+      timeout({first: 130_000}),
+      finalize(() => this.isGeneratingAreaInsight.set(false))
+    ).subscribe({
       next: (response) => {
+        const insightText = response?.insightText?.trim();
+        if (!insightText) {
+          this.areaInsightError.set('AREAS.INSIGHT_GENERATION_ERROR');
+          return;
+        }
         this.areaData.update(current => current ? {
           ...current,
-          latestInsight: response.insightText,
+          latestInsight: insightText,
           latestInsightCreatedAt: new Date().toISOString()
         } : current);
-        this.isGeneratingAreaInsight.set(false);
+        this.toastService.success(this.translocoService.translate('AREAS.INSIGHT_GENERATION_SUCCESS'));
       },
-      error: () => {
-        this.isGeneratingAreaInsight.set(false);
-        this.toastService.error(this.translocoService.translate('AREAS.INSIGHT_GENERATION_ERROR'));
+      error: (error: unknown) => {
+        this.areaInsightError.set(error instanceof TimeoutError
+          ? 'AREAS.INSIGHT_GENERATION_TIMEOUT'
+          : 'AREAS.INSIGHT_GENERATION_ERROR');
       }
     });
   }
