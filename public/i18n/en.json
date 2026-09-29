@@ -140,7 +140,10 @@
     "SERY": {
       "TITLE": "Sery Smart Summary",
       "NO_INSIGHT_STUDENT": "No Sery summary is available for your progress yet.",
-      "NO_INSIGHT_TEACHER": "No Sery summary is available for this classroom yet."
+      "NO_INSIGHT_TEACHER": "No Sery summary is available for this classroom yet.",
+      "UPDATE_ANALYSIS": "Generate or update summary",
+      "GENERATING": "Generating summary...",
+      "GENERATE_ERROR": "The classroom summary could not be generated. Metrics were preserved."
     },
   "KPI": {
     "AVERAGE": "Class<br>Average",
@@ -607,7 +610,11 @@
         "REFERENCES": "Reference Documents",
         "PREVIEW": "Preview",
         "DOWNLOAD": "Download",
-        "CORRECT_ANSWER": "Correct Answer!"
+        "CORRECT_ANSWER": "Correct Answer!",
+        "FEEDBACK_PENDING": "Your grade is saved. Sery is preparing feedback; it will appear here automatically.",
+        "FEEDBACK_FAILED": "Your grade was saved, but the feedback could not be generated.",
+        "RETRY_FEEDBACK": "Retry feedback",
+        "FEEDBACK_RETRY_ERROR": "The feedback could not be requested again."
       },
       "TEACHER": {
         "TITLE": "Quizzes Management",
@@ -696,6 +703,12 @@
       "NO_DOCS": "No documents linked to this topic.",
       "PROCESSING": "Processing",
       "PROCESSING_FAILED": "Processing failed",
+      "FILE_AVAILABLE": "File available",
+      "AI_PENDING": "Pending for AI",
+      "READY_FOR_AI": "Ready for AI",
+      "RETRY_PROCESSING": "Retry processing",
+      "RETRY_PROCESSING_QUEUED": "Document processing was queued again.",
+      "RETRY_PROCESSING_ERROR": "Document processing could not be retried.",
       "DOC_TITLE": "Title",
       "DOC_FORMAT": "Format",
       "DOC_FILE": "File",
@@ -748,11 +761,12 @@
     "TOPIC_PERFORMANCE": "Performance by topic",
     "TOPIC_PERFORMANCE_DESC": "Average of recorded evaluations for each topic.",
     "NO_TOPIC_DATA": "There are no evaluated topics for this period yet.",
-    "AUTO_WEEKLY": "Weekly automatic analysis",
+    "AUTO_WEEKLY": "Manual analysis generation",
     "UPDATED_AT": "Last updated:",
-    "INSIGHT_PENDING": "Sery will generate the first analysis automatically once there is evaluation data.",
+    "INSIGHT_PENDING": "There is no area summary yet. Use the button to generate one whenever you need it.",
     "GENERATING_INSIGHT": "Generating Insight...",
     "UPDATE_ANALYSIS": "Update Analysis",
+    "INSIGHT_GENERATION_ERROR": "The area summary could not be generated. Metrics were preserved.",
     "LOADING": "Loading area metrics...",
     "GENERAL_AVERAGE": "General Average",
     "SERY_ANALYSIS": "Area Analysis (Sery)",

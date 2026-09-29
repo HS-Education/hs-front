@@ -50,6 +50,14 @@ export class ClassroomService {
     );
   }
 
+  retryDocumentProcessing(courseId: number, documentId: number) {
+    return this.http.post<void>(
+      `${this.baseUrl}/courses/${courseId}/documents/${documentId}/retry-processing`,
+      {},
+      { withCredentials: true }
+    );
+  }
+
   getClassroomMembers(classroomId: number) {
     return this.http.get<Member[]>(
       `${this.baseUrl}/classrooms/${classroomId}/members`,

@@ -1,7 +1,8 @@
-import {ChangeDetectionStrategy, Component, computed, effect, inject, input, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ClassroomService} from '../../data-access/classroom.service';
 import {Document} from '../../data-access/models/responses/document.model';
-import {forkJoin} from 'rxjs';
+import {EMPTY, catchError, exhaustMap, filter, forkJoin, interval} from 'rxjs';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 
 export interface RepoDocument extends Document {
@@ -24,6 +25,7 @@ import {LanguageService} from '../../../../core/i18n/language.service';
 })
 export class Repo {
   private readonly classroomService = inject(ClassroomService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly translocoService = inject(TranslocoService);
   private readonly onboardingService = inject(OnboardingService);
@@ -103,6 +105,15 @@ export class Repo {
         }
       }
     });
+
+    interval(5000).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      filter(() => this.documents().some((document) => document.document_status === 'UPLOADED'
+        || document.document_status === 'PROCESSING')),
+      exhaustMap(() => this.classroomService.getClassroomDocuments(this.courseId()).pipe(
+        catchError(() => EMPTY)
+      ))
+    ).subscribe((latestDocuments) => this.refreshDocumentStatuses(latestDocuments));
   }
 
   markOnboardingCompleted(): void {
@@ -153,6 +164,14 @@ export class Repo {
         console.error(err);
       },
     });
+  }
+
+  private refreshDocumentStatuses(latestDocuments: Document[]): void {
+    const statusesById = new Map(latestDocuments.map((document) => [document.id, document.document_status]));
+    this.documents.update((documents) => documents.map((document) => {
+      const latestStatus = statusesById.get(document.id);
+      return latestStatus ? {...document, document_status: latestStatus} : document;
+    }));
   }
 
   downloadDocument(documentId: number) {

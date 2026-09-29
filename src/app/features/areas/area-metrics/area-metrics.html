@@ -49,6 +49,10 @@
                 {{ latestInsight() ? getInsightExcerpt(latestInsight(), 280) : ('AREAS.INSIGHT_PENDING' | transloco) }}
               </p>
             </div>
+            <button type="button" (click)="generateAreaInsight()" [disabled]="isGeneratingAreaInsight()"
+              class="mt-3 flex w-full items-center justify-center rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20 disabled:cursor-wait disabled:opacity-60">
+              {{ (isGeneratingAreaInsight() ? 'AREAS.GENERATING_INSIGHT' : 'AREAS.UPDATE_ANALYSIS') | transloco }}
+            </button>
             @if (latestInsight()) {
               <button type="button" (click)="openAreaInsightModal()"
                 class="mt-auto flex w-full items-center justify-between rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-left text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20">

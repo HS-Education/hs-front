@@ -553,6 +553,20 @@
     </div>
   </div>
 
+  @if (sub.feedbackStatus === 'PENDING' || sub.feedbackStatus === 'PROCESSING') {
+    <p class="rounded-xl border border-[var(--brand-primary)]/20 bg-[var(--brand-primary)]/5 px-4 py-3 text-xs font-semibold text-[var(--text-secondary)]" role="status" aria-live="polite">
+      {{ 'CLASSROOMS.QUIZZES.RESULTS.FEEDBACK_PENDING' | transloco }}
+    </p>
+  } @else if (sub.feedbackStatus === 'FAILED') {
+    <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--brand-error)]/25 bg-[var(--brand-error)]/5 px-4 py-3 text-xs text-[var(--text-secondary)]">
+      <span>{{ 'CLASSROOMS.QUIZZES.RESULTS.FEEDBACK_FAILED' | transloco }}</span>
+      <button type="button" (click)="retryFeedback()" [disabled]="retryingFeedback()"
+        class="rounded-lg border border-[var(--brand-primary)]/30 px-3 py-2 font-bold text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 disabled:opacity-50">
+        {{ retryingFeedback() ? ('CLASSROOMS.QUIZZES.RESULTS.FEEDBACK_PENDING' | transloco) : ('CLASSROOMS.QUIZZES.RESULTS.RETRY_FEEDBACK' | transloco) }}
+      </button>
+    </div>
+  }
+
   <!-- Answers and AI Explanations List (2-column Grid) -->
   <div class="pt-2">
     <h4 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-6">{{ 'CLASSROOMS.QUIZZES.RESULTS.BREAKDOWN' | transloco }}</h4>

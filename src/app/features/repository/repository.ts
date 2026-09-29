@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, computed, inject, OnInit, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {ClassroomService} from '../classrooms/data-access/classroom.service';
 import {UserDataService} from '../../shared/services/user-data.service';
 import {Classroom} from '../classrooms/data-access/models/responses/classroom.model';
 import {Topic} from '../classrooms/data-access/models/responses/topic.model';
 import {Document} from '../classrooms/data-access/models/responses/document.model';
-import {forkJoin, map, switchMap} from 'rxjs';
+import {EMPTY, catchError, exhaustMap, filter, forkJoin, interval, map, switchMap} from 'rxjs';
 import {FormsModule} from '@angular/forms';
 import {DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
 import {Modal} from '../../shared/components/modal/modal';
@@ -13,6 +14,7 @@ import {TranslateEnumPipe} from '../../shared/pipes/translate-enum.pipe';
 import {BIMESTER_OPTIONS, EDUCATION_LEVEL_OPTIONS, GRADE_LEVEL_OPTIONS} from '../../shared/models/academic-levels.model';
 import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 import {StyledSelectDirective} from '../../shared/directives/styled-select.directive';
+import {ToastService} from '../../shared/services/toast.service';
 
 interface GradingPeriodResource {
   id: number;
@@ -36,7 +38,9 @@ interface UploadFileMetadata {
 })
 export class Repository implements OnInit {
   private readonly translocoService = inject(TranslocoService);
+  private readonly toastService = inject(ToastService);
   private readonly classroomService = inject(ClassroomService);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly userDataService = inject(UserDataService);
   private readonly sanitizer = inject(DomSanitizer);
 
@@ -53,6 +57,7 @@ export class Repository implements OnInit {
   readonly loadingClassrooms = signal(true);
   readonly loadingContent = signal(false);
   readonly downloadingId = signal<number | null>(null);
+  readonly retryingDocumentId = signal<number | null>(null);
 
   readonly coordinatorArea = signal<string | null>(null);
   readonly coordinatorAreaId = signal<number | null>(null);
@@ -121,6 +126,17 @@ export class Repository implements OnInit {
   });
 
   ngOnInit(): void {
+    interval(5000).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      filter(() => this.documents().some((doc) => doc.document_status === 'UPLOADED' || doc.document_status === 'PROCESSING')),
+      exhaustMap(() => {
+        const courseId = this.selectedCourseId();
+        return courseId
+          ? this.classroomService.getClassroomDocuments(courseId).pipe(catchError(() => EMPTY))
+          : EMPTY;
+      })
+    ).subscribe((latestDocuments) => this.refreshDocumentStatuses(latestDocuments));
+
     const user = this.userDataService.userProfile();
     if (user) {
       this.classroomService.getClassrooms(user.id).subscribe({
@@ -196,6 +212,14 @@ export class Repository implements OnInit {
     });
   }
 
+  private refreshDocumentStatuses(latestDocuments: Document[]): void {
+    const statusesById = new Map(latestDocuments.map((document) => [document.id, document.document_status]));
+    this.documents.update((documents) => documents.map((document) => {
+      const latestStatus = statusesById.get(document.id);
+      return latestStatus ? {...document, document_status: latestStatus} : document;
+    }));
+  }
+
   useDefaultGradingPeriods(): void {
     this.gradingPeriods.set([
       { id: 1, bimester: 'BIMESTER_1' },
@@ -229,6 +253,24 @@ export class Repository implements OnInit {
 
   getDocsForTopic(topicId: number): Document[] {
     return this.documents().filter((doc) => doc.topicId === topicId);
+  }
+
+  retryDocumentProcessing(documentId: number): void {
+    const courseId = this.selectedCourseId();
+    if (!courseId || this.retryingDocumentId() !== null) return;
+
+    this.retryingDocumentId.set(documentId);
+    this.classroomService.retryDocumentProcessing(courseId, documentId).subscribe({
+      next: () => {
+        this.toastService.success(this.translocoService.translate('CLASSROOMS.REPO.RETRY_PROCESSING_QUEUED'));
+        this.fetchCourseContent(courseId);
+        this.retryingDocumentId.set(null);
+      },
+      error: () => {
+        this.toastService.error(this.translocoService.translate('CLASSROOMS.REPO.RETRY_PROCESSING_ERROR'));
+        this.retryingDocumentId.set(null);
+      }
+    });
   }
 
   downloadDocument(documentId: number, documentTitle: string): void {

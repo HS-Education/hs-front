@@ -187,13 +187,17 @@
                   <tbody class="divide-y divide-[var(--border)] font-medium text-[var(--text-primary)]">
                     @for (doc of docs; track doc.id) {
                       <tr class="hover:bg-[var(--bg-secondary)]/30 transition-colors">
-                        <td class="max-w-0 truncate py-3 font-bold text-[var(--text-primary)]" [title]="doc.title">
+                        <td class="max-w-0 py-3 font-bold text-[var(--text-primary)]" [title]="doc.title">
                           {{ doc.title }}
-                          @if (doc.status === 'FAILED') {
-                            <span class="ml-2 rounded border border-[var(--brand-error)]/40 px-1.5 py-0.5 text-[10px] text-[var(--brand-error)]">{{ 'CLASSROOMS.REPO.PROCESSING_FAILED' | transloco }}</span>
-                          } @else if (doc.status === 'PROCESSING') {
-                            <span class="ml-2 rounded border border-[var(--brand-mustard)]/40 px-1.5 py-0.5 text-[10px] text-[var(--brand-mustard)]">{{ 'CLASSROOMS.REPO.PROCESSING' | transloco }}</span>
-                          }
+                          <div class="mt-1 flex flex-wrap items-center gap-1.5 font-semibold normal-case tracking-normal">
+                            <span class="rounded border border-[var(--brand-forest)]/30 bg-[var(--brand-forest)]/5 px-1.5 py-0.5 text-[9px] text-[var(--brand-forest)]">{{ 'CLASSROOMS.REPO.FILE_AVAILABLE' | transloco }}</span>
+                            @switch (doc.document_status) {
+                              @case ('UPLOADED') { <span class="rounded border border-[var(--border)] px-1.5 py-0.5 text-[9px] text-[var(--text-secondary)]">{{ 'CLASSROOMS.REPO.AI_PENDING' | transloco }}</span> }
+                              @case ('PROCESSING') { <span class="rounded border border-[var(--brand-mustard)]/40 px-1.5 py-0.5 text-[9px] text-[var(--brand-mustard)]">{{ 'CLASSROOMS.REPO.PROCESSING' | transloco }}</span> }
+                              @case ('READY') { <span class="rounded border border-[var(--brand-forest)]/30 px-1.5 py-0.5 text-[9px] text-[var(--brand-forest)]">{{ 'CLASSROOMS.REPO.READY_FOR_AI' | transloco }}</span> }
+                              @case ('FAILED') { <span class="rounded border border-[var(--brand-error)]/40 px-1.5 py-0.5 text-[9px] text-[var(--brand-error)]">{{ 'CLASSROOMS.REPO.PROCESSING_FAILED' | transloco }}</span> }
+                            }
+                          </div>
                         </td>
                         <td class="py-3">
                           <span class="inline-flex items-center rounded-md bg-[var(--surface-muted)] border border-[var(--border)] px-2 py-0.5 text-[10px] font-bold text-[var(--text-secondary)]">
@@ -208,7 +212,7 @@
                               <button
                                 type="button"
                                 (click)="previewDocument(doc.id, doc.originalFileName || doc.title)"
-                                [disabled]="downloadingId() === doc.id || doc.status === 'FAILED'"
+                                [disabled]="downloadingId() === doc.id"
                                 title="{{ 'CLASSROOMS.REPO.PREVIEW_PDF' | transloco }}"
                                 class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition disabled:opacity-50"
                               >
@@ -222,7 +226,7 @@
                             <button
                               type="button"
                               (click)="downloadDocument(doc.id, doc.originalFileName || doc.title)"
-                              [disabled]="downloadingId() === doc.id || doc.status === 'FAILED'"
+                              [disabled]="downloadingId() === doc.id"
                               title="{{ 'CLASSROOMS.REPO.DOWNLOAD_DOC' | transloco }}"
                               class="text-[var(--text-secondary)] hover:text-[var(--brand-primary)] transition disabled:opacity-50"
                             >
@@ -230,6 +234,16 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                               </svg>
                             </button>
+
+                            @if (doc.document_status === 'FAILED') {
+                              <button type="button"
+                                (click)="retryDocumentProcessing(doc.id)"
+                                [disabled]="retryingDocumentId() !== null"
+                                title="{{ 'CLASSROOMS.REPO.RETRY_PROCESSING' | transloco }}"
+                                class="rounded-md border border-[var(--brand-primary)]/30 px-2 py-1 text-[10px] font-bold text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 disabled:cursor-not-allowed disabled:opacity-50">
+                                {{ retryingDocumentId() === doc.id ? ('CLASSROOMS.REPO.PROCESSING' | transloco) : ('CLASSROOMS.REPO.RETRY_PROCESSING' | transloco) }}
+                              </button>
+                            }
  
                             <!-- Edit button -->
                             <button

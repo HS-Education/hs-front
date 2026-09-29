@@ -1,6 +1,7 @@
 import {LanguageService} from '../../../../core/i18n/language.service';
 import {LocalizedDatePipe} from '../../../../shared/pipes/localized-date.pipe';
-import {ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal, effect} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, OnInit, signal, effect} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {UserDataService} from '../../../../shared/services/user-data.service';
 import {ActivatedRoute, Router} from '@angular/router';
 import {QuestionnaireService, AvailableQuestionnaire, Question, QuestionnaireSubmission, QuestionnaireAttempt} from '../../data-access/questionnaire.service';
@@ -16,8 +17,9 @@ import {ConfirmModal} from '../../../../shared/components/modal/confirm-modal';
 import {Modal} from '../../../../shared/components/modal/modal';
 import {TranslocoPipe, TranslocoService} from '@jsverse/transloco';
 import {OnboardingService} from '../../../onboarding/data-access/onboarding.service';
-import {AchievementService} from '../progress/services/achievement.service';
 import {StyledSelectDirective} from '../../../../shared/directives/styled-select.directive';
+import {EMPTY, Subscription, timer} from 'rxjs';
+import {catchError, switchMap, takeWhile} from 'rxjs/operators';
 
 interface MockStudentGrade {
   name: string;
@@ -47,7 +49,7 @@ export class Quizzes implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly translocoService = inject(TranslocoService);
   private readonly onboardingService = inject(OnboardingService);
-  private readonly achievementService = inject(AchievementService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly courseId = input.required<number>();
   readonly classroomId = input.required<number>();
@@ -71,7 +73,9 @@ export class Quizzes implements OnInit {
   // Results Signals
   readonly results = signal<QuestionnaireSubmission | null>(null);
   readonly loadingResults = signal(false);
+  readonly retryingFeedback = signal(false);
   readonly selectedResultIdx = signal<number>(0);
+  private feedbackPolling?: Subscription;
 
   scoreColor(score: number): string {
     if (score >= 18) return 'var(--progress-excellent)';
@@ -574,18 +578,12 @@ export class Quizzes implements OnInit {
     this.confirmAction.set(() => {
       this.submitting.set(true);
       this.questionnaireService.submitQuestionnaire(instanceId, this.selectedAnswers()).subscribe({
-        next: () => {
+        next: submission => {
           this.clearSavedAnswers(instanceId);
           this.confirmModalOpen.set(false);
           this.submitting.set(false);
           this.userDataService.setTakingQuiz(false);
-          const student = this.userDataService.userProfile();
-          if (student?.id) {
-            this.achievementService.generateStudentPerformanceInsight(student.id, student.name || this.translate('ENUM.STUDENT')).subscribe({
-              error: (error: unknown) => console.error('Error al actualizar análisis del estudiante:', error)
-            });
-          }
-          this.viewResults(instanceId);
+          this.showSubmissionResults(instanceId, submission);
         },
         error: (err: unknown) => {
           console.error('Error al enviar cuestionario:', err);
@@ -599,6 +597,7 @@ export class Quizzes implements OnInit {
 
   viewResults(instanceId: number): void {
     if (!instanceId || (instanceId as any) === 'null' || (instanceId as any) === 'undefined') return;
+    this.currentQuizInstanceId.set(instanceId);
     
     const currentUrl = this.router.url;
     if (!currentUrl.includes(`/quizzes/${instanceId}`)) {
@@ -614,6 +613,7 @@ export class Quizzes implements OnInit {
         this.results.set(res);
         this.trySetActiveQuiz(instanceId);
         this.loadingResults.set(false);
+        this.pollFeedback(instanceId);
       },
       error: (err: unknown) => {
         console.error('Error al cargar resultados:', err);
@@ -622,7 +622,58 @@ export class Quizzes implements OnInit {
     });
   }
 
+  private showSubmissionResults(instanceId: number, submission: QuestionnaireSubmission): void {
+    this.currentQuizInstanceId.set(instanceId);
+    this.results.set(submission);
+    this.loadingResults.set(false);
+    this.viewState.set('VIEW_RESULTS');
+    this.trySetActiveQuiz(instanceId);
+    if (!this.router.url.includes(`/quizzes/${instanceId}`)) {
+      this.router.navigate(['classrooms', this.classroomId(), 'quizzes', instanceId]);
+    }
+    this.pollFeedback(instanceId);
+  }
+
+  private pollFeedback(instanceId: number): void {
+    this.feedbackPolling?.unsubscribe();
+    if (!this.hasPendingFeedback()) return;
+
+    this.feedbackPolling = timer(2000, 3000).pipe(
+      switchMap(() => this.questionnaireService.getSubmissionResults(instanceId)
+        .pipe(catchError(() => EMPTY))),
+      takeWhile((submission, index) =>
+        (submission.feedbackStatus === 'PENDING' || submission.feedbackStatus === 'PROCESSING') && index < 59, true),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(submission => {
+      if (this.currentQuizInstanceId() === instanceId) this.results.set(submission);
+    });
+  }
+
+  private hasPendingFeedback(): boolean {
+    const status = this.results()?.feedbackStatus;
+    return status === 'PENDING' || status === 'PROCESSING';
+  }
+
+  retryFeedback(): void {
+    const instanceId = this.currentQuizInstanceId();
+    if (!instanceId || this.retryingFeedback()) return;
+    this.retryingFeedback.set(true);
+    this.questionnaireService.retryFeedback(instanceId).subscribe({
+      next: () => {
+        const current = this.results();
+        if (current) this.results.set({...current, feedbackStatus: 'PENDING'});
+        this.retryingFeedback.set(false);
+        this.pollFeedback(instanceId);
+      },
+      error: () => {
+        this.retryingFeedback.set(false);
+        this.toastService.error(this.translate('CLASSROOMS.QUIZZES.RESULTS.FEEDBACK_RETRY_ERROR'));
+      }
+    });
+  }
+
   goBackToList(): void {
+    this.feedbackPolling?.unsubscribe();
     this.viewState.set('LIST');
     this.userDataService.setTakingQuiz(false);
     this.currentQuizInstanceId.set(null);

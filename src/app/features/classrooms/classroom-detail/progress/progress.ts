@@ -178,6 +178,7 @@ export class Progress {
   readonly isLoading = signal(false);
   readonly isLoadingSummary = signal(false);
   readonly isGeneratingInsight = signal(false);
+  readonly isGeneratingClassroomInsight = signal(false);
   readonly hideSimulatedStudentInsightReferences = computed(() => {
     const user = this.userDataService.userProfile();
     return this.userDataService.isStudentView()
@@ -1062,10 +1063,9 @@ export class Progress {
   // Regenerate student insight (student view)
   regenerateStudentInsight() {
     const studentId = this.userDataService.userProfile()?.id;
-    const studentName = this.userDataService.userProfile()?.name || this.translate('ENUM.STUDENT');
     if (!studentId) return;
     this.isGeneratingInsight.set(true);
-    this.achievementService.generateStudentPerformanceInsight(studentId, studentName).subscribe({
+    this.achievementService.generateStudentPerformanceInsight(studentId).subscribe({
       next: () => {
         this.isGeneratingInsight.set(false);
         this.loadData(this.classroomId());
@@ -1081,7 +1081,7 @@ export class Progress {
     this.achievementService.getStudentAchievements(studentId).subscribe({
       next: (data) => {
         if (!data.latestInsight && studentName) {
-          this.generateInsightForStudent(studentId, studentName);
+          this.generateInsightForStudent(studentId);
         } else {
           this.studentInsights.update(map => ({...map, [studentId]: data.latestInsight}));
         }
@@ -1095,9 +1095,9 @@ export class Progress {
   }
 
   // Generate insight for a specific student (teacher view)
-  generateInsightForStudent(studentId: number, studentName: string) {
+  generateInsightForStudent(studentId: number) {
     this.generatingInsightStudentId.set(studentId);
-    this.achievementService.generateStudentPerformanceInsight(studentId, studentName).subscribe({
+    this.achievementService.generateStudentPerformanceInsight(studentId).subscribe({
       next: () => {
         // Reload the student insight
         this.studentInsights.update(map => {
@@ -1109,6 +1109,25 @@ export class Progress {
         this.loadStudentInsight(studentId);
       },
       error: () => this.generatingInsightStudentId.set(null)
+    });
+  }
+
+  generateClassroomInsight(): void {
+    if (this.isGeneratingClassroomInsight()) return;
+    this.isGeneratingClassroomInsight.set(true);
+    this.achievementService.generateClassroomInsight(this.classroomId()).subscribe({
+      next: response => {
+        this.classroomData.update(current => current ? {
+          ...current,
+          latestInsight: response.insightText,
+          latestInsightCreatedAt: new Date().toISOString()
+        } : current);
+        this.isGeneratingClassroomInsight.set(false);
+      },
+      error: () => {
+        this.isGeneratingClassroomInsight.set(false);
+        this.toastService.error(this.translate('PROGRESS.SERY.GENERATE_ERROR'));
+      }
     });
   }
 
