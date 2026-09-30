@@ -1,6 +1,8 @@
 name: Frontend Azure release
 
 on:
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       release_tag:
@@ -23,20 +25,21 @@ concurrency:
 
 jobs:
   release:
-    if: vars.AZURE_CD_ENABLED == 'true' && github.ref_type == 'tag' && github.ref_name == inputs.release_tag
+    if: vars.AZURE_CD_ENABLED == 'true' && github.ref_type == 'tag' && (github.event_name == 'push' || github.ref_name == inputs.release_tag)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: azure-students
     permissions:
       contents: write
       id-token: write
     env:
-      RELEASE_TAG: ${{ inputs.release_tag }}
-      AZURE_API_BASE_URL: ${{ inputs.hosting == 'app-service' && '/api/v1' || vars.AZURE_API_BASE_URL }}
+      RELEASE_TAG: ${{ github.ref_name }}
+      AZURE_API_BASE_URL: ${{ inputs.hosting == 'swa' && vars.AZURE_API_BASE_URL || '/api/v1' }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.release_tag }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
       - name: Verify release ancestry
         shell: bash
@@ -66,14 +69,14 @@ jobs:
           fi
           gh release upload "$RELEASE_TAG" dist/frontend.zip dist/frontend-manifest.json --repo "$GITHUB_REPOSITORY"
       - name: Authenticate for optional SWA deployment
-        if: inputs.hosting == 'swa'
+        if: github.event_name == 'workflow_dispatch' && inputs.hosting == 'swa'
         uses: azure/login@v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       - name: Verify optional SWA target and login prerequisites
-        if: inputs.hosting == 'swa'
+        if: github.event_name == 'workflow_dispatch' && inputs.hosting == 'swa'
         shell: pwsh
         env:
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -81,7 +84,7 @@ jobs:
           AZURE_STATIC_WEB_APPS_API_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
         run: ./infra/azure/Verify-SwaTarget.ps1
       - name: Deploy to Static Web Apps only when explicitly selected
-        if: inputs.hosting == 'swa'
+        if: github.event_name == 'workflow_dispatch' && inputs.hosting == 'swa'
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
@@ -91,7 +94,7 @@ jobs:
           skip_api_build: true
       - uses: actions/upload-artifact@v7
         with:
-          name: frontend-release-${{ inputs.release_tag }}
+          name: frontend-release-${{ github.ref_name }}
           path: |
             dist/frontend.zip
             dist/frontend-manifest.json
