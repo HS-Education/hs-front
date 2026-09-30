@@ -1,3 +1,22 @@
+# Release 0.2.3
+
+## Coordinated Azure migration recovery release
+
+- Set the frontend package version to 0.2.3 to pair with the backend OIDC and PostgreSQL migration firewall fixes.
+- Preserve Angular application behavior, dependencies, the pnpm lockfile and existing protected deployment/smoke workflows.
+- Produce a new frontend artifact under the matching release tag so the backend can verify its tag, main ancestry, manifest and checksum before packaging.
+
+## Release preparation and integration
+
+- Create `release/0.2.3` from integrated `develop` after its CI and CodeQL checks succeeded.
+- Repeat the 8 deployment/workflow tests locally; this release does not change application code or claim Azure functional acceptance.
+- Open the release PR into `main`; wait for checks and approval on its current SHA before merging, then synchronize `main` back into `develop`.
+- Publish matching new `v0.2.3` tags on the final main commits, frontend first. Preserve `v0.2.2` and other existing tags and release assets.
+- Keep environment approval before frontend artifact publication and backend deployment; automatic backend browser smoke follows successful deployment.
+- Branch publication does not initiate cloud deployment. The same-origin frontend is deployed with Java by the backend CD, not as a separate Web App upload.
+
+---
+
 # Release 0.2.2
 
 ## Protected tag-driven Azure release
