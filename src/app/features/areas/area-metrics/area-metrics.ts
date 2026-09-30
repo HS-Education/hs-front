@@ -1,6 +1,7 @@
 import {LocalizedDatePipe} from '../../../shared/pipes/localized-date.pipe';
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { Modal } from '../../../shared/components/modal/modal';
@@ -311,6 +312,7 @@ export class AreaMetrics implements OnInit, OnDestroy {
   private readonly seryGenerationState = inject(SeryGenerationStateService);
 
   readonly isLoading = signal(true);
+  readonly areaLoadFailed = signal(false);
   readonly explorerView = signal(0);
   private explorerWheelLocked = false;
   private explorerWheelTimer: ReturnType<typeof setTimeout> | null = null;
@@ -816,6 +818,7 @@ export class AreaMetrics implements OnInit, OnDestroy {
 
   private loadCoordinatorArea() {
     this.isLoading.set(true);
+    this.areaLoadFailed.set(false);
     const user = this.userDataService.userProfile();
     if (!user) {
       this.isLoading.set(false);
@@ -835,7 +838,10 @@ export class AreaMetrics implements OnInit, OnDestroy {
           this.isLoading.set(false);
         }
       },
-      error: () => this.isLoading.set(false)
+      error: () => {
+        this.areaLoadFailed.set(true);
+        this.isLoading.set(false);
+      }
     });
   }
 
@@ -846,7 +852,12 @@ export class AreaMetrics implements OnInit, OnDestroy {
         this.isLoading.set(false);
         
       },
-      error: () => this.isLoading.set(false)
+      error: (error: unknown) => {
+        if (!(error instanceof HttpErrorResponse && error.status === 404)) {
+          this.areaLoadFailed.set(true);
+        }
+        this.isLoading.set(false);
+      }
     });
   }
 

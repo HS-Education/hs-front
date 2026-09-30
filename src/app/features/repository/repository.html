@@ -14,25 +14,25 @@
     </div>
  
     <!-- Course Selector Dropdown -->
-    <div class="flex items-center gap-3">
-      <label for="course-select" class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.REPO.COURSE' | transloco }}</label>
-      @if (loadingClassrooms()) {
-        <div class="h-10 w-44 rounded-xl bg-[var(--bg-secondary)] animate-pulse border border-[var(--border)]"></div>
-      } @else if (courses().length > 0) {
-        <select
-          id="course-select"
-          (change)="onCourseChange($event)"
-          [value]="selectedCourseId() ?? ''"
-          class="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-xs font-bold text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/10"
-        >
-          @for (course of courses(); track course.id) {
-            <option [value]="course.id">{{ course.name }}</option>
-          }
-        </select>
-      } @else {
-        <span class="text-xs text-[var(--text-secondary)] font-semibold bg-[var(--bg-secondary)] border border-[var(--border)] px-3 py-1.5 rounded-lg">{{ 'CLASSROOMS.REPO.NO_COURSES' | transloco }}</span>
-      }
-    </div>
+    @if (loadingClassrooms() || courses().length > 0) {
+      <div class="flex items-center gap-3">
+        <label for="course-select" class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">{{ 'CLASSROOMS.REPO.COURSE' | transloco }}</label>
+        @if (loadingClassrooms()) {
+          <div class="h-10 w-44 rounded-xl bg-[var(--bg-secondary)] animate-pulse border border-[var(--border)]"></div>
+        } @else {
+          <select
+            id="course-select"
+            (change)="onCourseChange($event)"
+            [value]="selectedCourseId() ?? ''"
+            class="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-xs font-bold text-[var(--text-primary)] shadow-sm outline-none transition focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/10"
+          >
+            @for (course of courses(); track course.id) {
+              <option [value]="course.id">{{ course.name }}</option>
+            }
+          </select>
+        }
+      </div>
+    }
   </div>
 
   <!-- Main Content Layout -->
@@ -55,12 +55,11 @@
         </button>
       </section>
     } @else if (courses().length === 0) {
-      <section role="status" class="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] px-6 py-16 text-center shadow-sm">
-        <svg class="mx-auto h-12 w-12 text-[var(--text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5A2.25 2.25 0 015.25 5.25h4.5l2.25 2.25h6.75A2.25 2.25 0 0121 9.75v8.25a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18V7.5z" />
+      <section role="status" class="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-12 text-center text-[var(--text-secondary)] shadow-sm">
+        <svg class="mx-auto mb-3 h-12 w-12 text-[var(--text-secondary)]/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
         </svg>
-        <h2 class="mt-4 text-sm font-bold text-[var(--text-primary)]">{{ 'CLASSROOMS.REPO.NO_REPOSITORY_DATA' | transloco }}</h2>
-        <p class="mx-auto mt-1 max-w-md text-xs text-[var(--text-secondary)]">{{ 'CLASSROOMS.REPO.NO_REPOSITORY_DATA_DESC' | transloco }}</p>
+        <p class="text-sm font-semibold text-[var(--text-secondary)]">{{ 'CLASSROOMS.REPO.NO_REPOSITORY_DATA' | transloco }}</p>
       </section>
     } @else if (selectedCourseId() !== null) {
       <!-- Block/Restriction Banner if not PLANNED -->
