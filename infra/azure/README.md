@@ -1,4 +1,6 @@
-# Frontend: deployment preparado, sin publicar
+# Frontend: release 0.2.0 preparada, sin despliegue cloud
+
+La feature se integró a develop y el usuario confirmó la validación local conjunta. Se preparó `release/0.2.0` desde develop, con package version 0.2.0 y el historial actual de main incorporado sin conflictos. El siguiente PR es **release/0.2.0 → main**, emparejado con el mismo PR de backend. No se crearon tags ni recursos Azure; CD sigue deshabilitado. Después de ambos merges, sincronizar main → develop y publicar nuevos tags antes del aprovisionamiento/CD.
 
 Se conserva `ng serve`/entorno local. El build production carga `/runtime-config.json`, que solo permite el endpoint público de API, nunca keys. `pnpm build:azure` configura `/api/v1` por defecto para servir Angular con Java en la misma URL de App Service. El navegador sigue llamando la API directamente; Sery no pasa por un proxy SWA con timeout de 45 s.
 
