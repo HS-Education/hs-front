@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
+import { csrfHeaders } from './csrf';
 
 const api = 'http://localhost:8080/api/v1';
 
@@ -10,7 +11,9 @@ function credentials(prefix: string) {
 }
 
 async function apiSignIn(context: APIRequestContext, prefix: string) {
-  const response = await context.post(`${api}/auth/sign-in`, { data: credentials(prefix) });
+  const response = await context.post(`${api}/auth/sign-in`, {
+    data: credentials(prefix), headers: await csrfHeaders(context, api)
+  });
   expect(response.status()).toBe(200);
 }
 
@@ -45,6 +48,7 @@ test('role checks block unauthorized assessment actions and student cannot read 
     try {
       await apiSignIn(teacherContext.request, 'TEACHER');
       const remedial = await teacherContext.request.post(`${api}/assessments/questionnaires/generate-remedial`, {
+        headers: await csrfHeaders(teacherContext.request, api),
         data: {
           studentId: 1,
           courseId: 1,
@@ -58,6 +62,7 @@ test('role checks block unauthorized assessment actions and student cannot read 
 
       await apiSignIn(studentContext.request, 'SMOKE');
       const generate = await studentContext.request.post(`${api}/assessments/questionnaires/generate`, {
+        headers: await csrfHeaders(studentContext.request, api),
         data: {
           courseId: 1,
           gradingPeriodId: 1,

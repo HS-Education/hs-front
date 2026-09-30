@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { csrfHeaders } from './csrf';
 
 const api = process.env['PLAYWRIGHT_API_BASE_URL'] ?? 'http://localhost:8080/api/v1';
 
@@ -48,7 +49,7 @@ test('cold start permits login, secures cookies, restores a guarded route and lo
   await expect(page).toHaveURL(/\/(home|admin\/academic-years)(?:\?.*)?$/);
 
   const logout = await page.request.post(`${api}/auth/log-out`, {
-    data: {}, headers: { Origin: new URL(page.url()).origin },
+    data: {}, headers: { ...await csrfHeaders(page.request, api), Origin: new URL(page.url()).origin },
   });
   expect(logout.status()).toBe(200);
   expect((await page.request.get(`${api}/auth/me`)).status()).toBe(401);
