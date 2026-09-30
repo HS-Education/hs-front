@@ -10,6 +10,7 @@ jobs:
   browser-smoke:
     if: vars.AZURE_CD_ENABLED == 'true' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: azure-students
     env:
       PLAYWRIGHT_BASE_URL: ${{ vars.AZURE_FRONTEND_URL }}
@@ -26,12 +27,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
       - name: Require explicit cloud targets
-        shell: bash
-        run: |
-          [[ "$PLAYWRIGHT_BASE_URL" == https://* ]]
-          [[ "$PLAYWRIGHT_API_BASE_URL" == https://*/api/v1 ]]
-          [[ -n "$SMOKE_USERNAME" && -n "$SMOKE_PASSWORD" ]]
-          node -e 'const front = new URL(process.env.PLAYWRIGHT_BASE_URL); const api = new URL(process.env.PLAYWRIGHT_API_BASE_URL); if (!front.hostname.startsWith("hs-thesis-api-") || !front.hostname.endsWith(".azurewebsites.net") || front.origin !== api.origin || front.username || front.password || api.username || api.password || front.search || front.hash || api.search || api.hash) throw new Error("An expected same-origin App Service target is required before sending credentials.");'
+        run: node scripts/assert-cloud-smoke-target.cjs
       - name: Verify cloud login, secure cookies and deep-link reload
         run: pnpm exec playwright test e2e/login.smoke.spec.ts
       - uses: actions/upload-artifact@v7
