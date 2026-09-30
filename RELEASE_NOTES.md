@@ -1,3 +1,21 @@
+# Release 0.2.1
+
+## Coordinated Azure release
+
+- Set the frontend package version to 0.2.1 to pair with backend 0.2.1 and its managed-identity deployment operations fix.
+- Preserve the existing frontend application behavior, dependencies and deployment workflows; this release only changes version metadata and release notes.
+- No lockfile update is required because the pnpm lockfile does not store the root package version.
+
+## Release preparation and integration
+
+- Create `release/0.2.1` from the integrated `develop` branch.
+- Open the release pull request into `main`; wait for CI, security checks and approval before merging.
+- Synchronize `main` back into `develop` after promotion and publish a new `v0.2.1` tag on the final main commit. Do not move existing tags.
+- After both tags are available, run Frontend Azure release in app-service mode, then Backend Azure CD, then Azure browser smoke, using `v0.2.1` in sequence with protected environment approvals.
+- Release preparation does not deploy the application or establish cloud functional acceptance.
+
+---
+
 # Release 0.2.0
 
 ## Azure deployment preparation
