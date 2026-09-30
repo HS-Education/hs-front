@@ -1,4 +1,16 @@
-# Frontend: release 0.2.0 preparada, sin despliegue cloud
+# Frontend: CD por tags con aprobación protegida
+
+La feature de CD automático inicia **Frontend Azure release** al publicar un tag `v*`, con `app-service` como hosting automático y `AZURE_CD_ENABLED=true` como gate. Conserva el environment `azure-students`, su aprobación humana, bloqueo de autoaprobación y restricción a tags. SWA se mantiene exclusivamente manual y explícito. No se modifican los tags `v0.2.1` ya publicados ni se inicia un despliegue al subir esta feature.
+
+Integrar esta feature a develop en ambos repos y preparar una **release nueva coordinada** antes de publicar el siguiente tag. El compañero publica los tags en frontend y backend; `sebaditas` aprueba los environments. Si el único revisor publica el tag, no puede aprobar su propia ejecución: no desactivar esa protección.
+
+El backend espera el paquete frontend hasta 30 minutos, verifica identidad e integridad, pide aprobación antes del deploy y, solo después del despliegue exitoso, ejecuta automáticamente los tres smoke de este frontend. El código de prueba debe corresponder al SHA del manifiesto desplegado. El workflow independiente **Azure browser smoke** se conserva manual para diagnóstico, evitando correr en paralelo antes del deploy. El environment del backend requiere `SMOKE_USERNAME` y `SMOKE_PASSWORD` cifrados y autorizados para esa ejecución; tenerlos únicamente en el frontend no basta. No se necesita un PAT de escritura entre repositorios.
+
+El guard compartido `scripts/assert-cloud-smoke-target.cjs` rechaza destinos HTTP, distintos orígenes, rutas/hosts inesperados y credenciales ausentes antes de enviar las credenciales. Las trazas HTTPS siguen deshabilitadas; solo se conserva JUnit. Un smoke fallido marca CD fallido, no revierte automáticamente un despliegue ni prueba por sí solo documentos, Sery, notificaciones o recuperación.
+
+Los siguientes apartados conservan la preparación y validación histórica de 0.2.0; no representan el estado actual del gate ni del aprovisionamiento.
+
+## Preparación histórica de release 0.2.0
 
 La feature se integró a develop y el usuario confirmó la validación local conjunta. Se preparó `release/0.2.0` desde develop, con package version 0.2.0 y el historial actual de main incorporado sin conflictos. El siguiente PR es **release/0.2.0 → main**, emparejado con el mismo PR de backend. No se crearon tags ni recursos Azure; CD sigue deshabilitado. Después de ambos merges, sincronizar main → develop y publicar nuevos tags antes del aprovisionamiento/CD.
 
