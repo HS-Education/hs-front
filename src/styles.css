@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+@keyframes sery-response-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sery-response-enter {
+  animation: sery-response-enter 200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sery-response-enter {
+    animation: none;
+  }
+}
+
 :root {
   /* Foundation */
   --bg-primary: #fdfbf7;

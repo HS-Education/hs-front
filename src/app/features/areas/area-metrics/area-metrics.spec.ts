@@ -1,7 +1,8 @@
 import {TestBed} from '@angular/core/testing';
+import {HttpErrorResponse} from '@angular/common/http';
 import {DomSanitizer} from '@angular/platform-browser';
 import {TranslocoService} from '@jsverse/transloco';
-import {Subject} from 'rxjs';
+import {Subject, of, throwError} from 'rxjs';
 import {UserDataService} from '../../../shared/services/user-data.service';
 import {ToastService} from '../../../shared/services/toast.service';
 import {ClassroomService} from '../../classrooms/data-access/classroom.service';
@@ -12,17 +13,21 @@ describe('AreaMetrics insight refresh', () => {
   let component: AreaMetrics;
   let response: Subject<{insightText: string}>;
   let generateAreaInsight: ReturnType<typeof vi.fn>;
+  let getAreas: ReturnType<typeof vi.fn>;
+  let getAreaAchievements: ReturnType<typeof vi.fn>;
   let success: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     response = new Subject<{insightText: string}>();
     generateAreaInsight = vi.fn(() => response.asObservable());
+    getAreas = vi.fn();
+    getAreaAchievements = vi.fn();
     success = vi.fn();
     TestBed.configureTestingModule({
       providers: [
-        {provide: UserDataService, useValue: {}},
-        {provide: ClassroomService, useValue: {}},
-        {provide: AchievementService, useValue: {generateAreaInsight}},
+        {provide: UserDataService, useValue: {userProfile: () => ({name: 'Coordinator'})}},
+        {provide: ClassroomService, useValue: {getAreas, getAllClassrooms: () => of([])}},
+        {provide: AchievementService, useValue: {generateAreaInsight, getAreaAchievements}},
         {provide: DomSanitizer, useValue: {}},
         {provide: TranslocoService, useValue: {translate: (key: string) => key}},
         {provide: ToastService, useValue: {success}},
@@ -43,6 +48,40 @@ describe('AreaMetrics insight refresh', () => {
     component.ngOnDestroy();
   });
 
+  it('shows the neutral empty state when no area is assigned', () => {
+    getAreas.mockReturnValue(of([]));
+    component.areaData.set(null);
+
+    component.ngOnInit();
+
+    expect(component.isLoading()).toBe(false);
+    expect(component.areaLoadFailed()).toBe(false);
+    expect(component.areaPerformance()).toBeUndefined();
+    expect(getAreaAchievements).not.toHaveBeenCalled();
+  });
+
+  it('shows the neutral empty state when the area has no performance yet', () => {
+    getAreas.mockReturnValue(of([{id: 1, name: 'Matemática', coordinatorName: 'Coordinator'}]));
+    getAreaAchievements.mockReturnValue(throwError(() => new HttpErrorResponse({status: 404})));
+    component.areaData.set(null);
+
+    component.ngOnInit();
+
+    expect(component.isLoading()).toBe(false);
+    expect(component.areaLoadFailed()).toBe(false);
+    expect(component.areaPerformance()).toBeUndefined();
+  });
+
+  it('keeps a server failure separate from the empty state', () => {
+    getAreas.mockReturnValue(throwError(() => new HttpErrorResponse({status: 503})));
+    component.areaData.set(null);
+
+    component.ngOnInit();
+
+    expect(component.isLoading()).toBe(false);
+    expect(component.areaLoadFailed()).toBe(true);
+  });
+
   it('shows progress, updates the summary and clears the loading state on success', () => {
     component.generateAreaInsight();
     expect(generateAreaInsight).toHaveBeenCalledWith(1);
@@ -55,6 +94,23 @@ describe('AreaMetrics insight refresh', () => {
     expect(component.areaData()?.latestInsight).toBe('Updated analysis');
     expect(component.areaInsightError()).toBeNull();
     expect(success).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the coordinator refresh active when the view is recreated for the same area', () => {
+    component.generateAreaInsight();
+
+    const returningView = TestBed.runInInjectionContext(() => new AreaMetrics());
+    returningView.coordinatorAreaId.set(1);
+
+    expect(returningView.isGeneratingAreaInsight()).toBe(true);
+    returningView.generateAreaInsight();
+    expect(generateAreaInsight).toHaveBeenCalledTimes(1);
+
+    response.next({insightText: 'Updated analysis'});
+    response.complete();
+
+    expect(returningView.isGeneratingAreaInsight()).toBe(false);
+    returningView.ngOnDestroy();
   });
 
   it('ends a stalled request and preserves the previous summary', async () => {

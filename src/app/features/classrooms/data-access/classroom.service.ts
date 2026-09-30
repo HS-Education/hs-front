@@ -1,5 +1,6 @@
 import {inject, Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
+import {Observable, catchError, of, throwError} from 'rxjs';
 import {environment} from '../../../../environment/environment';
 import {Classroom} from './models/responses/classroom.model';
 import {Document} from './models/responses/document.model';
@@ -16,10 +17,10 @@ export class ClassroomService {
 
   getClassrooms(userId: number) {
     const params = new HttpParams().set('userId', userId);
-    return this.http.get<Classroom[]>(
+    return this.emptyCollectionOnNotFound(this.http.get<Classroom[]>(
       `${this.baseUrl}/classrooms`,
       { params, withCredentials: true }
-    );
+    ));
   }
 
   getAllClassrooms() {
@@ -145,9 +146,17 @@ export class ClassroomService {
   }
 
   getAreas() {
-    return this.http.get<Array<{ id: number; name: string; coordinatorName: string }>>(
+    return this.emptyCollectionOnNotFound(this.http.get<Array<{ id: number; name: string; coordinatorName: string }>>(
       `${this.baseUrl}/areas`,
       { withCredentials: true }
-    );
+    ));
+  }
+
+  private emptyCollectionOnNotFound<T>(request: Observable<T[]>): Observable<T[]> {
+    return request.pipe(catchError((error: HttpErrorResponse) =>
+      error.status === 404 && (error.error == null || error.error === '')
+        ? of([] as T[])
+        : throwError(() => error)
+    ));
   }
 }
