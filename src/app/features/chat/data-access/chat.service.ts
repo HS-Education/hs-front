@@ -3,6 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environment/environment';
 import { ChatSession } from './models/chat-session.model';
 import { ChatMessage } from './models/chat-message.model';
+import { firstValueFrom } from 'rxjs';
+import { CsrfService } from '../../../auth/services/csrf.service';
 
 @Injectable({
   providedIn: 'root',
@@ -10,6 +12,7 @@ import { ChatMessage } from './models/chat-message.model';
 export class ChatService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.baseUrl;
+  private readonly csrf = inject(CsrfService);
 
   getChatSessions(courseId?: number) {
     let params = new HttpParams();
@@ -47,11 +50,13 @@ export class ChatService {
   }
 
   async sendMessageStream(sessionId: number, question: string, onChunk: (text: string) => void): Promise<void> {
+    const csrfToken = await firstValueFrom(this.csrf.getToken());
     const response = await fetch(`${this.baseUrl}/chat/sessions/${sessionId}/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'text/event-stream',
+        'X-XSRF-TOKEN': csrfToken,
       },
       body: JSON.stringify({ question }),
       credentials: 'include'

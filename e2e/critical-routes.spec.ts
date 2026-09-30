@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { csrfHeaders } from './csrf';
 
 const api = 'http://localhost:8080/api/v1';
 
@@ -30,8 +31,9 @@ test('anonymous users cannot open guarded views', async ({ page }) => {
 
 test('parallel sign-ins for one account do not fail with a token uniqueness error', async ({ request }) => {
   const credentials = account('SMOKE');
+  const headers = await csrfHeaders(request, api);
   const responses = await Promise.all(Array.from({ length: 4 }, () =>
-    request.post(`${api}/auth/sign-in`, { data: credentials })));
+    request.post(`${api}/auth/sign-in`, { data: credentials, headers })));
   expect(responses.map(response => response.status())).toEqual([200, 200, 200, 200]);
 });
 
@@ -53,7 +55,9 @@ test('student journey: own views, server authorization and cross-user denial', a
   }
   expect((await page.request.get(`${api}/users`)).status()).toBe(403);
 
-  const adminSignIn = await request.post(`${api}/auth/sign-in`, { data: account('ADMIN') });
+  const adminSignIn = await request.post(`${api}/auth/sign-in`, {
+    data: account('ADMIN'), headers: await csrfHeaders(request, api)
+  });
   expect(adminSignIn.status()).toBe(200);
   const admin = await request.get(`${api}/auth/me`);
   expect(admin.status()).toBe(200);

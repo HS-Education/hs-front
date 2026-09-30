@@ -1,10 +1,12 @@
 {
   "name": "hs-tesis-front",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:azure": "ng build --configuration production && node scripts/configure-deployment.cjs",
+    "test:deployment": "node --test scripts/configure-deployment.test.cjs",
     "watch": "ng build --watch --configuration development",
     "test": "vitest run --configLoader runner",
     "test:e2e": "playwright test"

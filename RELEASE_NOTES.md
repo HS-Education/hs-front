@@ -1,3 +1,32 @@
+# Release 0.2.0
+
+## Azure deployment preparation
+
+- Add public runtime configuration and Azure production packaging without embedding credentials in Angular.
+- Support same-origin Angular/Java hosting on App Service; keep Static Web Apps optional and gated on a validated login/domain strategy.
+- Add manual tagged frontend release packaging with checksum manifests and protected cloud smoke workflows.
+- Expand browser smoke coverage for anonymous routes, authentication, secure cookies, guarded-route reload and logout.
+
+## Security and reliability
+
+- Bootstrap masked CSRF tokens and attach them only to configured API writes, including Sery streaming requests.
+- Share concurrent CSRF bootstrap requests, invalidate cached tokens after authentication actions and fail closed without replaying forbidden writes.
+- Generate administrative passwords with Web Crypto and unbiased selection instead of `Math.random()`.
+- Preserve local development and prevent cloud traces from recording authentication credentials or document content.
+
+## Release preparation and integration
+
+- Set the frontend package version to 0.2.0 and pair it with backend 0.2.0; publish both together for the new CSRF contract.
+- No dependency changes are required; the pnpm lockfile does not store the root package version.
+- Create `release/0.2.0` from integrated `develop` and merge the current `main` history before promotion.
+- The project owner confirmed functional validation from integrated develop before release preparation.
+- Release preparation verification passed: 55 frontend unit tests, 3 deployment-configuration tests, dictionary validation and the production build. The existing initial-bundle size warning remains; the build succeeded.
+- Merge the release PR into `main` only after current CI, security checks and review pass; then synchronize `main` back into `develop`.
+- Create a new `v0.2.0` tag on each promoted main commit. Do not move existing tags.
+- Azure provisioning and cloud acceptance remain a subsequent phase; keep CD disabled until the required infrastructure, OIDC and configuration are ready.
+
+---
+
 # Release 0.1.1
 
 ## Fixes

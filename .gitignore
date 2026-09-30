@@ -46,4 +46,11 @@ __screenshots__/
 Thumbs.db
 
 # Environment files
-/src/environment
+.env
+.env.*
+!.env.example
+!.env.*.example
+/src/environment/*.local.ts
+/infra/azure/*.local.json
+/infra/azure/*.local.bicepparam
+/infra/azure/.generated/

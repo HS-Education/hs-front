@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30_000,
+  timeout: process.env['PLAYWRIGHT_BASE_URL']?.startsWith('https://') ? 90_000 : 30_000,
   retries: 0,
   reporter: [
     ['list'],
@@ -10,7 +10,8 @@ export default defineConfig({
   ],
   use: {
     ...devices['Desktop Chrome'],
-    baseURL: 'http://localhost:4200',
-    trace: 'retain-on-failure',
+    baseURL: process.env['PLAYWRIGHT_BASE_URL'] ?? 'http://localhost:4200',
+    // Cloud traces can capture passwords, authentication cookies and document content.
+    trace: process.env['PLAYWRIGHT_BASE_URL']?.startsWith('https://') ? 'off' : 'retain-on-failure',
   },
 });

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, CanActivateFn, provideRouter, Router, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivateFn, GuardResult, provideRouter, Router, RouterStateSnapshot } from '@angular/router';
 import { firstValueFrom, isObservable, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthService } from '../services/auth.service';
@@ -22,7 +22,7 @@ describe('route access by session and role', () => {
     router = TestBed.inject(Router);
   });
 
-  async function check(guard: CanActivateFn, expectedRoles: string[] = []): Promise<unknown> {
+  async function check(guard: CanActivateFn, expectedRoles: string[] = []): Promise<GuardResult> {
     const route = { data: { expectedRoles } } as unknown as ActivatedRouteSnapshot;
     const state = { url: '/repository' } as RouterStateSnapshot;
     const result = TestBed.runInInjectionContext(() => guard(route, state));
