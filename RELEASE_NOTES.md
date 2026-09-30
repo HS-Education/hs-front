@@ -1,3 +1,23 @@
+# Release 0.2.2
+
+## Protected tag-driven Azure release
+
+- Prepare the frontend package automatically on release tag pushes, using same-origin App Service hosting and the protected environment approval.
+- Preserve manual recovery and keep optional Static Web Apps deployment restricted to explicit manual selection.
+- Share the strict HTTPS same-origin smoke destination guard between manual frontend smoke and automatic post-deployment backend smoke.
+- Add regression checks for tag events, approval gates, manual-only SWA, smoke ordering and credential-safe destination rejection.
+- Keep standalone frontend smoke manual for diagnostics; the backend CD runs it automatically after successful deployment using the verified matching frontend commit.
+
+## Release preparation and integration
+
+- Set the frontend package version to 0.2.2 to pair with backend 0.2.2; dependencies and the pnpm lockfile remain unchanged.
+- Create `release/0.2.2` from integrated `develop` after the tag-driven CD feature was merged.
+- Open the release pull request into `main`; wait for CI, security checks and approval before merging, then synchronize `main` back into `develop`.
+- The collaborator publishes the new `v0.2.2` tags on the final main commits, frontend first; the designated reviewer approves the protected environments without self-approval or bypass.
+- Do not move `v0.2.1` or other existing tags. This branch publication does not initiate deployment or establish cloud functional acceptance.
+
+---
+
 # Release 0.2.1
 
 ## Coordinated Azure release
