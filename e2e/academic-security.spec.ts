@@ -1,4 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { csrfHeaders } from './csrf';
 
 // These scenarios run only against the gate's disposable database and users.
 const api = 'http://localhost:8080/api/v1';
@@ -11,7 +12,9 @@ function credentials(prefix: string) {
 }
 
 async function apiSignIn(context: APIRequestContext, prefix: string) {
-  const response = await context.post(`${api}/auth/sign-in`, { data: credentials(prefix) });
+  const response = await context.post(`${api}/auth/sign-in`, {
+    data: credentials(prefix), headers: await csrfHeaders(context, api)
+  });
   expect(response.status()).toBe(200);
 }
 
@@ -36,11 +39,14 @@ test('admin-created area and course appear in the management UI; student cannot 
     const areaName = `QA AREA ${suffix}`;
     const courseName = `QA COURSE ${suffix}`;
     const area = await request.post(`${api}/areas`, {
+      headers: await csrfHeaders(request, api),
       data: { name: areaName, coordinatorId: coordinator!.id },
     });
     expect(area.status()).toBe(201);
     const areaId = (await area.json()).id as number;
-    const course = await request.post(`${api}/courses`, { data: { name: courseName, areaId } });
+    const course = await request.post(`${api}/courses`, {
+      data: { name: courseName, areaId }, headers: await csrfHeaders(request, api)
+    });
     expect(course.status()).toBe(201);
     const courseId = (await course.json()).id as number;
 
@@ -48,9 +54,12 @@ test('admin-created area and course appear in the management UI; student cannot 
     try {
       await apiSignIn(studentContext.request, 'SMOKE');
       expect((await studentContext.request.post(`${api}/areas`, {
+        headers: await csrfHeaders(studentContext.request, api),
         data: { name: `UNAUTHORIZED ${suffix}`, coordinatorId: null },
       })).status()).toBe(403);
-      expect((await studentContext.request.delete(`${api}/courses/${courseId}`)).status()).toBe(403);
+      expect((await studentContext.request.delete(`${api}/courses/${courseId}`, {
+        headers: await csrfHeaders(studentContext.request, api)
+      })).status()).toBe(403);
 
       await uiSignIn(page, 'ADMIN');
       await page.goto('/admin/courses');
@@ -67,8 +76,8 @@ test('admin-created area and course appear in the management UI; student cannot 
       expect(await malformedFilter.text()).not.toMatch(/SQLSTATE|PSQLException|syntax error at/i);
     } finally {
       await studentContext.close();
-      await request.delete(`${api}/courses/${courseId}`);
-      await request.delete(`${api}/areas/${areaId}`);
+      await request.delete(`${api}/courses/${courseId}`, { headers: await csrfHeaders(request, api) });
+      await request.delete(`${api}/areas/${areaId}`, { headers: await csrfHeaders(request, api) });
     }
   });
 
@@ -82,11 +91,13 @@ test('corrupt PDF upload is rejected and does not create a document', async ({ r
 
   const suffix = `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
   const area = await request.post(`${api}/areas`, {
+    headers: await csrfHeaders(request, api),
     data: { name: `QA DOCUMENT AREA ${suffix}`, coordinatorId: coordinator!.id },
   });
   expect(area.status()).toBe(201);
   const areaId = (await area.json()).id as number;
   const course = await request.post(`${api}/courses`, {
+    headers: await csrfHeaders(request, api),
     data: { name: `QA DOCUMENT COURSE ${suffix}`, areaId },
   });
   expect(course.status()).toBe(201);
@@ -95,7 +106,7 @@ test('corrupt PDF upload is rejected and does not create a document', async ({ r
   const yearList = await request.get(`${api}/academic-years`);
   const years = yearList.status() === 200 ? await yearList.json() as Array<{ id: number }> : [];
   if (years.length === 0) {
-    const created = await request.post(`${api}/academic-years`);
+    const created = await request.post(`${api}/academic-years`, { headers: await csrfHeaders(request, api) });
     expect(created.status()).toBe(201);
     years.push(await created.json());
   }
@@ -109,6 +120,7 @@ test('corrupt PDF upload is rejected and does not create a document', async ({ r
   try {
     await apiSignIn(coordinatorContext, 'COORDINATOR');
     const topic = await coordinatorContext.post(`${api}/courses/${courseId}/topics`, {
+      headers: await csrfHeaders(coordinatorContext, api),
       data: { gradingPeriodId: firstPeriod!.id, name: `QA TOPIC ${suffix}` },
     });
     expect(topic.status()).toBe(201);
@@ -120,6 +132,7 @@ test('corrupt PDF upload is rejected and does not create a document', async ({ r
     expect(before.status()).toBe(200);
     const beforeCount = (await before.json() as unknown[]).length;
     const response = await coordinatorContext.post(`${api}/courses/${courseId}/documents/bulk`, {
+      headers: await csrfHeaders(coordinatorContext, api),
       multipart: {
         files: { name: 'corrupt.pdf', mimeType: 'application/pdf',
           buffer: Buffer.from('%PDF-1.7\ntruncated synthetic document') },
@@ -136,7 +149,7 @@ test('corrupt PDF upload is rejected and does not create a document', async ({ r
     expect((await after.json() as unknown[]).length).toBe(beforeCount);
   } finally {
     await coordinatorContext.dispose();
-    await request.delete(`${api}/courses/${courseId}`);
-    await request.delete(`${api}/areas/${areaId}`);
+    await request.delete(`${api}/courses/${courseId}`, { headers: await csrfHeaders(request, api) });
+    await request.delete(`${api}/areas/${areaId}`, { headers: await csrfHeaders(request, api) });
   }
 });

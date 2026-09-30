@@ -52,5 +52,8 @@ jobs:
       - name: Validate English and Spanish dictionaries
         run: node scripts/check-i18n.cjs
 
+      - name: Verify public deployment configuration
+        run: pnpm test:deployment
+
       - name: Build production bundle
         run: pnpm build

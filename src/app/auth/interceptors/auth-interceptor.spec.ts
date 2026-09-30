@@ -4,17 +4,23 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { provideRouter } from '@angular/router';
 import { authInterceptor } from './auth-interceptor';
 import { environment } from '../../../environment/environment';
+import { CsrfService } from '../services/csrf.service';
+import { of, throwError } from 'rxjs';
 
 describe('authInterceptor cookie and refresh boundary', () => {
   let client: HttpClient;
   let http: HttpTestingController;
+  const csrf = { getToken: vi.fn(() => of('masked-csrf-token-fixture')), invalidate: vi.fn() };
 
   beforeEach(() => {
+    csrf.getToken.mockReset().mockReturnValue(of('masked-csrf-token-fixture'));
+    csrf.invalidate.mockClear();
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
+        { provide: CsrfService, useValue: csrf },
       ],
     });
     client = TestBed.inject(HttpClient);
@@ -64,5 +70,36 @@ describe('authInterceptor cookie and refresh boundary', () => {
     http.expectOne('https://untrusted.example/api/v1/classrooms')
       .flush({}, { status: 401, statusText: 'Unauthorized' });
     http.expectNone(`${environment.baseUrl}/auth/refresh-token`);
+  });
+
+  it('attaches CSRF to API writes only, including absolute local API URLs', () => {
+    client.post(`${environment.baseUrl}/classrooms`, {}).subscribe();
+    const own = http.expectOne(`${environment.baseUrl}/classrooms`);
+    expect(own.request.headers.get('X-XSRF-TOKEN')).toBe('masked-csrf-token-fixture');
+    own.flush({});
+    client.post('https://untrusted.example/api/v1/classrooms', {}).subscribe();
+    const external = http.expectOne('https://untrusted.example/api/v1/classrooms');
+    expect(external.request.headers.has('X-XSRF-TOKEN')).toBe(false);
+    expect(external.request.withCredentials).toBe(false);
+    external.flush({});
+    expect(csrf.getToken).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not send a write when CSRF bootstrap fails', () => {
+    csrf.getToken.mockReturnValueOnce(throwError(() => new Error('Bootstrap failed')));
+    let failed = false;
+    client.post(`${environment.baseUrl}/classrooms`, {}).subscribe({ error: () => failed = true });
+    http.expectNone(`${environment.baseUrl}/classrooms`);
+    expect(failed).toBe(true);
+  });
+
+  it('invalidates CSRF after logout without automatically replaying forbidden writes', () => {
+    client.post(`${environment.baseUrl}/auth/log-out`, {}).subscribe();
+    http.expectOne(`${environment.baseUrl}/auth/log-out`).flush({});
+    expect(csrf.invalidate).toHaveBeenCalledOnce();
+    client.post(`${environment.baseUrl}/classrooms`, {}).subscribe({ error: () => {} });
+    http.expectOne(`${environment.baseUrl}/classrooms`).flush({}, { status: 403, statusText: 'Forbidden' });
+    http.expectNone(`${environment.baseUrl}/classrooms`);
+    expect(csrf.invalidate).toHaveBeenCalledTimes(2);
   });
 });

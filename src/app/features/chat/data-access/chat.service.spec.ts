@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { ChatService } from './chat.service';
+import { CsrfService } from '../../../auth/services/csrf.service';
+import { of, throwError } from 'rxjs';
 
 function eventStreamResponse(frames: string[], status = 200): Response {
   const encoder = new TextEncoder();
@@ -19,9 +21,13 @@ function eventStreamResponse(frames: string[], status = 200): Response {
 
 describe('ChatService streaming responses', () => {
   let service: ChatService;
+  const csrf = { getToken: vi.fn(() => of('chat-csrf-fixture')) };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [{ provide: HttpClient, useValue: {} }] });
+    csrf.getToken.mockReset().mockReturnValue(of('chat-csrf-fixture'));
+    TestBed.configureTestingModule({ providers: [
+      { provide: HttpClient, useValue: {} }, { provide: CsrfService, useValue: csrf }
+    ] });
     service = TestBed.runInInjectionContext(() => new ChatService());
   });
 
@@ -52,7 +58,9 @@ describe('ChatService streaming responses', () => {
     expect(received).toEqual(['Según ', 'tus documentos.']);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining('/chat/sessions/5/stream'),
-      expect.objectContaining({ headers: expect.objectContaining({ Accept: 'text/event-stream' }) })
+      expect.objectContaining({ headers: expect.objectContaining({
+        Accept: 'text/event-stream', 'X-XSRF-TOKEN': 'chat-csrf-fixture'
+      }), credentials: 'include' })
     );
   });
 
@@ -83,5 +91,13 @@ describe('ChatService streaming responses', () => {
     await expect(service.sendMessageStream(5, 'pregunta', () => {})).rejects.toThrow(
       'request failed (502)'
     );
+  });
+
+  it('does not start the provider stream without a valid CSRF bootstrap', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    csrf.getToken.mockReturnValueOnce(throwError(() => new Error('CSRF unavailable')));
+    await expect(service.sendMessageStream(5, 'pregunta', () => {})).rejects.toThrow('CSRF unavailable');
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
