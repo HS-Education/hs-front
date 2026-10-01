@@ -1,3 +1,22 @@
+# Release 0.2.5
+
+## Coordinated Azure startup readiness release
+
+- Set the frontend package version to 0.2.5 to pair with the backend cloud readiness fix.
+- Preserve Angular application behavior, dependencies, the pnpm lockfile and protected release/smoke workflows.
+- Produce matching tagged frontend assets so the backend can verify their main ancestry, manifest and checksum before packaging the same-origin Java/Angular application.
+
+## Release preparation and integration
+
+- Create `release/0.2.5` from integrated `develop` after its CI and CodeQL passed.
+- Run all 8 local deployment/workflow tests; these do not establish cloud browser or functional acceptance.
+- Require current CI, CodeQL and independent approval before merging the release PR into `main`, then synchronize `main` back into `develop` through reviewed PRs.
+- Publish matching new `v0.2.5` tags on final main commits, frontend first; preserve `v0.2.4` and existing release assets.
+- The authorized collaborator publishes the tags/initiates protected jobs so the designated reviewer can approve without self-review or bypass.
+- Branch publication does not deploy. The backend CD deploys the frontend together with Java and runs browser smoke only after successful deployment.
+
+---
+
 # Release 0.2.4
 
 ## Coordinated Azure Web App authentication recovery release
