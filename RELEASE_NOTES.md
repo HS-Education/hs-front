@@ -1,3 +1,22 @@
+# Release 0.2.4
+
+## Coordinated Azure Web App authentication recovery release
+
+- Set the frontend package version to 0.2.4 to pair with the backend Web App deployment authentication correction.
+- Preserve Angular application behavior, dependencies, the pnpm lockfile and protected deployment/smoke workflows.
+- Produce matching tagged frontend assets so the backend can verify their main ancestry, manifest and checksum before packaging Java and Angular together.
+
+## Release preparation and integration
+
+- Create `release/0.2.4` from integrated `develop`; require current CI, CodeQL and independent approval before merging its PR into `main`.
+- Run the 8 local deployment/workflow tests; these do not establish Azure functional acceptance.
+- Synchronize `main` back into `develop` through a separate reviewed PR after release integration.
+- Publish new matching `v0.2.4` tags on final main commits, frontend first; preserve existing tags and release assets.
+- Keep protected environment approvals and self-review restrictions. An authorized collaborator must initiate protected runs so the designated reviewer can approve them.
+- Branch publication does not deploy. The backend CD deploys the same-origin frontend with Java, followed by browser smoke validation.
+
+---
+
 # Release 0.2.3
 
 ## Coordinated Azure migration recovery release
