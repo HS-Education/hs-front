@@ -954,7 +954,7 @@
       "TITLE": "Gestión de Aulas",
       "SUBTITLE": "Administra las aulas físicas/virtuales, su generación automática y profesores asignados.",
       "GENERATE_CLASSROOMS": "Generar Aulas del Año",
-      "ONLY_PLANNED": "La generación automática de aulas solo está disponible cuando el Año Académico actual se encuentra en estado PLANNED.",
+      "ONLY_PLANNED": "La generación automática de aulas solo está disponible cuando el año académico actual está en planificación.",
       "SEARCH_COURSE": "Buscar curso...",
       "LEVEL": "Nivel",
       "PRIMARY": "Primaria",
@@ -1079,6 +1079,9 @@
       "PASSWORD": "Contraseña",
       "PASSWORD_PH": "Haz clic en Generar",
       "GENERATE_SECURE_PASSWORD": "Generar contraseña segura",
+      "COPY_PASSWORD": "Copiar contraseña",
+      "PASSWORD_COPIED": "Contraseña copiada",
+      "PASSWORD_COPY_FAILED": "No se pudo copiar. Selecciona la contraseña y cópiala manualmente.",
       "GENERATE": "Generar",
       "PASSWORD_REQ": "Debe incluir min. 8 caracteres (mayúscula, minúscula, número y símbolo).",
       "USER_ROLES": "Roles del Usuario",
@@ -1123,6 +1126,8 @@
     "PREV": "Anterior",
     "NEXT": "Siguiente",
     "FINISH": "Comenzar",
+    "SAVING": "Guardando...",
+    "SAVE_FAILED": "No se pudo guardar el tutorial. Pulsa Comenzar para volver a intentarlo.",
     "WELCOME": {
       "TITLE": "¡Bienvenido a HS Education!",
       "DESC": "Esta es tu plataforma de aprendizaje. Te mostramos rápidamente las secciones que tienes disponibles."
@@ -1163,6 +1168,8 @@
     "DAY_QUESTIONNAIRES": "Cuestionarios del día"
   },
   "UI_TEXT": {
+    "SHOW_PASSWORD": "Mostrar contraseña",
+    "HIDE_PASSWORD": "Ocultar contraseña",
     "LOADING_HS_EDUCATION": "Cargando HS Education",
     "WELCOME": "Bienvenido",
     "PERSONALIZED_LEARNING_PLATFORM": "Plataforma de Aprendizaje Personalizado",

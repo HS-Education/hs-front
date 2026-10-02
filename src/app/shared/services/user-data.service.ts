@@ -16,6 +16,12 @@ export class UserDataService {
   private readonly sessionLoaded = signal(false);
 
   readonly userProfile = computed(() => this.user());
+  readonly userInitials = computed(() => {
+    const parts = this.user()?.name?.trim().split(/\s+/).filter(Boolean) ?? [];
+    if (!parts.length) return '?';
+    if (parts.length === 1) return Array.from(parts[0]).slice(0, 2).join('').toLocaleUpperCase();
+    return (Array.from(parts[0])[0] + Array.from(parts[parts.length - 1])[0]).toLocaleUpperCase();
+  });
   readonly isAuthenticated = computed(() => !!this.user());
   readonly isSessionLoaded = computed(() => this.sessionLoaded());
   readonly loggingOut = signal(false);
