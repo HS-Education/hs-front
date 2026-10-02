@@ -48,10 +48,12 @@ test('cold start permits login, secures cookies, restores a guarded route and lo
   await page.reload();
   await expect(page).toHaveURL(/\/(home|admin\/academic-years)(?:\?.*)?$/);
 
-  const logout = await page.request.post(`${api}/auth/log-out`, {
-    data: {}, headers: { ...await csrfHeaders(page.request, api), Origin: new URL(page.url()).origin },
-  });
-  expect(logout.status()).toBe(200);
+  // Capture the same session before either response clears its cookies.
+  // Repeated requests must not fail when another request revoked the token.
+  const headers = { ...await csrfHeaders(page.request, api), Origin: new URL(page.url()).origin };
+  const logouts = await Promise.all(Array.from({length: 4}, () =>
+    page.request.post(`${api}/auth/log-out`, {data: {}, headers})));
+  for (const logout of logouts) expect(logout.status()).toBe(200);
   expect((await page.request.get(`${api}/auth/me`)).status()).toBe(401);
   await page.goto('/home');
   await expect(page).toHaveURL(/\/sign-in(?:\?.*)?$/);
