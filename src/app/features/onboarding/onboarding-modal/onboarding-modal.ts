@@ -1,4 +1,4 @@
-import { Component, output, inject, ChangeDetectionStrategy, signal, computed, HostListener, OnInit, AfterViewInit } from '@angular/core';
+import { Component, input, output, inject, ChangeDetectionStrategy, signal, computed, HostListener, OnInit, AfterViewInit } from '@angular/core';
 import { UserDataService } from '../../../shared/services/user-data.service';
 import { TranslocoPipe } from '@jsverse/transloco';
 
@@ -76,6 +76,7 @@ interface OnboardingStep {
             <button
               type="button"
               (click)="goTo($index)"
+              [disabled]="saving()"
               class="h-2 rounded-full transition-all duration-300"
               [class.w-6]="currentIndex() === $index"
               [class.bg-[var(--button-primary-bg)]]="currentIndex() === $index"
@@ -88,10 +89,14 @@ interface OnboardingStep {
         </div>
 
         <!-- Footer actions -->
+        @if (errorMessage(); as message) {
+          <p role="alert" class="px-6 pt-2 text-xs text-[var(--color-danger)]">{{ message }}</p>
+        }
         <div class="px-6 pb-6 pt-3 flex items-center justify-between gap-3">
           <button
             type="button"
             (click)="prev()"
+            [disabled]="saving()"
             [class.invisible]="currentIndex() === 0"
             class="px-4 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition">
             {{ 'ONBOARDING.PREV' | transloco }}
@@ -105,8 +110,10 @@ interface OnboardingStep {
             <button
               type="button"
               (click)="finish()"
+              [disabled]="saving()"
+              [attr.aria-busy]="saving()"
               class="px-5 py-2 text-xs font-bold text-white bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] rounded-lg transition active:scale-[0.97] shadow-sm shadow-[var(--brand-primary)]/30">
-              {{ 'ONBOARDING.FINISH' | transloco }}
+              {{ (saving() ? 'ONBOARDING.SAVING' : 'ONBOARDING.FINISH') | transloco }}
             </button>
           } @else {
             <button
@@ -123,6 +130,8 @@ interface OnboardingStep {
 })
 export class OnboardingModal implements OnInit, AfterViewInit {
   readonly completed = output<void>();
+  readonly saving = input(false);
+  readonly errorMessage = input<string | null>(null);
   private readonly userDataService = inject(UserDataService);
 
   readonly currentIndex = signal(0);
@@ -251,7 +260,7 @@ export class OnboardingModal implements OnInit, AfterViewInit {
   }
 
   finish(): void {
-    this.completed.emit();
+    if (!this.saving()) this.completed.emit();
   }
 
   private updateTargetRect(): void {
