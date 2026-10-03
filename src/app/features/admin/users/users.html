@@ -161,9 +161,16 @@
     <!-- Password Input with Generator -->
     <div>
       <label class="block text-sm font-bold text-[var(--text-secondary)] mb-1">{{ 'ADMIN.USERS.PASSWORD' | transloco }}</label>
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         <input type="text" [ngModel]="newPassword()" placeholder="{{ 'ADMIN.USERS.PASSWORD_PH' | transloco }}" readonly
-          class="flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-[var(--text-secondary)] focus:outline-none transition font-mono cursor-not-allowed opacity-80" />
+          class="min-w-0 flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-[var(--text-secondary)] focus:outline-none transition font-mono opacity-80" />
+        <button type="button" (click)="copyPassword()" [disabled]="!newPassword() || isCopyingPassword()"
+          [title]="'ADMIN.USERS.COPY_PASSWORD' | transloco" [attr.aria-label]="'ADMIN.USERS.COPY_PASSWORD' | transloco"
+          class="shrink-0 inline-flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 text-[var(--text-secondary)] hover:text-[var(--brand-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] disabled:opacity-40 disabled:cursor-not-allowed">
+          <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
+          </svg>
+        </button>
         <button type="button" (click)="generatePassword()" title="{{ 'ADMIN.USERS.GENERATE_SECURE_PASSWORD' | transloco }}"
           class="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] px-4 text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:border-[var(--brand-primary)]/50 hover:bg-[var(--brand-primary)]/5 transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

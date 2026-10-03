@@ -183,6 +183,7 @@ export class Navbar implements OnInit {
   }
 
   onLogOut(): void {
+    if (this.userDataService.loggingOut()) return;
     this.userDataService.loggingOut.set(true);
     this.authService.logOut().subscribe({
       next: () => {

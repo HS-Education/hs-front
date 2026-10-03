@@ -5,12 +5,13 @@ import {AuthService} from '../../services/auth.service';
 import {UserDataService} from '../../../shared/services/user-data.service';
 import {Router} from '@angular/router';
 import {SignInRequest} from '../../models/sign-in.model';
-import {finalize} from 'rxjs';
+import {finalize, from, switchMap} from 'rxjs';
+import {PasswordToggle} from '../../../shared/components/password-toggle/password-toggle';
 
 @Component({
   selector: 'app-sign-in',
   imports: [TranslocoPipe,
-    ReactiveFormsModule
+    ReactiveFormsModule, PasswordToggle
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sign-in.html',
@@ -24,14 +25,16 @@ export class SignIn {
   private readonly router = inject(Router);
 
   readonly loading = signal(false);
+  readonly showPassword = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
-    username: ['', [Validators.required]],
+    username: ['', [Validators.required, Validators.pattern(/\S/)]],
     password: ['', [Validators.required]],
   });
 
   onSubmit(): void {
+    if (this.loading()) return;
     if (this.form.invalid) {
       this.errorMessage.set(this.translocoService.translate('UI_TEXT.COMPLETE_ALL_FIELDS'));
       return;
@@ -41,26 +44,23 @@ export class SignIn {
     this.loading.set(true);
 
     const payload: SignInRequest = {
-      username: this.form.controls.username.value,
+      username: this.form.controls.username.value.trim(),
       password: this.form.controls.password.value,
     };
 
     this.authService.SignIn(payload)
       .pipe(
+        switchMap(profile => {
+          this.userDataService.setUser(profile);
+          const admin = profile.roles.some(role => role === 'ADMIN' || role === 'ROLE_ADMIN');
+          return from(this.router.navigate([admin ? '/admin/academic-years' : '/home']));
+        }),
         finalize(() => this.loading.set(false))
       )
       .subscribe({
-        next: (profile) => {
-          this.userDataService.setUser(profile);
-          if (profile.roles.includes('ADMIN')) {
-            void this.router.navigate(['/admin/academic-years']);
-          } else {
-            void this.router.navigate(['/home']);
-          }
-        },
         error: (err: unknown) => {
           if (isPasswordUpdateRequired(err)) {
-            void this.router.navigate(['/update-password'], { queryParams: { username: this.form.controls.username.value } });
+            void this.router.navigate(['/update-password'], { queryParams: { username: payload.username } });
             return;
           }
           this.errorMessage.set(

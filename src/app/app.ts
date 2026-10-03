@@ -1,4 +1,4 @@
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import {Component, computed, effect, inject, OnInit, signal} from '@angular/core';
 import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import {Navbar} from './shared/components/navbar/navbar';
@@ -9,6 +9,7 @@ import {OnboardingService} from './features/onboarding/data-access/onboarding.se
 import {OnboardingModal} from './features/onboarding/onboarding-modal/onboarding-modal';
 import {SeryBubble} from './shared/components/sery-bubble/sery-bubble';
 import {SeryBubbleService} from './shared/components/sery-bubble/sery-bubble.service';
+import {finalize} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -22,11 +23,14 @@ export class App implements OnInit {
   protected readonly seryBubbleService = inject(SeryBubbleService);
   private readonly router = inject(Router);
   private readonly onboardingService = inject(OnboardingService);
+  private readonly translocoService = inject(TranslocoService);
   protected readonly title = signal('HS');
 
   readonly isRouting = signal(false);
   readonly currentUrl = signal(this.router.url);
   readonly showOnboarding = signal(false);
+  readonly completingOnboarding = signal(false);
+  readonly onboardingError = signal<string | null>(null);
 
   readonly showNavbar = computed(() => {
     return this.userDataService.isAuthenticated() && !this.currentUrl().includes('/sign-in') && !this.currentUrl().includes('/update-password');
@@ -71,9 +75,12 @@ export class App implements OnInit {
   }
 
   onOnboardingComplete(): void {
-    this.onboardingService.complete().subscribe({
+    if (this.completingOnboarding()) return;
+    this.completingOnboarding.set(true);
+    this.onboardingError.set(null);
+    this.onboardingService.complete().pipe(finalize(() => this.completingOnboarding.set(false))).subscribe({
       next: () => this.showOnboarding.set(false),
-      error: () => this.showOnboarding.set(false),
+      error: () => this.onboardingError.set(this.translocoService.translate('ONBOARDING.SAVE_FAILED')),
     });
   }
 
