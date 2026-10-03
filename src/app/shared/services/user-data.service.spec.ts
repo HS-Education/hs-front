@@ -30,7 +30,7 @@ describe('UserDataService signals', () => {
     ['É', 'É'],
     ['', '?'],
     ['   ', '?'],
-  ])('derives avatar initials from the name %j, never the username', (name, initials) => {
+  ])('derives avatar initials from the name %j, never the username', (name: string, initials: string) => {
     const state = TestBed.inject(UserDataService);
     state.setUser({id: 2, name, username: '20260002', roles: ['STUDENT']});
     expect(state.userInitials()).toBe(initials);

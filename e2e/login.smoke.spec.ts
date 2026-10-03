@@ -51,6 +51,13 @@ test('cold start permits login, secures cookies, restores a guarded route and lo
   // Capture the same session before either response clears its cookies.
   // Repeated requests must not fail when another request revoked the token.
   const headers = { ...await csrfHeaders(page.request, api), Origin: new URL(page.url()).origin };
+  // POST on this GET-only endpoint exercises CSRF without changing any cloud data.
+  // Keep the same cookie/token across writes: fresh bootstrap per write hid the regression.
+  for (let turn = 0; turn < 3; turn++) {
+    const rejectedMethod = await page.request.post(`${api}/auth/csrf`, {data: {}, headers});
+    expect(rejectedMethod.status()).toBe(405);
+    expect((await rejectedMethod.json()).status).toBe(405);
+  }
   const logouts = await Promise.all(Array.from({length: 4}, () =>
     page.request.post(`${api}/auth/log-out`, {data: {}, headers})));
   for (const logout of logouts) expect(logout.status()).toBe(200);
