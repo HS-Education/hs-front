@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateEnumPipe } from '../../../shared/pipes/translate-enum.pipe';
 import { NgClass } from '@angular/common';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { StyledSelectDirective } from '../../../shared/directives/styled-select.directive';
 import { generateSecurePassword } from '../../../shared/security/secure-password';
 
@@ -23,6 +23,7 @@ import { generateSecurePassword } from '../../../shared/security/secure-password
 export class Users implements OnInit {
   private readonly userService = inject(UserService);
   private readonly toastService = inject(ToastService);
+  private readonly translocoService = inject(TranslocoService);
 
   readonly users = signal<User[]>([]);
   readonly isLoading = signal(false);
@@ -59,6 +60,7 @@ export class Users implements OnInit {
 
   readonly newName = signal('');
   readonly newPassword = signal('');
+  readonly isCopyingPassword = signal(false);
   readonly selectedRoles = signal<string[]>([]);
 
   readonly isFormValid = computed(() => {
@@ -105,6 +107,7 @@ export class Users implements OnInit {
   closeModal = () => {
     this.isModalOpen.set(false);
     this.editingUser.set(null);
+    this.newPassword.set('');
   }
 
   toggleRole(roleId: string) {
@@ -130,8 +133,22 @@ export class Users implements OnInit {
     this.newPassword.set(generateSecurePassword());
   }
 
+  async copyPassword(): Promise<void> {
+    const password = this.newPassword();
+    if (!password || this.isCopyingPassword()) return;
+    this.isCopyingPassword.set(true);
+    try {
+      await navigator.clipboard.writeText(password);
+      this.toastService.success(this.translocoService.translate('ADMIN.USERS.PASSWORD_COPIED'));
+    } catch {
+      this.toastService.error(this.translocoService.translate('ADMIN.USERS.PASSWORD_COPY_FAILED'));
+    } finally {
+      this.isCopyingPassword.set(false);
+    }
+  }
+
   submitUser() {
-    if (!this.isFormValid()) return;
+    if (!this.isFormValid() || this.isSubmitting()) return;
     this.isSubmitting.set(true);
 
     const userToEdit = this.editingUser();

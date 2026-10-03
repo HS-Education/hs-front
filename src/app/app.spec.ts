@@ -8,6 +8,8 @@ import {OnboardingService} from './features/onboarding/data-access/onboarding.se
 import {SeryBubbleService} from './shared/components/sery-bubble/sery-bubble.service';
 import {ThemeService} from './shared/services/theme.service';
 import {UserDataService} from './shared/services/user-data.service';
+import {TranslocoService} from '@jsverse/transloco';
+import {Subject} from 'rxjs';
 
 describe('application routes', () => {
   it('keeps sign-in public and protects metrics by role', () => {
@@ -32,6 +34,7 @@ describe('Sery bubble visibility', () => {
         {provide: ThemeService, useValue: {}},
         {provide: SeryBubbleService, useValue: {isCourseFiltered: signal(false)}},
         {provide: OnboardingService, useValue: {}},
+        {provide: TranslocoService, useValue: {translate: (key: string) => key}},
       ],
     });
     const app = TestBed.runInInjectionContext(() => new App());
@@ -39,5 +42,40 @@ describe('Sery bubble visibility', () => {
     expect(app.showSeryBubble()).toBe(false);
     isAdmin.set(false);
     expect(app.showSeryBubble()).toBe(true);
+  });
+});
+
+describe('onboarding completion', () => {
+  it('keeps the tutorial open after a failure and permits a successful retry', () => {
+    const firstAttempt = new Subject<void>();
+    const retry = new Subject<void>();
+    const complete = vi.fn().mockReturnValueOnce(firstAttempt).mockReturnValueOnce(retry);
+    TestBed.configureTestingModule({providers: [
+      {provide: UserDataService, useValue: {
+        isAuthenticated: signal(true), isSessionLoaded: signal(false),
+        isAdmin: signal(false), isTakingQuiz: signal(false),
+      }},
+      {provide: Router, useValue: {url: '/home'}},
+      {provide: ThemeService, useValue: {}},
+      {provide: SeryBubbleService, useValue: {isCourseFiltered: signal(false)}},
+      {provide: OnboardingService, useValue: {complete}},
+      {provide: TranslocoService, useValue: {translate: (key: string) => key}},
+    ]});
+    const app = TestBed.runInInjectionContext(() => new App());
+    app.showOnboarding.set(true);
+    app.onOnboardingComplete();
+    app.onOnboardingComplete();
+    expect(complete).toHaveBeenCalledTimes(1);
+    expect(app.completingOnboarding()).toBe(true);
+    firstAttempt.error(new Error('Save failed'));
+    expect(app.showOnboarding()).toBe(true);
+    expect(app.completingOnboarding()).toBe(false);
+    expect(app.onboardingError()).toBe('ONBOARDING.SAVE_FAILED');
+    app.onOnboardingComplete();
+    expect(app.onboardingError()).toBeNull();
+    retry.next();
+    retry.complete();
+    expect(app.showOnboarding()).toBe(false);
+    expect(app.completingOnboarding()).toBe(false);
   });
 });

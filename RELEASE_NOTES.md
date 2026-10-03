@@ -1,3 +1,23 @@
+# Hotfix 0.2.6
+
+## Authentication and administrative UI corrections
+
+- Prevent repeated sign-in and logout submissions while a request is pending; retain login loading state through route navigation.
+- Add accessible, independent password visibility controls to sign-in and password-update forms.
+- Allow administrators to copy generated passwords, handle denied clipboard access without exposing the password, and clear the generated value when the modal closes.
+- Use an HS Education favicon, name-based avatar initials, translated classroom planning labels and theme-aware generation information.
+- Keep the onboarding tutorial open on save failure, display a translated retry message and close only after successful persistence.
+- Add synthetic-data browser regressions for Chrome and Firefox. Extend the real deployment smoke to require successful concurrent logout requests before accepting deployment.
+
+## Protected hotfix integration
+
+- Prepare `hotfix/0.2.6` from `main`, paired with backend 0.2.6. This is not an already-deployed release.
+- Require CI, CodeQL and independent approval for `hotfix/0.2.6` into `main`; then synchronize `main` into `develop` through a reviewed PR.
+- Publish matching new `v0.2.6` tags on the reviewed main commits, frontend first. Preserve existing tags and environment approval protections.
+- Local mocked browser tests do not establish Azure functional acceptance. Validate the reported logout and Firefox behavior after protected deployment.
+
+---
+
 # Release 0.2.5
 
 ## Coordinated Azure startup readiness release

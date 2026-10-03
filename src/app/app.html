@@ -39,5 +39,6 @@
 
 <!-- Onboarding Modal -->
 @if (showOnboarding()) {
-  <app-onboarding-modal (completed)="onOnboardingComplete()"></app-onboarding-modal>
+  <app-onboarding-modal [saving]="completingOnboarding()" [errorMessage]="onboardingError()"
+    (completed)="onOnboardingComplete()"></app-onboarding-modal>
 }

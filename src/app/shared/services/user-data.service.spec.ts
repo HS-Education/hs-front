@@ -23,4 +23,16 @@ describe('UserDataService signals', () => {
     state.clearUser();
     expect(state.isAuthenticated()).toBe(false);
   });
+
+  it.each([
+    ['  María   del Carmen Torres  ', 'MT'],
+    ['Admin', 'AD'],
+    ['É', 'É'],
+    ['', '?'],
+    ['   ', '?'],
+  ])('derives avatar initials from the name %j, never the username', (name, initials) => {
+    const state = TestBed.inject(UserDataService);
+    state.setUser({id: 2, name, username: '20260002', roles: ['STUDENT']});
+    expect(state.userInitials()).toBe(initials);
+  });
 });
