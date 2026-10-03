@@ -1,6 +1,6 @@
 import {LocalizedDatePipe} from '../../shared/pipes/localized-date.pipe';
 import {ChangeDetectionStrategy, Component, computed, ElementRef, inject, OnInit, signal, viewChild} from '@angular/core';
-import {ChatService} from './data-access/chat.service';
+import {ChatService, chatErrorTranslationKey} from './data-access/chat.service';
 import {ClassroomService} from '../classrooms/data-access/classroom.service';
 import {UserDataService} from '../../shared/services/user-data.service';
 import {ChatSession} from './data-access/models/chat-session.model';
@@ -341,7 +341,7 @@ export class Chat implements OnInit {
       this.messages.update(prev => 
         prev.map(msg => 
           msg.id === assistantId 
-            ? { ...msg, content: '**Error:** ' + this.translocoService.translate('CHAT.STREAM_INTERRUPTED') }
+            ? { ...msg, content: '**Error:** ' + this.translocoService.translate(chatErrorTranslationKey(err)) }
             : msg
         )
       );
