@@ -954,7 +954,7 @@
       "TITLE": "Classroom Management",
       "SUBTITLE": "Manage physical/virtual classrooms, their automatic generation and assigned teachers.",
       "GENERATE_CLASSROOMS": "Generate Year Classrooms",
-      "ONLY_PLANNED": "Automatic classroom generation is only available when the current Academic Year is in PLANNED status.",
+      "ONLY_PLANNED": "Automatic classroom generation is only available while the current academic year is in the planning stage.",
       "SEARCH_COURSE": "Search course...",
       "LEVEL": "Level",
       "PRIMARY": "Primary",
@@ -1079,6 +1079,9 @@
       "PASSWORD": "Password",
       "PASSWORD_PH": "Click Generate",
       "GENERATE_SECURE_PASSWORD": "Generate secure password",
+      "COPY_PASSWORD": "Copy password",
+      "PASSWORD_COPIED": "Password copied",
+      "PASSWORD_COPY_FAILED": "Could not copy. Select the password and copy it manually.",
       "GENERATE": "Generate",
       "PASSWORD_REQ": "Must include min 8 characters (uppercase, lowercase, number, symbol).",
       "USER_ROLES": "User Roles",
@@ -1123,6 +1126,8 @@
     "PREV": "Back",
     "NEXT": "Next",
     "FINISH": "Get Started",
+    "SAVING": "Saving...",
+    "SAVE_FAILED": "Could not save the tutorial. Press Get Started to try again.",
     "WELCOME": {
       "TITLE": "Welcome to HS Education!",
       "DESC": "This is your learning platform. Let us give you a quick tour of the sections available to you."
@@ -1163,6 +1168,8 @@
     "DAY_QUESTIONNAIRES": "Questionnaires for the day"
   },
   "UI_TEXT": {
+    "SHOW_PASSWORD": "Show password",
+    "HIDE_PASSWORD": "Hide password",
     "LOADING_HS_EDUCATION": "Loading HS Education",
     "WELCOME": "Welcome",
     "PERSONALIZED_LEARNING_PLATFORM": "Personalized Learning Platform",

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">HS Education</title>
+  <rect width="64" height="64" rx="15" fill="#c2410c"/>
+  <g fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 16v23m15-23v23M14 27h15M49 18c-9-6-19 1-11 7l7 4c8 6-2 15-11 8"/>
+    <path d="M13 48h38" stroke-width="3"/>
+  </g>
+</svg>
