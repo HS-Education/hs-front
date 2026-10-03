@@ -1,3 +1,29 @@
+# Hotfix 0.2.7
+
+## CSRF recovery across Angular requests and native streaming
+
+- Version the in-memory CSRF cache across authentication transitions. A late bootstrap from an older generation cannot restore a stale token or clear a newer pending request; concurrent rejections share the replacement.
+- Retry a write at most once only for HTTP 403 with the backend filter's explicit `CSRF_TOKEN_MISSING` or `CSRF_TOKEN_INVALID` code, before its controller executed. Never replay ordinary permission failures, HTTP 500, session failures, provider errors, partially consumed streams or network failures.
+- Apply the same contract to Angular HttpClient and Sery's native fetch path without weakening cookies, CSRF validation or origin restrictions.
+- Distinguish an expired session, an authorization rejection and a server failure before streaming from a response interrupted after streaming begins, in both chat interfaces and both languages.
+- Add unit regressions for invalidation races, bounded recovery and consecutive messages, plus synthetic browser journeys covering session creation, three answers, recovery, no duplicate AI generations and UI logout.
+
+## CI and deployed smoke coverage
+
+- Run the synthetic UI/CSRF browser suites in a dedicated frontend CI job. Fixtures intercept API requests and do not use Azure accounts or an AI provider.
+- Type-check unit tests in CI and explicitly type the existing avatar regression fixture parameters.
+- Select password generation by its real accessible title in the integrated student-creation journey, rather than relying on button order after the copy control was added.
+- Strengthen the login smoke with three sequential POST requests to the GET-only CSRF endpoint, expecting JSON HTTP 405 while reusing the same valid cookie/token. These requests do not mutate production data and detect per-request cookie deletion missed by parallel logout alone.
+- Synthetic/local success is not Azure functional acceptance. After deployment, separately validate consecutive Sery queries and logout using an authorized Sery-enabled test account, then the remaining module journeys.
+
+## Protected hotfix preparation
+
+- Set version 0.2.7 and prepare `hotfix/0.2.7` from `main`, paired with backend 0.2.7.
+- Publish the branch and open the PR into `main`, leaving merge, `develop` synchronization, new matching tags and protected deployment for the next reviewed session.
+- Keep existing tags, GitHub protection rules, deployment approval and cloud resources unchanged.
+
+---
+
 # Hotfix 0.2.6
 
 ## Authentication and administrative UI corrections
