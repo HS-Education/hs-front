@@ -87,7 +87,7 @@ test('admin creates a student through the UI and the API lists that account', as
   await page.locator('button').filter({ has: page.locator('span', { hasText: /nuevo usuario|new user/i }) }).click();
   const modal = page.locator('app-modal');
   await modal.locator('input[type="text"]').first().fill('Quality Gate Learner');
-  await modal.locator('input[readonly] + button').click();
+  await modal.getByTitle('Generar contraseña segura', {exact: true}).click();
   await modal.locator('input[type="checkbox"]').last().check();
   const created = page.waitForResponse(r => r.url().endsWith('/users') && r.request().method() === 'POST');
   await modal.locator('button').last().click();

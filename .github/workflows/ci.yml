@@ -49,6 +49,9 @@ jobs:
       - name: Run frontend unit tests
         run: pnpm test
 
+      - name: Type-check frontend unit tests
+        run: pnpm exec tsc --project tsconfig.spec.json --noEmit
+
       - name: Validate English and Spanish dictionaries
         run: node scripts/check-i18n.cjs
 
@@ -57,3 +60,43 @@ jobs:
 
       - name: Build production bundle
         run: pnpm build
+
+  ui-regressions:
+    name: Frontend / UI regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up pnpm 11 and Node.js 22
+        uses: pnpm/setup@v3
+        with:
+          version: 11.0.8
+          runtime: node@22
+          cache: true
+          install: false
+      - name: Install locked dependencies and Chromium
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+      - name: Verify UI and CSRF regressions with synthetic APIs only
+        shell: bash
+        run: |
+          pnpm exec ng serve --host 127.0.0.1 --port 4200 > /tmp/hs-frontend-ci.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for attempt in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:4200/sign-in > /dev/null; then break; fi
+            sleep 1
+          done
+          if ! curl --fail --silent http://127.0.0.1:4200/sign-in > /dev/null; then
+            tail -n 80 /tmp/hs-frontend-ci.log
+            exit 1
+          fi
+          PLAYWRIGHT_BASE_URL=http://127.0.0.1:4200 pnpm exec playwright test e2e/ui-hotfix.spec.ts e2e/csrf-lifecycle.spec.ts
+      - name: Preserve synthetic browser test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-ui-regressions
+          path: test-results/playwright-junit.xml
+          if-no-files-found: ignore

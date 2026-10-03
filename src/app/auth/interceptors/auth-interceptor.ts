@@ -5,6 +5,7 @@ import {AuthService} from '../services/auth.service';
 import {UserDataService} from '../../shared/services/user-data.service';
 import {environment} from '../../../environment/environment';
 import {CsrfService} from '../services/csrf.service';
+import {isCsrfRejection} from '../services/csrf-error';
 
 let refresh$: Observable<unknown> | null = null;
 
@@ -25,11 +26,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // For API requests use credentials so browser sends HttpOnly cookies
   const requestWithCredentials = isApiRequest ? req.clone({ withCredentials: true }) : req;
   const unsafe = isApiRequest && !['GET', 'HEAD', 'OPTIONS'].includes(req.method);
-  const send = () => unsafe
-    ? csrf.getToken().pipe(switchMap(token => next(requestWithCredentials.clone({
+  let sentCsrfToken: string | undefined;
+  const sendOnce = () => unsafe
+    ? csrf.getToken().pipe(tap(token => sentCsrfToken = token), switchMap(token => next(requestWithCredentials.clone({
         setHeaders: { 'X-XSRF-TOKEN': token }
       }))))
     : next(requestWithCredentials);
+  const send = () => sendOnce().pipe(catchError((err: unknown) => {
+    if (unsafe && err instanceof HttpErrorResponse && isCsrfRejection(err.status, err.error)) {
+      csrf.invalidate(sentCsrfToken);
+      // Exactly one retry, and only for a filter rejection before the write ran.
+      return sendOnce();
+    }
+    return throwError(() => err);
+  }));
 
   return send().pipe(
     tap(event => {

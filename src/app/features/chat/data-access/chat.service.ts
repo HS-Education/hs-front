@@ -5,6 +5,18 @@ import { ChatSession } from './models/chat-session.model';
 import { ChatMessage } from './models/chat-message.model';
 import { firstValueFrom } from 'rxjs';
 import { CsrfService } from '../../../auth/services/csrf.service';
+import { isCsrfRejection } from '../../../auth/services/csrf-error';
+
+export class ChatRequestError extends Error {
+  constructor(readonly status: number) { super(`Chat stream request failed (${status})`); }
+}
+
+export function chatErrorTranslationKey(error: unknown): string {
+  if (!(error instanceof ChatRequestError)) return 'CHAT.STREAM_INTERRUPTED';
+  if (error.status === 401) return 'CHAT.SESSION_EXPIRED';
+  if (error.status === 403) return 'CHAT.REQUEST_REJECTED';
+  return 'CHAT.REQUEST_FAILED';
+}
 
 @Injectable({
   providedIn: 'root',
@@ -50,6 +62,16 @@ export class ChatService {
   }
 
   async sendMessageStream(sessionId: number, question: string, onChunk: (text: string) => void): Promise<void> {
+    const response = await this.openMessageStream(sessionId, question);
+
+    if (!response.ok) {
+      throw new ChatRequestError(response.status);
+    }
+
+    await this.consumeMessageStream(response, onChunk);
+  }
+
+  private async openMessageStream(sessionId: number, question: string, retried = false): Promise<Response> {
     const csrfToken = await firstValueFrom(this.csrf.getToken());
     const response = await fetch(`${this.baseUrl}/chat/sessions/${sessionId}/stream`, {
       method: 'POST',
@@ -62,10 +84,17 @@ export class ChatService {
       credentials: 'include'
     });
 
-    if (!response.ok) {
-      throw new Error(`Chat stream request failed (${response.status})`);
+    if (response.status === 403) {
+      const body: unknown = await response.clone().json().catch(() => null);
+      if (isCsrfRejection(response.status, body)) {
+        this.csrf.invalidate(csrfToken);
+        if (!retried) return this.openMessageStream(sessionId, question, true);
+      }
     }
+    return response;
+  }
 
+  private async consumeMessageStream(response: Response, onChunk: (text: string) => void): Promise<void> {
     if (!response.body) {
       throw new Error('El entorno no soporta streaming (response.body es nulo).');
     }

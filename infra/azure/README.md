@@ -1,5 +1,13 @@
 # Frontend: CD por tags con aprobación protegida
 
+## Hotfix 0.2.7 preparado para revisión
+
+`hotfix/0.2.7` se prepara desde `main` y se publica mediante PR hacia `main`, junto con el backend de la misma versión. Esta fase termina en los PR abiertos: no incluye merges, sincronización a `develop`, tags ni despliegue. Se conservan las aprobaciones independientes y los tags existentes.
+
+El cliente recupera el token CSRF y reintenta una sola vez únicamente cuando el filtro del backend responde HTTP 403 con `CSRF_TOKEN_MISSING` o `CSRF_TOKEN_INVALID`, antes de ejecutar el controlador. Este contrato se aplica tanto a HttpClient como a `fetch` de Sery. No se reintentan automáticamente errores de permisos, HTTP 500, fallos de red ni streams iniciados. Las pruebas de navegador con API sintética se ejecutan en CI; el smoke de despliegue añade tres escrituras consecutivas no mutantes con un único bootstrap CSRF. La aceptación funcional en Azure queda pendiente del despliegue aprobado y de la prueba real de Sery sin recargar.
+
+## Flujo de despliegue establecido
+
 La feature de CD automático inicia **Frontend Azure release** al publicar un tag `v*`, con `app-service` como hosting automático y `AZURE_CD_ENABLED=true` como gate. Conserva el environment `azure-students`, su aprobación humana, bloqueo de autoaprobación y restricción a tags. SWA se mantiene exclusivamente manual y explícito. No se modifican los tags `v0.2.1` ya publicados ni se inicia un despliegue al subir esta feature.
 
 Integrar esta feature a develop en ambos repos y preparar una **release nueva coordinada** antes de publicar el siguiente tag. El compañero publica los tags en frontend y backend; `sebaditas` aprueba los environments. Si el único revisor publica el tag, no puede aprobar su propia ejecución: no desactivar esa protección.
