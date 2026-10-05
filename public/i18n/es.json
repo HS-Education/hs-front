@@ -473,6 +473,9 @@
     "SOURCES": "Fuentes consultadas",
     "SERY_THINKING": "Sery está pensando",
     "STREAM_INTERRUPTED": "La respuesta se interrumpió y no se completó. Revisa la conexión e inténtalo de nuevo.",
+    "SESSION_EXPIRED": "Tu sesión ha vencido. Vuelve a iniciar sesión antes de consultar a Sery.",
+    "REQUEST_REJECTED": "No se pudo autorizar la consulta. Recarga la página y verifica tus permisos antes de intentarlo de nuevo.",
+    "REQUEST_FAILED": "El servidor no pudo iniciar la respuesta de Sery. Inténtalo más tarde; si continúa, informa el error.",
     "INPUT_PLACEHOLDER": "Pregúntale a Sery sobre los materiales...",
     "BTN_SEND": "Enviar",
     "PREVIEW": {

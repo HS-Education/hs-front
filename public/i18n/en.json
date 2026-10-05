@@ -473,6 +473,9 @@
     "SOURCES": "Sources",
     "SERY_THINKING": "Sery is thinking",
     "STREAM_INTERRUPTED": "The response was interrupted before it completed. Check your connection and try again.",
+    "SESSION_EXPIRED": "Your session has expired. Sign in again before asking Sery.",
+    "REQUEST_REJECTED": "The request could not be authorized. Reload the page and check your permissions before trying again.",
+    "REQUEST_FAILED": "The server could not start Sery's response. Try again later; if it persists, report the error.",
     "INPUT_PLACEHOLDER": "Ask Sery about the materials...",
     "BTN_SEND": "Send",
     "PREVIEW": {
