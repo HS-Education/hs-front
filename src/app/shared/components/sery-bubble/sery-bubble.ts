@@ -15,7 +15,7 @@ import { FormsModule } from '@angular/forms';
 
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ChatService } from '../../../features/chat/data-access/chat.service';
+import { ChatService, chatErrorTranslationKey } from '../../../features/chat/data-access/chat.service';
 import { ChatSession } from '../../../features/chat/data-access/models/chat-session.model';
 import { ChatMessage } from '../../../features/chat/data-access/models/chat-message.model';
 import { Classroom } from '../../../features/classrooms/data-access/models/responses/classroom.model';
@@ -351,7 +351,7 @@ export class SeryBubble implements OnInit {
           msg.id === assistantId
             ? {
                 ...msg,
-                content: '**Error:** ' + this.translate('CHAT.STREAM_INTERRUPTED'),
+                content: '**Error:** ' + this.translate(chatErrorTranslationKey(err)),
               }
             : msg
         )
