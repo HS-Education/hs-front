@@ -102,4 +102,42 @@ describe('authInterceptor cookie and refresh boundary', () => {
     http.expectNone(`${environment.baseUrl}/classrooms`);
     expect(csrf.invalidate).toHaveBeenCalledTimes(2);
   });
+
+  it('renews CSRF and retries a filter-rejected write exactly once', () => {
+    csrf.getToken.mockReturnValueOnce(of('old-masked-token-fixture')).mockReturnValueOnce(of('new-masked-token-fixture'));
+    let result: unknown;
+    client.post(`${environment.baseUrl}/classrooms`, {name: 'Synthetic class'}).subscribe(value => result = value);
+    const first = http.expectOne(`${environment.baseUrl}/classrooms`);
+    expect(first.request.headers.get('X-XSRF-TOKEN')).toBe('old-masked-token-fixture');
+    first.flush({code: 'CSRF_TOKEN_INVALID'}, {status: 403, statusText: 'Forbidden'});
+    const replacement = http.expectOne(`${environment.baseUrl}/classrooms`);
+    expect(replacement.request.headers.get('X-XSRF-TOKEN')).toBe('new-masked-token-fixture');
+    expect(replacement.request.body).toEqual({name: 'Synthetic class'});
+    replacement.flush({id: 42});
+    expect(result).toEqual({id: 42});
+    expect(csrf.invalidate).toHaveBeenCalledWith('old-masked-token-fixture');
+    expect(csrf.getToken).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops after a second explicit CSRF rejection', () => {
+    let status: number | undefined;
+    client.post(`${environment.baseUrl}/onboarding/complete`, {}).subscribe({error: error => status = error.status});
+    for (let attempt = 0; attempt < 2; attempt++) {
+      http.expectOne(`${environment.baseUrl}/onboarding/complete`)
+        .flush({code: 'CSRF_TOKEN_MISSING'}, {status: 403, statusText: 'Forbidden'});
+    }
+    http.expectNone(`${environment.baseUrl}/onboarding/complete`);
+    expect(status).toBe(403);
+    expect(csrf.getToken).toHaveBeenCalledTimes(2);
+  });
+
+  it('never replays server failures or ordinary permission denials', () => {
+    for (const status of [403, 500]) {
+      client.post(`${environment.baseUrl}/documents`, {}).subscribe({error: () => {}});
+      http.expectOne(`${environment.baseUrl}/documents`)
+        .flush({code: 'ACCESS_DENIED'}, {status, statusText: 'Synthetic rejection'});
+      http.expectNone(`${environment.baseUrl}/documents`);
+    }
+    expect(csrf.getToken).toHaveBeenCalledTimes(2);
+  });
 });
