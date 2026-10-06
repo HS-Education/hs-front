@@ -3,6 +3,21 @@ import { csrfHeaders } from './csrf';
 
 const api = process.env['PLAYWRIGHT_API_BASE_URL'] ?? 'http://localhost:8080/api/v1';
 
+test('unknown routes, absent assets and disabled Swagger return safe 404 responses', async ({ request }) => {
+  for (const path of ['/homeaaa', '/swagger-ui.html', '/swagger-ui/index.html', '/v3/api-docs',
+    '/assets/hs-diagnostic-missing.svg', '/hs-diagnostic-missing.js']) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(404);
+    expect(response.headers()['content-type']).toContain('application/json');
+    const body = await response.json();
+    expect(body.status).toBe(404);
+    expect(body.error).toBe('Not Found');
+    expect(body.message).toBe('The requested resource was not found.');
+    expect(typeof body.timestamp).toBe('string');
+    expect(JSON.stringify(body)).not.toContain(path);
+  }
+});
+
 test('anonymous visitors are redirected from protected application routes', async ({ page }) => {
   for (const route of ['/home', '/classrooms', '/repository', '/metrics', '/admin/users']) {
     await page.goto(route);
@@ -45,6 +60,10 @@ test('cold start permits login, secures cookies, restores a guarded route and lo
   const me = await page.request.get(`${api}/auth/me`);
   expect(me.status()).toBe(200);
   expect((await me.json()).username).toBe(username);
+  // A missing authenticated API must be 404, not an Angular fallback or a 500.
+  const missingApi = await page.request.get(`${api}/hs-diagnostic-missing`);
+  expect(missingApi.status()).toBe(404);
+  expect((await missingApi.json()).status).toBe(404);
   await page.reload();
   await expect(page).toHaveURL(/\/(home|admin\/academic-years)(?:\?.*)?$/);
 

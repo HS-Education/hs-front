@@ -1,3 +1,15 @@
+# Hotfix 0.2.8
+
+## Cloud missing-route smoke coverage
+
+- Pair the frontend release with backend 0.2.8; keep same-origin `/api/v1` configuration and the current Azure hostname.
+- Require safe JSON HTTP 404 for unknown public routes, missing static assets and disabled Swagger; check that responses do not reflect the requested path.
+- Verify an authenticated unknown API returns HTTP 404 rather than HTTP 500 or an Angular HTML fallback, while retaining anonymous authentication checks and repeated-write/logout smoke coverage.
+- Do not change the Angular route allowlist or frontend UI. Direct unknown server routes return JSON 404; the existing Angular wildcard still redirects client-side navigation to the not-found page.
+- Publish `hotfix/0.2.8` and its PR into main, stopping before merge, synchronization, matching tag publication or protected deployment. New smoke assertions must run against the newly deployed backend, not the current version.
+
+---
+
 # Hotfix 0.2.7
 
 ## CSRF recovery across Angular requests and native streaming
