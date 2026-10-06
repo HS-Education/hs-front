@@ -1,3 +1,13 @@
+# Hotfix 0.2.9
+
+## Two-week grading-period compatibility
+
+- Pair the frontend package with backend 0.2.9 for the matching-tag Azure deployment contract; keep the existing same-origin configuration and hostname.
+- The academic-year editor does not impose a three-week minimum. Add regressions proving it submits and displays a successful two-week update, retaining edits when the server rejects an invalid duration.
+- Leave authorization, CSRF, cloud smoke, deployment gates and production data unchanged. New-version Azure acceptance remains a post-deployment step.
+
+---
+
 # Hotfix 0.2.8
 
 ## Cloud missing-route smoke coverage
