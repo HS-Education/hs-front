@@ -19,7 +19,7 @@
       </button>
     </div>
 
-  @if (!isPlanning()) {
+  @if (!isLoadingAcademicYear() && !isPlanning()) {
     <div class="bg-[var(--color-warning-soft)] border-l-4 border-[var(--color-warning)] p-4 rounded-r-lg mb-6">
     <div class="flex">
       <div class="flex-shrink-0">
