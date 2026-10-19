@@ -38,6 +38,7 @@ export class ClassroomsManagement implements OnInit {
   // Data signals
   readonly classrooms = signal<Classroom[]>([]);
   readonly activeAcademicYear = signal<AcademicYear | null>(null);
+  readonly isLoadingAcademicYear = signal(true);
   readonly teachers = signal<User[]>([]);
   readonly students = signal<User[]>([]);
   readonly availableStudents = signal<User[]>([]);
@@ -125,8 +126,9 @@ export class ClassroomsManagement implements OnInit {
         // Find the active or planning one (the system normally has 1)
         const current = years.find(y => y.status === 'PLANNED' || y.status === 'ACTIVE');
         if (current) this.activeAcademicYear.set(current);
+        this.isLoadingAcademicYear.set(false);
       },
-      error: () => {} });
+      error: () => { this.isLoadingAcademicYear.set(false); } });
   }
 
   loadClassrooms() {

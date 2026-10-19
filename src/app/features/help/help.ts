@@ -27,6 +27,7 @@ export interface Faq {
   id: number;
   questionKey: string;
   answerKey: string;
+  roles: Array<'STUDENT' | 'STAFF'>;
   isOpen?: boolean;
 }
 
@@ -179,31 +180,14 @@ export class HelpCenter {
 
   // Mock Data: FAQs
   readonly faqs = signal<Faq[]>([
-    {
-      id: 1,
-      questionKey: 'HELP.FAQ_1.Q',
-      answerKey: 'HELP.FAQ_1.A'
-    },
-    {
-      id: 2,
-      questionKey: 'HELP.FAQ_2.Q',
-      answerKey: 'HELP.FAQ_2.A'
-    },
-    {
-      id: 3,
-      questionKey: 'HELP.FAQ_3.Q',
-      answerKey: 'HELP.FAQ_3.A'
-    },
-    {
-      id: 4,
-      questionKey: 'HELP.FAQ_4.Q',
-      answerKey: 'HELP.FAQ_4.A'
-    },
-    {
-      id: 5,
-      questionKey: 'HELP.FAQ_5.Q',
-      answerKey: 'HELP.FAQ_5.A'
-    }
+    { id: 1, questionKey: 'HELP.FAQ_1.Q', answerKey: 'HELP.FAQ_1.A', roles: ['STAFF'] },
+    { id: 2, questionKey: 'HELP.FAQ_2.Q', answerKey: 'HELP.FAQ_2.A', roles: ['STAFF'] },
+    { id: 3, questionKey: 'HELP.FAQ_3.Q', answerKey: 'HELP.FAQ_3.A', roles: ['STAFF'] },
+    { id: 4, questionKey: 'HELP.FAQ_4.Q', answerKey: 'HELP.FAQ_4.A', roles: ['STAFF'] },
+    { id: 5, questionKey: 'HELP.FAQ_5.Q', answerKey: 'HELP.FAQ_5.A', roles: ['STAFF'] },
+    { id: 6, questionKey: 'HELP.FAQ_6.Q', answerKey: 'HELP.FAQ_6.A', roles: ['STUDENT'] },
+    { id: 7, questionKey: 'HELP.FAQ_7.Q', answerKey: 'HELP.FAQ_7.A', roles: ['STUDENT'] },
+    { id: 8, questionKey: 'HELP.FAQ_8.Q', answerKey: 'HELP.FAQ_8.A', roles: ['STUDENT'] }
   ]);
 
   private loadTutorialsWithFavorites(baseTutorials: Tutorial[]): Tutorial[] {
@@ -272,7 +256,10 @@ export class HelpCenter {
 
     if (filter === null && !query) return [];
 
+    const activeRole: 'STUDENT' | 'STAFF' = this.userDataService.isStudentView() ? 'STUDENT' : 'STAFF';
+
     return this.faqs().filter(faq => {
+      if (!faq.roles.includes(activeRole)) return false;
       // 1. Filter by Type
       if (filter === 'TUTORIAL' || filter === 'VIDEO' || filter === 'DOCUMENT' || filter === 'FAVORITE') return false;
       

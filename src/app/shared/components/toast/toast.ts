@@ -16,6 +16,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
         <div
           class="animate-slide-in-right pointer-events-auto flex items-start gap-3 rounded-2xl border border-l-4 border-[var(--border)] bg-[var(--surface)]/95 p-4 text-[var(--text-primary)] shadow-2xl shadow-black/10 backdrop-blur-xl"
           role="status"
+          (click)="toastService.remove(toast.id)"
           [ngClass]="{
             'border-l-[var(--brand-forest)]': toast.type === 'success',
             'border-l-[var(--brand-error)]': toast.type === 'error',
@@ -59,7 +60,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
           <button
             type="button"
-            (click)="toastService.remove(toast.id)"
+            (click)="$event.stopPropagation(); toastService.remove(toast.id)"
             class="shrink-0 rounded-lg p-1.5 text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-primary)]"
             [attr.aria-label]="'COMMON.CLOSE' | transloco">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">

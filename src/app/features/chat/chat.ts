@@ -357,15 +357,19 @@ export class Chat implements OnInit {
   getSources(content: string | null | undefined): ChatSource[] {
     if (!content) return [];
     const sources: ChatSource[] = [];
-    const regex = /(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+    const regex = /(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*([^\n]*?)\s*[-*•]?\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*[^\n]*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download\)?/gi;
     let match;
     while ((match = regex.exec(content)) !== null) {
-      sources.push({
-        name: match[1].replace(/\*\*/g, '').trim(),
-        courseId: Number(match[2]),
-        documentId: Number(match[3]),
-        downloadUrl: `/api/v1/courses/${match[2]}/documents/${match[3]}/download`
-      });
+      const courseId = Number(match[2]);
+      const documentId = Number(match[3]);
+      if (!sources.some(s => s.courseId === courseId && s.documentId === documentId)) {
+        sources.push({
+          name: match[1].replace(/\*\*/g, '').trim(),
+          courseId,
+          documentId,
+          downloadUrl: `/api/v1/courses/${courseId}/documents/${documentId}/download`
+        });
+      }
     }
     return sources;
   }
@@ -375,10 +379,15 @@ export class Chat implements OnInit {
     const sources = this.getSources(rawText);
 
     if (sources.length > 0) {
-      const regex = /\s*(?:\[\d+\])?\s*(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+      const renderedBlockIndices = new Set<number>();
+      const regex = /\s*(?:\[\d+\])?\s*[-*•]?\s*(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*([^\n]*?)\s*[-*•]?\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*[^\n]*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download\)?/gi;
       rawText = rawText.replace(regex, (match) => {
         const idx = sources.findIndex(s => match.includes(`/documents/${s.documentId}/download`));
         if (idx >= 0) {
+          if (renderedBlockIndices.has(idx)) {
+            return '';
+          }
+          renderedBlockIndices.add(idx);
           const citation = `[${idx + 1}]`;
           // Original check to see if the AI referenced it inline
           if (!msg.content?.includes(citation)) {

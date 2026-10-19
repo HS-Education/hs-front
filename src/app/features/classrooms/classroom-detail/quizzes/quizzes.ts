@@ -100,7 +100,7 @@ export class Quizzes implements OnInit {
     && this.userDataService.teacherViewMode() === 'STUDENT'
   );
   readonly canTeacherGenerate = computed(() =>
-    this.isClassroomTeacher() && this.userDataService.isTeacher() && !this.userDataService.isCoordinator()
+    this.isClassroomTeacher() && this.userDataService.isTeacher()
   );
 
   // Confirm Modal signals
@@ -638,7 +638,7 @@ export class Quizzes implements OnInit {
     this.feedbackPolling?.unsubscribe();
     if (!this.hasPendingFeedback()) return;
 
-    this.feedbackPolling = timer(2000, 3000).pipe(
+    this.feedbackPolling = timer(1500, 2000).pipe(
       switchMap(() => this.questionnaireService.getSubmissionResults(instanceId)
         .pipe(catchError(() => EMPTY))),
       takeWhile((submission, index) =>
