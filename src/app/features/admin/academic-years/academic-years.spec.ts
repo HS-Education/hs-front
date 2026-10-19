@@ -12,19 +12,22 @@ describe('two-week grading-period updates', () => {
   let response: Subject<GradingPeriod>;
   let update: ReturnType<typeof vi.fn>;
   let period: GradingPeriod;
+  let toastError: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     response = new Subject<GradingPeriod>();
+    toastError = vi.fn();
     update = vi.fn(() => response);
     TestBed.configureTestingModule({providers: [
       {provide: AcademicYearService, useValue: {
         updateGradingPeriod: update,
         getAllAcademicYears: vi.fn(() => of([{id: 1, year: 2030, status: 'PLANNED'}])),
       }},
-      {provide: ToastService, useValue: {}},
+      {provide: ToastService, useValue: {error: toastError}},
       {provide: TranslocoService, useValue: {translate: (key: string) => key}},
     ]});
     page = TestBed.runInInjectionContext(() => new AcademicYears());
+    vi.spyOn(page, 'todayIso').mockReturnValue('2030-04-01');
     page.selectedYear.set({id: 1, year: 2030, status: 'PLANNED'});
     period = {id: 2, academicYearId: 1, academicYearName: 2030,
       bimester: 'BIMESTER_2', startDate: null, endDate: null, status: 'PLANNED'};
@@ -46,15 +49,25 @@ describe('two-week grading-period updates', () => {
     expect(page.editStartDate()).toBe('');
   });
 
-  it('retains unsaved edits and original dates when the backend rejects a shorter period', () => {
+  it('rejects periods shorter than two weeks locally and retains unsaved edits', () => {
     page.editEndDate.set('2030-04-14');
     page.saveEdit(period);
-    response.error(new HttpErrorResponse({status: 400, error: {
-      message: "A grading period must last at least 2 weeks. Current duration: '1' weeks.",
-    }}));
+    expect(toastError).toHaveBeenCalledExactlyOnceWith('ADMIN.TOAST.GRADING_PERIOD_MIN_WEEKS');
+    expect(update).not.toHaveBeenCalled();
     expect(page.editingPeriodId()).toBe(2);
     expect(page.editEndDate()).toBe('2030-04-14');
     expect(page.gradingPeriods()[0].endDate).toBeNull();
+  });
+
+  it('retains unsaved edits and original dates when the backend rejects an update', () => {
+    page.saveEdit(period);
+    response.error(new HttpErrorResponse({status: 400, error: {
+      message: "The grading period overlaps another period.",
+    }}));
+    expect(page.editingPeriodId()).toBe(2);
+    expect(page.editEndDate()).toBe('2030-04-15');
+    expect(page.gradingPeriods()[0].endDate).toBeNull();
     expect(update).toHaveBeenCalledTimes(1);
+    expect(toastError).not.toHaveBeenCalled();
   });
 });
