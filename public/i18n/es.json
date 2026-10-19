@@ -438,6 +438,18 @@
       "Q": "¿Cómo se calcula la Tendencia de Calificaciones Promedio?",
       "A": "Se promedian todas las evaluaciones y tareas realizadas por los estudiantes de un aula durante la semana académica correspondiente."
     },
+    "FAQ_6": {
+      "Q": "¿Cómo respondo un cuestionario?",
+      "A": "Entra a tu aula, abre la pestaña Cuestionarios y elige el cuestionario disponible. Responde todas las preguntas y envíalo; verás tu nota y la retroalimentación de Sery."
+    },
+    "FAQ_7": {
+      "Q": "¿Qué hace Sery y qué puedo preguntarle?",
+      "A": "Sery es tu asistente de estudio: resuelve dudas sobre los temas de tus cursos usando el material del repositorio. Puede estar bloqueado mientras tienes una evaluación en curso."
+    },
+    "FAQ_8": {
+      "Q": "¿Dónde veo mi progreso?",
+      "A": "En la pestaña Progreso de cada aula verás tus notas por bimestre, tu dominio por tema y el resumen de Sery con recomendaciones."
+    },
     "TUTORIAL_CREATED_SUCCESS": "Tutorial creado correctamente",
     "TUTORIAL_UPDATED_SUCCESS": "Tutorial actualizado correctamente",
     "TUTORIAL_DELETED_SUCCESS": "Tutorial eliminado correctamente",

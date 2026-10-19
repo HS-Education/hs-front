@@ -438,6 +438,18 @@
       "Q": "How is the Average Grades Trend calculated?",
       "A": "All assessments and assignments completed by the students of a classroom during the corresponding academic week are averaged."
     },
+    "FAQ_6": {
+      "Q": "How do I answer a quiz?",
+      "A": "Go to your classroom, open the Quizzes tab and choose the available quiz. Answer every question and submit it; you will see your grade and Sery's feedback."
+    },
+    "FAQ_7": {
+      "Q": "What does Sery do and what can I ask?",
+      "A": "Sery is your study assistant: it answers questions about your course topics using the repository material. It may be locked while you have an assessment in progress."
+    },
+    "FAQ_8": {
+      "Q": "Where can I see my progress?",
+      "A": "In each classroom's Progress tab you will see your grades per period, your mastery by topic and Sery's summary with recommendations."
+    },
     "TUTORIAL_CREATED_SUCCESS": "Tutorial created successfully",
     "TUTORIAL_UPDATED_SUCCESS": "Tutorial updated successfully",
     "TUTORIAL_DELETED_SUCCESS": "Tutorial deleted successfully",
