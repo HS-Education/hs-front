@@ -62,7 +62,7 @@ export class MarkdownMathPipe implements PipeTransform {
       .replace(/>/g, '&gt;');
 
     // 1.5 Strip Source Badges completely (e.g. from RAG or internal Contexts)
-    escaped = escaped.replace(/(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*([^\s]+)/gi, '');
+    escaped = escaped.replace(/[-*•]?\s*(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*([^\n]*?)\s*[-*•]?\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*[^\n]*?(?:\/api\/v1)?\/courses\/\d+\/documents\/\d+\/download\)?/gi, '');
 
     // 1.8 Protect Math Pipes: escape '|' inside math blocks so it doesn't break Markdown tables
     escaped = escaped.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[^$\n]+\$|\\\([\s\S]*?\\\))/g, (match) => {

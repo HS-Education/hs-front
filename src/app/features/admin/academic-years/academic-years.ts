@@ -35,6 +35,10 @@ export class AcademicYears implements OnInit {
   readonly editStartDate = signal<string>('');
   readonly editEndDate = signal<string>('');
 
+  todayIso(): string {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(new Date());
+  }
+
   ngOnInit() {
     this.loadYears();
   }
@@ -112,6 +116,22 @@ export class AcademicYears implements OnInit {
 
   saveEdit(period: GradingPeriod) {
     if (!this.selectedYear() || !this.editStartDate() || !this.editEndDate()) return;
+
+    const start = new Date(`${this.editStartDate()}T00:00:00`);
+    const end = new Date(`${this.editEndDate()}T00:00:00`);
+    const days = Math.round((end.getTime() - start.getTime()) / 86_400_000);
+    if (days <= 0) {
+      this.toastService.error(this.translocoService.translate('ADMIN.TOAST.GRADING_PERIOD_END_BEFORE_START'));
+      return;
+    }
+    if (Math.floor(days / 7) < 2) {
+      this.toastService.error(this.translocoService.translate('ADMIN.TOAST.GRADING_PERIOD_MIN_WEEKS', { weeks: Math.floor(days / 7) }));
+      return;
+    }
+    if (this.editStartDate() !== (period.startDate ?? '') && this.editStartDate() < this.todayIso()) {
+      this.toastService.error(this.translocoService.translate('ADMIN.TOAST.GRADING_PERIOD_PAST_DATE'));
+      return;
+    }
 
     this.academicYearService.updateGradingPeriod(
       this.selectedYear()!.id,

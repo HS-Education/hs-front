@@ -3,7 +3,7 @@ import { ClassroomService } from '../data-access/classroom.service';
 import { Classroom } from '../data-access/models/responses/classroom.model';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { UserDataService } from '../../../shared/services/user-data.service';
-import { filter, switchMap } from 'rxjs';
+import { catchError, filter, of, switchMap } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { ClassroomCard } from './ui/classroom-card';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -38,7 +38,11 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
       @let classroomList = classrooms();
       
-      @if (classroomList.length > 0) {
+      @if (classroomList === undefined) {
+        <div role="status" class="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)] p-12 text-center text-sm font-semibold text-[var(--text-secondary)] shadow-sm">
+          {{ 'PROGRESS.EXPLORER.LOADING' | transloco }}
+        </div>
+      } @else if (classroomList.length > 0) {
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           @for (classroom of classroomList; track classroom.id) {
             <a
@@ -72,8 +76,9 @@ export class ClassroomList {
 
   readonly classrooms = toSignal(
     this.userProfile$.pipe(
-      switchMap((profile) => this.classroomService.getClassrooms(profile.id))
-    ),
-    { initialValue: [] as Classroom[] }
+      switchMap((profile) => this.classroomService.getClassrooms(profile.id).pipe(
+        catchError(() => of([] as Classroom[]))
+      ))
+    )
   );
 }
