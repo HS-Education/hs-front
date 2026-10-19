@@ -92,14 +92,18 @@ export class SeryBubble implements OnInit {
   getSources(content: string | null | undefined): ChatSourceReference[] {
     if (!content) return [];
     const sources: ChatSourceReference[] = [];
-    const regex = /(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+    const regex = /(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*([^\n]*?)\s*[-*•]?\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*[^\n]*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download\)?/gi;
     let match: RegExpExecArray | null;
     while ((match = regex.exec(content)) !== null) {
-      sources.push({
-        name: match[1].replace(/\*\*/g, '').trim(),
-        courseId: Number(match[2]),
-        documentId: Number(match[3]),
-      });
+      const courseId = Number(match[2]);
+      const documentId = Number(match[3]);
+      if (!sources.some(s => s.courseId === courseId && s.documentId === documentId)) {
+        sources.push({
+          name: match[1].replace(/\*\*/g, '').trim(),
+          courseId,
+          documentId,
+        });
+      }
     }
     return sources;
   }

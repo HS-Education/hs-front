@@ -1039,7 +1039,10 @@ export class Progress {
   selectDistributionStudent(studentId: number) {
     this.selectedDistributionStudentId.set(studentId);
     this.selectedTopicKey.set(null);
-    if (this.distributionTab() === 'sery') this.loadStudentInsight(studentId);
+    if (this.distributionTab() === 'sery') {
+      const student = this.distributionStudents().find(s => s.studentId === studentId);
+      this.loadStudentInsight(studentId, student?.studentName);
+    }
   }
 
   selectDistributionTab(tab: 'grades' | 'sery' | 'topics') {
@@ -1818,12 +1821,14 @@ export class Progress {
     return sources;
   }
 
-  renderInsightContent(rawText: string | null | undefined, showReferences = true): SafeHtml {
+  renderInsightContent(rawText: string | null | undefined, _showReferences = true): SafeHtml {
+    // Los informes de Sery en progreso no deben mostrar fuentes del repositorio.
+    const showReferences = false;
     rawText = rawText || '';
     const sources = this.getSources(rawText);
 
     if (sources.length > 0 || !showReferences) {
-      const regex1 = /\s*(?:\[\d+\])?\s*(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
+      const regex1 = /\s*(?:\[\d+\])?\s*[-*•]?\s*(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*([^\n]*?)\s*[-*•]?\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*[^\n]*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download\)?/gi;
       rawText = rawText.replace(regex1, '');
 
       const regex2 = /\s*(?:(?:\*\*)?Material de apoyo:(?:\*\*)?\s*)?\[([^\]]+)\]\((?:.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download)\)/gi;
