@@ -1,3 +1,4 @@
+import {stripDocumentReferences} from '../../../shared/utils/document-references';
 import {LocalizedDatePipe} from '../../../shared/pipes/localized-date.pipe';
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -526,6 +527,9 @@ export class AreaMetrics implements OnInit, OnDestroy {
   // Derived state
   readonly areaPerformance = computed(() => this.areaData()?.performance);
   readonly latestInsight = computed(() => this.areaData()?.latestInsight);
+  readonly showAreaInsightPreview = computed(() =>
+    !this.isGeneratingAreaInsight() || !!this.latestInsight()?.trim()
+  );
 
   readonly sortedClassrooms = computed(() => {
     return [...this.classroomStats()].sort((a, b) => (b.averageScore ?? -1) - (a.averageScore ?? -1));
@@ -933,47 +937,8 @@ export class AreaMetrics implements OnInit, OnDestroy {
   }
 
   renderInsightContent(rawText: string | null | undefined): SafeHtml {
-    rawText = rawText || '';
-    const sources = this.getSources(rawText);
-
-    if (sources.length > 0) {
-      const regex1 = /\s*(?:\[\d+\])?\s*(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
-      rawText = rawText.replace(regex1, '');
-
-      const regex2 = /\s*(?:(?:\*\*)?Material de apoyo:(?:\*\*)?\s*)?\[([^\]]+)\]\((?:.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download)\)/gi;
-      rawText = rawText.replace(regex2, '');
-      
-      // Cleanup AI hallucinated source text
-      rawText = rawText.replace(/(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*Contexto[^\n]*/gi, '');
-    }
-
-    let htmlString = MarkdownMathPipe.process(rawText);
-
-    if (sources.length > 0) {
-      htmlString = htmlString.replace(/\s*\[(\d+)\]/g, (match, p1) => {
-        const idx = Number(p1) - 1;
-        if (idx >= 0 && idx < sources.length) {
-          return ''; // Strip inline citations
-        }
-        return match;
-      });
-
-      // Remove empty paragraphs that might be left over from stripping
-      htmlString = htmlString.replace(/<p>(?:\s|<br\/>)*<\/p>/gi, '');
-
-      let badgesHtml = '<div class="mt-4 pt-4 border-t border-[var(--border)] flex flex-wrap gap-2.5">';
-      sources.forEach((src, idx) => {
-        badgesHtml += `<a href="javascript:void(0)" data-source-index="${idx}" class="inline-flex items-center gap-1.5 bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary-soft)] hover:underline px-3 py-1.5 rounded-lg font-semibold text-xs transition border border-[var(--brand-primary)]/20 w-auto">
-            <span class="text-[var(--brand-primary)] font-bold px-0.5 py-0.5 text-[10px] tracking-wide">[${idx + 1}]</span> 
-            <span>${src.name}</span>
-          </a>`;
-      });
-      badgesHtml += '</div>';
-
-      htmlString += badgesHtml;
-    }
-
-    return this.sanitizer.bypassSecurityTrustHtml(sanitizeRenderedHtml(htmlString));
+    const text = stripDocumentReferences(rawText || '').replace(/\s*\[\d+\]/g, '');
+    return this.sanitizer.bypassSecurityTrustHtml(sanitizeRenderedHtml(MarkdownMathPipe.process(text)));
   }
 
   handleInsightClick(event: MouseEvent, content: string | null | undefined): void {

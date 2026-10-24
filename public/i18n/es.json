@@ -787,6 +787,7 @@
     "GENERATING_INSIGHT": "Generando Insight...",
     "UPDATE_ANALYSIS": "Actualizar Análisis",
     "INSIGHT_GENERATION_WAIT": "Sery está actualizando el análisis. Esto puede tardar un par de minutos.",
+    "INSIGHT_INITIAL_GENERATION_WAIT": "Sery está generando el primer resumen del área. Esto puede tardar un par de minutos.",
     "INSIGHT_GENERATION_SUCCESS": "El análisis de Sery se actualizó correctamente.",
     "INSIGHT_GENERATION_TIMEOUT": "La actualización tardó demasiado. Revisa el resumen antes de intentarlo otra vez.",
     "INSIGHT_GENERATION_ERROR": "No se pudo generar el resumen del área. Las métricas se conservaron.",

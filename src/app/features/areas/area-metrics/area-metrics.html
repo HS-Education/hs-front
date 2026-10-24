@@ -58,7 +58,7 @@
             </div>
             @if (isGeneratingAreaInsight()) {
               <p role="status" class="mt-2 text-[10px] font-semibold text-[var(--button-primary-text)]/90">
-                {{ 'AREAS.INSIGHT_GENERATION_WAIT' | transloco }}
+                {{ (latestInsight() ? 'AREAS.INSIGHT_GENERATION_WAIT' : 'AREAS.INSIGHT_INITIAL_GENERATION_WAIT') | transloco }}
               </p>
             }
             @if (areaInsightError(); as errorKey) {
@@ -66,9 +66,11 @@
                 {{ errorKey | transloco }}
               </p>
             }
+            @if (showAreaInsightPreview()) {
             <p class="mt-2 line-clamp-5 text-xs font-medium leading-relaxed text-[var(--button-primary-text)]/90">
               {{ latestInsight() ? getInsightExcerpt(latestInsight(), 280) : ('AREAS.INSIGHT_PENDING' | transloco) }}
             </p>
+            }
             @if (latestInsight()) {
               <button type="button" (click)="openAreaInsightModal()"
                 class="mt-auto flex w-full items-center justify-between rounded-lg border border-[var(--button-primary-text)]/25 bg-[var(--button-primary-text)]/10 px-3 py-2 text-left text-[10px] font-bold transition hover:bg-[var(--button-primary-text)]/20">

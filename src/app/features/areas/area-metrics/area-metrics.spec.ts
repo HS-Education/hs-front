@@ -28,7 +28,7 @@ describe('AreaMetrics insight refresh', () => {
         {provide: UserDataService, useValue: {userProfile: () => ({name: 'Coordinator'})}},
         {provide: ClassroomService, useValue: {getAreas, getAllClassrooms: () => of([])}},
         {provide: AchievementService, useValue: {generateAreaInsight, getAreaAchievements}},
-        {provide: DomSanitizer, useValue: {}},
+        {provide: DomSanitizer, useValue: {bypassSecurityTrustHtml: (html: string) => html}},
         {provide: TranslocoService, useValue: {translate: (key: string) => key}},
         {provide: ToastService, useValue: {success}},
       ],
@@ -149,4 +149,32 @@ describe('AreaMetrics insight refresh', () => {
     expect(generateAreaInsight).toHaveBeenCalledTimes(2);
     expect(component.areaInsightError()).toBeNull();
   });
+  it('hides document references in previously saved coordinator insights', () => {
+    const html = String(component.renderInsightContent('Revisa el aula.\nFuente: 30pg Enlace de descarga: /api/v1/courses/10/documents/30/download'));
+    expect(html).toContain('Revisa el aula.');
+    expect(html).not.toContain('30pg');
+    expect(html).not.toContain('data-source-index');
+    expect(html).not.toContain('/download');
+  });
+
+  it('shows the empty state only before generation, and hides it while creating the first summary', () => {
+    component.areaData.update(data => data ? {...data, latestInsight: null} : data);
+    expect(component.showAreaInsightPreview()).toBe(true);
+    component.generateAreaInsight();
+    expect(component.isGeneratingAreaInsight()).toBe(true);
+    expect(component.showAreaInsightPreview()).toBe(false);
+    response.next({insightText: 'First analysis'});
+    response.complete();
+    expect(component.showAreaInsightPreview()).toBe(true);
+    expect(component.latestInsight()).toBe('First analysis');
+    expect(component.isGeneratingAreaInsight()).toBe(false);
+  });
+
+  it('keeps the existing summary visible while updating it', () => {
+    component.generateAreaInsight();
+    expect(component.isGeneratingAreaInsight()).toBe(true);
+    expect(component.showAreaInsightPreview()).toBe(true);
+    expect(component.latestInsight()).toBe('Previous analysis');
+  });
+
 });

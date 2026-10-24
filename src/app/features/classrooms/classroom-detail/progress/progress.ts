@@ -1,3 +1,4 @@
+import {stripDocumentReferences, escapeReferenceTitle} from '../../../../shared/utils/document-references';
 import {LanguageService} from '../../../../core/i18n/language.service';
 import {untracked} from '@angular/core';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
@@ -162,6 +163,9 @@ export class Progress {
   readonly classroomId = input.required<number>();
   readonly courseId = input.required<number>();
   readonly academicYearId = input.required<number>();
+  readonly canGenerateClassroomInsight = computed(() =>
+    this.userDataService.isTeacher() && !this.userDataService.isStudentView()
+  );
   readonly isGeneratingClassroomInsight = computed(() =>
     this.seryGenerationState.isGenerating('classroom', this.classroomId())
   );
@@ -1798,12 +1802,14 @@ export class Progress {
     const regex1 = /(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*(.*?)\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download/gi;
     let match: RegExpExecArray | null;
     while ((match = regex1.exec(content)) !== null) {
-      sources.push({
+      if (!sources.some(source => source.courseId === Number(match![2]) && source.documentId === Number(match![3]))) {
+        sources.push({
         name: match[1].replace(/\*\*/g, '').trim(),
         courseId: Number(match[2]),
         documentId: Number(match[3]),
         downloadUrl: `/api/v1/courses/${match[2]}/documents/${match[3]}/download`
-      });
+        });
+      }
     }
 
     const regex2 = /\[([^\]]+)\]\((?:.*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download)\)/gi;
@@ -1822,10 +1828,11 @@ export class Progress {
   }
 
   renderInsightContent(rawText: string | null | undefined, _showReferences = true): SafeHtml {
-    // Los informes de Sery en progreso no deben mostrar fuentes del repositorio.
-    const showReferences = false;
+    const showReferences = _showReferences && this.userDataService.isStudentView()
+      && !this.hideSimulatedStudentInsightReferences();
     rawText = rawText || '';
     const sources = this.getSources(rawText);
+    rawText = stripDocumentReferences(rawText);
 
     if (sources.length > 0 || !showReferences) {
       const regex1 = /\s*(?:\[\d+\])?\s*[-*•]?\s*(?:\*\*)?(?:Fuente|Source):(?:\*\*)?\s*([^\n]*?)\s*[-*•]?\s*(?:\*\*)?(?:Enlace de descarga|Download link):(?:\*\*)?\s*[^\n]*?(?:\/api\/v1)?\/courses\/(\d+)\/documents\/(\d+)\/download\)?/gi;
@@ -1861,7 +1868,7 @@ export class Progress {
         sources.forEach((src, idx) => {
           badgesHtml += `<a href="javascript:void(0)" data-source-index="${idx}" class="inline-flex items-center gap-1.5 bg-[var(--brand-primary-soft)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary-soft)] hover:underline px-3 py-1.5 rounded-lg font-semibold text-xs transition border border-[var(--brand-primary)]/20 w-auto">
             <span class="text-[var(--brand-primary)] font-bold px-0.5 py-0.5 text-[10px] tracking-wide">[${idx + 1}]</span> 
-            <span>${src.name}</span>
+            <span>${escapeReferenceTitle(src.name)}</span>
           </a>`;
         });
         badgesHtml += '</div>';
