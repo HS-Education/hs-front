@@ -117,14 +117,24 @@
       </div>
     } @else {
       <div class="space-y-6">
-        @for (topic of topics(); track topic.id; let idx = $index) {
+        @if (hasInvalidTopicOrder()) {
+          <div class="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] p-4 text-sm text-[var(--text-secondary)]">
+            <p>{{ 'CLASSROOMS.REPO.TOPIC_ORDER_INVALID' | transloco }}</p>
+            <button type="button" (click)="normalizeTopicOrder()"
+              [disabled]="!isAcademicYearPlanned() || savingTopicOrder()"
+              class="shrink-0 rounded-lg border border-[var(--border)] px-3 py-2 disabled:opacity-40">
+              {{ 'CLASSROOMS.REPO.TOPIC_ORDER_REPAIR' | transloco }}
+            </button>
+          </div>
+        }
+        @for (topic of orderedTopics(); track topic.id; let idx = $index) {
           <!-- Topic Group Container -->
           <div class="rounded-2xl border border-l-2 border-l-[var(--brand-primary)] border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm transition-all duration-200">
             <!-- Topic Header -->
             <div class="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-4">
               <div class="flex items-center gap-3">
                 <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--brand-primary-soft)] border border-[var(--brand-primary)]/30 text-[var(--brand-primary)] font-extrabold text-xs shadow-sm">
-                  {{ idx + 1 }}
+                  {{ topic.orderIndex }}
                 </span>
                 <div>
                   <h3 class="text-sm font-bold text-[var(--text-primary)] tracking-tight">{{ topic.name }}</h3>
@@ -150,7 +160,7 @@
                 <button
                   type="button"
                   (click)="reorderTopic(idx, 'up')"
-                  [disabled]="idx === 0 || !isAcademicYearPlanned()"
+                  [disabled]="!canReorderTopic(idx, 'up')"
                   title="{{ 'CLASSROOMS.REPO.UPLOAD_TOPIC' | transloco }}"
                   class="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed transition duration-150"
                 >
@@ -161,7 +171,7 @@
                 <button
                   type="button"
                   (click)="reorderTopic(idx, 'down')"
-                  [disabled]="idx === topics().length - 1 || !isAcademicYearPlanned()"
+                  [disabled]="!canReorderTopic(idx, 'down')"
                   title="{{ 'CLASSROOMS.REPO.MOVE_TOPIC_DOWN' | transloco }}"
                   class="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] hover:bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed transition duration-150"
                 >
@@ -310,6 +320,7 @@
           id="topic-name"
           type="text"
           [(ngModel)]="newTopicName"
+          [disabled]="savingTopic()"
           placeholder="{{ 'UI_TEXT.E_G_LINEAR_EQUATIONS' | transloco }}"
           class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-primary)] focus:bg-[var(--surface)]"
         />
@@ -320,12 +331,23 @@
         <select
           id="topic-period"
           [(ngModel)]="newTopicGradingPeriodId"
+          [disabled]="savingTopic()"
           class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-primary)] focus:bg-[var(--surface)]"
         >
           @for (period of gradingPeriods(); track period.id) {
-            <option [value]="period.id">{{ period.bimester | translateEnum:'bimester' }}</option>
+            <option [ngValue]="period.id">{{ period.bimester | translateEnum:'bimester' }}</option>
           }
         </select>
+        <p class="mt-2 text-xs text-[var(--text-secondary)]" aria-live="polite">
+          @if (topicPeriodWeeks() === null) {
+            {{ 'CLASSROOMS.REPO.TOPIC_DATES_REQUIRED' | transloco }}
+          } @else {
+            {{ 'CLASSROOMS.REPO.TOPIC_CAPACITY' | transloco: { count: topicPeriodCount(), weeks: topicPeriodWeeks() } }}
+            @if (topicPeriodCount() >= topicPeriodWeeks()!) {
+              {{ 'CLASSROOMS.REPO.TOPIC_LIMIT_REACHED' | transloco }}
+            }
+          }
+        </p>
       </div>
  
       <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
@@ -339,7 +361,7 @@
         <button
           type="button"
           (click)="addTopic()"
-          [disabled]="!newTopicName().trim()"
+          [disabled]="!canSaveTopic()"
           class="rounded-xl bg-[var(--button-primary-bg)] hover:bg-[var(--button-primary-hover)] disabled:bg-[var(--brand-inactive)]/30 px-5 py-2.5 text-xs font-bold text-white transition active:scale-[0.98]"
         >
           {{ 'CLASSROOMS.REPO.SAVE_TOPIC' | transloco }}

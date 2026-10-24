@@ -12,7 +12,7 @@ import {FormsModule} from '@angular/forms';
 import {MarkdownMathPipe, sanitizeRenderedHtml} from '../../shared/pipes/markdown-math.pipe';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {DomSanitizer, SafeResourceUrl, SafeHtml} from '@angular/platform-browser';
-import {ConfirmModal} from '../../shared/components/modal/confirm-modal';
+import {ChatDeleteDialog} from '../../shared/components/chat-delete-dialog/chat-delete-dialog';
 import {TranslocoService, TranslocoPipe} from '@jsverse/transloco';
 import {StyledSelectDirective} from '../../shared/directives/styled-select.directive';
 
@@ -25,7 +25,7 @@ export interface ChatSource {
 
 @Component({
   selector: 'app-chat',
-  imports: [FormsModule, LocalizedDatePipe, ConfirmModal, RouterLink, TranslocoPipe, StyledSelectDirective],
+  imports: [FormsModule, LocalizedDatePipe, ChatDeleteDialog, RouterLink, TranslocoPipe, StyledSelectDirective],
   templateUrl: './chat.html',
   styleUrl: './chat.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,13 +75,9 @@ export class Chat implements OnInit {
     return false;
   });
 
-  // Confirm Modal signals
-  readonly confirmModalOpen = signal(false);
-  readonly confirmModalTitle = signal('');
-  readonly confirmModalMessage = signal('');
-  readonly confirmAction = signal<() => void>(() => {});
-
-  closeConfirmModal = (): void => this.confirmModalOpen.set(false);
+  readonly pendingDeleteSession = signal<ChatSession | null>(null);
+  readonly deletingSession = signal(false);
+  readonly deleteSessionError = signal(false);
 
   // Computed list of unique courses for dropdown filter
   readonly courses = computed(() => {
@@ -243,31 +239,42 @@ export class Chat implements OnInit {
 
   deleteSession(sessionId: number, event: Event): void {
     event.stopPropagation();
-    this.confirmModalTitle.set(this.translocoService.translate('CHAT.MODAL.DELETE_TITLE'));
-    this.confirmModalMessage.set(this.translocoService.translate('CHAT.MODAL.DELETE_MSG'));
-    this.confirmAction.set(() => {
-      this.chatService.deleteChatSession(sessionId).subscribe({
-        next: () => {
-          this.confirmModalOpen.set(false);
-          this.sessions.update(list => list.filter(s => s.id !== sessionId));
-          if (this.currentSessionId() === sessionId) {
-            this.currentSessionId.set(null);
-            this.messages.set([]);
-            this.router.navigate([], {
-              relativeTo: this.route,
-              queryParams: { sessionId: null },
-              queryParamsHandling: 'merge'
-            });
-          }
-        },
-        error: (err: unknown) => {
-          console.error('Error al eliminar sesión de chat:', err);
-          this.confirmModalOpen.set(false);
-          alert(this.translocoService.translate('CHAT.MODAL.DELETE_ERR'));
+    if (this.deletingSession() || this.sendingMessage()) return;
+    const session = this.sessions().find(item => item.id === sessionId);
+    if (!session) return;
+    this.deleteSessionError.set(false);
+    this.pendingDeleteSession.set(session);
+  }
+
+  cancelDeleteSession(): void {
+    if (!this.deletingSession()) this.pendingDeleteSession.set(null);
+  }
+
+  confirmDeleteSession(): void {
+    const session = this.pendingDeleteSession();
+    if (!session || this.deletingSession() || this.sendingMessage()) return;
+    this.deletingSession.set(true);
+    this.deleteSessionError.set(false);
+    this.chatService.deleteChatSession(session.id).subscribe({
+      next: () => {
+        this.sessions.update(list => list.filter(item => item.id !== session.id));
+        if (this.currentSessionId() === session.id) {
+          this.currentSessionId.set(null);
+          this.messages.set([]);
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {sessionId: null},
+            queryParamsHandling: 'merge',
+          });
         }
-      });
+        this.pendingDeleteSession.set(null);
+        this.deletingSession.set(false);
+      },
+      error: () => {
+        this.deleteSessionError.set(true);
+        this.deletingSession.set(false);
+      },
     });
-    this.confirmModalOpen.set(true);
   }
 
   getCourseName(courseId: number | null): string {
@@ -288,7 +295,7 @@ export class Chat implements OnInit {
   async sendMessage(): Promise<void> {
     const sessionId = this.currentSessionId();
     const text = this.questionText().trim();
-    if (!sessionId || !text || this.sendingMessage()) return;
+    if (!sessionId || !text || this.sendingMessage() || this.deletingSession()) return;
 
     this.sendingMessage.set(true);
     this.streamingResponse.set(false);

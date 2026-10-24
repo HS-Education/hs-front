@@ -139,7 +139,7 @@ export class ClassroomService {
   }
 
   getGradingPeriods(academicYearId: number) {
-    return this.http.get<Array<{ id: number; bimester: string; status?: 'PLANNED' | 'ACTIVE' | 'FINISHED' }>>(
+    return this.http.get<Array<{ id: number; bimester: string; startDate?: string | null; endDate?: string | null; status?: 'PLANNED' | 'ACTIVE' | 'FINISHED' }>>(
       `${this.baseUrl}/academic-years/${academicYearId}/grading-periods`,
       { withCredentials: true }
     );
