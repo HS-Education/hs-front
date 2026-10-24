@@ -19,7 +19,7 @@
             <span class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[var(--surface)] bg-[var(--color-success)]"></span>
           </div>
 
-          <button type="button" (click)="toggleSessionMenu()" class="min-w-0 text-left rounded-lg px-1 py-0.5 hover:bg-[var(--bg-secondary)] transition">
+          <button #sessionMenuButton type="button" [attr.aria-expanded]="showSessionMenu()" (click)="toggleSessionMenu()" class="min-w-0 text-left rounded-lg px-1 py-0.5 hover:bg-[var(--bg-secondary)] transition">
             <div class="flex items-center gap-1.5">
               <h3 class="text-xs font-black text-[var(--text-primary)] tracking-tight font-['Plus_Jakarta_Sans'] truncate">
                 {{ 'CHAT.CHAT_HEADER' | transloco }}
@@ -38,14 +38,14 @@
           </button>
 
           @if (showSessionMenu()) {
-            <div class="absolute left-3 top-14 z-50 w-56 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-xl">
+            <div #sessionMenu class="absolute left-3 top-14 z-50 w-56 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-xl">
               <p class="px-2 py-1 text-[9px] font-bold uppercase text-[var(--text-secondary)]">{{ 'UI_TEXT.SESSIONS' | transloco }}</p>
               @for (session of sessions(); track session.id) {
                 <div role="button" tabindex="0" (click)="selectSession(session.id)" class="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-[11px] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]">
                   <span>{{ 'CHAT.SESSION_PREFIX' | transloco }}{{ session.sessionNumber }}</span>
                   <span class="flex items-center gap-2">
                     @if (session.id === currentSessionId()) { <span class="text-[var(--brand-primary)]">✓</span> }
-                    <button type="button" (click)="$event.stopPropagation(); deleteSession(session.id)" title="{{ 'UI_TEXT.DELETE_SESSION' | transloco }}" class="rounded p-1 text-[var(--text-secondary)] hover:bg-[var(--color-danger-soft)] hover:text-[var(--color-danger)]">×</button>
+                    <button type="button" (click)="$event.stopPropagation(); deleteSession(session.id)" title="{{ 'UI_TEXT.DELETE_SESSION' | transloco }}" [attr.aria-label]="'UI_TEXT.DELETE_SESSION' | transloco" class="rounded p-1 text-[var(--text-secondary)] hover:bg-[var(--color-danger-soft)] hover:text-[var(--color-danger)]">×</button>
                   </span>
                 </div>
               }
@@ -58,7 +58,10 @@
           <!-- Create New Session -->
           <button
             type="button"
+            #createMenuButton
+            [attr.aria-expanded]="showCreateMenu()"
             (click)="toggleCreateMenu()"
+            [disabled]="creatingSession() || deletingSession() || sendingMessage() || loadingSessions()"
             title="{{ 'UI_TEXT.NEW_SESSION' | transloco }}"
             class="flex h-8 w-8 items-center justify-center rounded-xl text-[var(--text-secondary)] hover:text-[var(--brand-primary)] hover:bg-[var(--brand-primary-soft)] transition duration-150"
           >
@@ -68,7 +71,7 @@
           </button>
 
           @if (showCreateMenu()) {
-            <div class="absolute right-14 top-14 z-50 w-52 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-xl">
+            <div #createMenu class="absolute right-14 top-14 z-50 w-52 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-1.5 shadow-xl">
               <button type="button" (click)="createNewSession(null)" class="block w-full rounded-lg px-2 py-2 text-left text-[11px] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]">{{ 'UI_TEXT.GENERAL_CHAT' | transloco }}</button>
               @for (classroom of classrooms(); track classroom.courseId) {
                 <button type="button" (click)="createNewSession(classroom.courseId)" class="block w-full truncate rounded-lg px-2 py-2 text-left text-[11px] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]">{{ classroom.courseName }}</button>
@@ -310,3 +313,6 @@
   }
 
 </aside>
+
+<app-chat-delete-dialog [session]="pendingDeleteSession()" [loading]="deletingSession()" [error]="deleteSessionError()"
+  (cancelled)="cancelDeleteSession()" (confirmed)="confirmDeleteSession()" />

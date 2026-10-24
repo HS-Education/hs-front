@@ -945,7 +945,7 @@
                 <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-[var(--button-primary-text)]/30 bg-[var(--button-primary-text)]/10">✦</span>
                 {{ 'PROGRESS.SERY.TITLE' | transloco }}
               </div>
-              @if (userDataService.isTeacher() && !userDataService.isCoordinator()) {
+              @if (canGenerateClassroomInsight()) {
                 <button type="button" (click)="generateClassroomInsight()" [disabled]="isGeneratingClassroomInsight()"
                   [attr.aria-label]="(isGeneratingClassroomInsight() ? 'PROGRESS.SERY.GENERATING' : 'PROGRESS.SERY.UPDATE_ANALYSIS') | transloco"
                   [attr.title]="(isGeneratingClassroomInsight() ? 'PROGRESS.SERY.GENERATING' : 'PROGRESS.SERY.UPDATE_ANALYSIS') | transloco"

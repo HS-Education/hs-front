@@ -316,12 +316,7 @@
   }
 
   <!-- Modal: Confirmación -->
-  <app-confirm-modal
-    [isOpen]="confirmModalOpen()"
-    [title]="confirmModalTitle()"
-    [message]="confirmModalMessage()"
-    [onCancel]="closeConfirmModal"
-    [onConfirmCallback]="confirmAction()"
-  ></app-confirm-modal>
+  <app-chat-delete-dialog [session]="pendingDeleteSession()" [loading]="deletingSession()" [error]="deleteSessionError()"
+    (cancelled)="cancelDeleteSession()" (confirmed)="confirmDeleteSession()" />
 </div>
 }
