@@ -19,6 +19,8 @@ import {ToastService} from '../../shared/services/toast.service';
 interface GradingPeriodResource {
   id: number;
   bimester: string;
+  startDate?: string | null;
+  endDate?: string | null;
 }
 
 interface UploadFileMetadata {
@@ -81,6 +83,51 @@ export class Repository implements OnInit {
   readonly isTopicModalOpen = signal(false);
   readonly newTopicName = signal('');
   readonly newTopicGradingPeriodId = signal<number | null>(null);
+  readonly savingTopic = signal(false);
+  readonly savingTopicOrder = signal(false);
+  readonly orderedTopics = computed(() => this.sortTopics(this.topics()));
+  readonly hasInvalidTopicOrder = computed(() => {
+    const counts = new Map<number, number>();
+    return this.orderedTopics().some(topic => {
+      const expected = (counts.get(topic.gradingPeriodId) ?? 0) + 1;
+      counts.set(topic.gradingPeriodId, expected);
+      return topic.orderIndex !== expected;
+    });
+  });
+  readonly selectedTopicPeriod = computed(() =>
+    this.gradingPeriods().find(period => period.id === this.newTopicGradingPeriodId()));
+  readonly topicPeriodCount = computed(() => this.topics()
+    .filter(topic => topic.gradingPeriodId === this.newTopicGradingPeriodId()).length);
+  readonly topicPeriodWeeks = computed(() => this.getPeriodWeeks(this.selectedTopicPeriod()));
+  readonly canSaveTopic = computed(() => !!this.newTopicName().trim()
+    && this.isAcademicYearPlanned() && !this.savingTopic()
+    && this.topicPeriodWeeks() !== null && this.topicPeriodCount() < this.topicPeriodWeeks()!);
+
+  getPeriodWeeks(period: GradingPeriodResource | undefined): number | null {
+    if (!period?.startDate || !period.endDate) return null;
+    const start = Date.parse(`${period.startDate}T00:00:00Z`);
+    const end = Date.parse(`${period.endDate}T00:00:00Z`);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
+    // Match the backend's complete weeks between dates, without counting the end twice.
+    return Math.floor((end - start) / (7 * 86_400_000));
+  }
+
+  private sortTopics(topics: Topic[]): Topic[] {
+    const periods = this.sortGradingPeriods(this.gradingPeriods());
+    const rank = new Map(periods.map((period, index) => [period.id, index]));
+    return [...topics].sort((a, b) =>
+      (rank.get(a.gradingPeriodId) ?? Number.MAX_SAFE_INTEGER)
+      - (rank.get(b.gradingPeriodId) ?? Number.MAX_SAFE_INTEGER)
+      || a.gradingPeriodId - b.gradingPeriodId || a.orderIndex - b.orderIndex || a.id - b.id);
+  }
+
+  canReorderTopic(index: number, direction: 'up' | 'down'): boolean {
+    const topics = this.orderedTopics();
+    const target = direction === 'up' ? index - 1 : index + 1;
+    return this.isAcademicYearPlanned() && !this.savingTopicOrder()
+      && !!topics[index] && !!topics[target]
+      && topics[index].gradingPeriodId === topics[target].gradingPeriodId;
+  }
 
   readonly isUploadModalOpen = signal(false);
   readonly uploadBimester = signal<string>('');
@@ -361,36 +408,43 @@ export class Repository implements OnInit {
   }
 
   reorderTopic(index: number, direction: 'up' | 'down'): void {
+    if (!this.canReorderTopic(index, direction)) return;
+    const topicsList = this.orderedTopics().map(topic => ({...topic}));
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    [topicsList[index], topicsList[targetIndex]] = [topicsList[targetIndex], topicsList[index]];
+    this.saveTopicOrder(topicsList);
+  }
+
+  normalizeTopicOrder(): void {
+    if (!this.isAcademicYearPlanned() || this.savingTopicOrder() || !this.hasInvalidTopicOrder()) return;
+    this.saveTopicOrder(this.orderedTopics());
+  }
+
+  private saveTopicOrder(topics: Topic[]): void {
     const courseId = this.selectedCourseId();
     if (!courseId) return;
-
-    const topicsList = [...this.topics()];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= topicsList.length) return;
-
-    // Swap their order indexes
-    const tempIndex = topicsList[index].orderIndex;
-    topicsList[index].orderIndex = topicsList[targetIndex].orderIndex;
-    topicsList[targetIndex].orderIndex = tempIndex;
-
-    // Swap positions in the array
-    const tempTopic = topicsList[index];
-    topicsList[index] = topicsList[targetIndex];
-    topicsList[targetIndex] = tempTopic;
-
-    // Build Payload for Backend API
+    const counts = new Map<number, number>();
+    const topicsList = topics.map(topic => {
+      const orderIndex = (counts.get(topic.gradingPeriodId) ?? 0) + 1;
+      counts.set(topic.gradingPeriodId, orderIndex);
+      return {...topic, orderIndex};
+    });
     const payload = topicsList.map((t) => ({
       topicId: t.id,
       gradingPeriodId: t.gradingPeriodId,
       orderIndex: t.orderIndex
     }));
 
+    this.savingTopicOrder.set(true);
     this.classroomService.reorderTopics(courseId, payload).subscribe({
       next: () => {
         this.topics.set(topicsList);
+        this.savingTopicOrder.set(false);
       },
       error: (err: unknown) => {
         console.error('Error al reordenar topics:', err);
+        this.savingTopicOrder.set(false);
+        this.toastService.error(this.translocoService.translate('CLASSROOMS.REPO.TOPIC_ORDER_ERROR'));
         this.fetchCourseContent(courseId);
       }
     });
@@ -400,13 +454,18 @@ export class Repository implements OnInit {
   openTopicModal = (): void => {
     const periods = this.gradingPeriods();
     if (periods.length > 0) {
-      this.newTopicGradingPeriodId.set(periods[0].id);
+      const available = periods.find(period => {
+        const weeks = this.getPeriodWeeks(period);
+        return weeks !== null && this.topics().filter(topic => topic.gradingPeriodId === period.id).length < weeks;
+      });
+      this.newTopicGradingPeriodId.set((available ?? periods[0]).id);
     }
     this.newTopicName.set('');
     this.isTopicModalOpen.set(true);
   }
 
   closeTopicModal = (): void => {
+    if (this.savingTopic()) return;
     this.isTopicModalOpen.set(false);
   }
 
@@ -415,14 +474,17 @@ export class Repository implements OnInit {
     const name = this.newTopicName().trim();
     const periodId = this.newTopicGradingPeriodId();
 
-    if (!courseId || !name || !periodId) return;
+    if (!courseId || !name || !periodId || !this.canSaveTopic()) return;
 
+    this.savingTopic.set(true);
     this.classroomService.addTopic(courseId, name, periodId).subscribe({
       next: () => {
+        this.savingTopic.set(false);
         this.closeTopicModal();
         this.fetchCourseContent(courseId);
       },
       error: (err: unknown) => {
+        this.savingTopic.set(false);
         console.error('Error al agregar tema:', err);
       }
     });
