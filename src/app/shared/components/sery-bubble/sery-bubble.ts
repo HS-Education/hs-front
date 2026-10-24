@@ -1,3 +1,4 @@
+import {ChatDeleteDialog} from '../chat-delete-dialog/chat-delete-dialog';
 import {LanguageService} from '../../../core/i18n/language.service';
 import {LocalizedDatePipe} from '../../pipes/localized-date.pipe';
 import {
@@ -6,6 +7,7 @@ import {
   computed,
   effect,
   ElementRef,
+  HostListener,
   inject,
   OnInit,
   signal,
@@ -32,7 +34,7 @@ interface ChatSourceReference {
 
 @Component({
   selector: 'app-sery-bubble',
-  imports: [FormsModule, LocalizedDatePipe, TranslocoPipe, MarkdownMathPipe],
+  imports: [FormsModule, LocalizedDatePipe, TranslocoPipe, MarkdownMathPipe, ChatDeleteDialog],
   templateUrl: './sery-bubble.html',
   styleUrl: './sery-bubble.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,9 +55,18 @@ export class SeryBubble implements OnInit {
   readonly isOpen = this.seryBubbleService.isOpen;
   readonly isMaximized = this.seryBubbleService.isMaximized;
   readonly scrollContainer = viewChild<ElementRef<HTMLDivElement>>('scrollContainer');
+  private readonly sessionMenuButton = viewChild<ElementRef<HTMLElement>>('sessionMenuButton');
+  private readonly sessionMenu = viewChild<ElementRef<HTMLElement>>('sessionMenu');
+  private readonly createMenuButton = viewChild<ElementRef<HTMLElement>>('createMenuButton');
+  private readonly createMenu = viewChild<ElementRef<HTMLElement>>('createMenu');
 
   // Chat Data Signals
   readonly sessions = signal<ChatSession[]>([]);
+  private readonly sessionLoadAttempted = signal(false);
+  readonly creatingSession = signal(false);
+  readonly deletingSession = signal(false);
+  readonly pendingDeleteSession = signal<ChatSession | null>(null);
+  readonly deleteSessionError = signal(false);
   readonly currentSessionId = signal<number | null>(null);
   readonly messages = signal<ChatMessage[]>([]);
   readonly loadingSessions = signal(false);
@@ -140,7 +151,7 @@ export class SeryBubble implements OnInit {
     // When the bubble is opened, ensure sessions and history are loaded
     effect(() => {
       if (this.isOpen()) {
-        if (this.sessions().length === 0 && !this.loadingSessions()) {
+        if (!this.sessionLoadAttempted() && !this.loadingSessions()) {
           this.loadSessionsAndSelect();
         } else if (this.currentSessionId() && this.messages().length === 0 && !this.loadingMessages() && this.currentSessionId() !== this.emptySessionId() && this.currentSessionId() !== this.historyLoadedSessionId()) {
           this.fetchHistoryForSession(this.currentSessionId()!);
@@ -167,6 +178,7 @@ export class SeryBubble implements OnInit {
   }
 
   close(): void {
+    this.closeMenus();
     this.seryBubbleService.close();
   }
 
@@ -175,6 +187,8 @@ export class SeryBubble implements OnInit {
   }
 
   loadSessionsAndSelect(): void {
+    if (this.loadingSessions() || this.creatingSession() || this.deletingSession()) return;
+    this.sessionLoadAttempted.set(true);
     this.loadingSessions.set(true);
     this.chatService.getChatSessions().subscribe({
       next: (list) => {
@@ -207,6 +221,26 @@ export class SeryBubble implements OnInit {
     this.fetchHistoryForSession(sessionId);
   }
 
+  @HostListener('document:click', ['$event'])
+  closeMenusOnOutsideClick(event: MouseEvent): void {
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (this.showSessionMenu() && !this.sessionMenu()?.nativeElement.contains(target)
+        && !this.sessionMenuButton()?.nativeElement.contains(target)) {
+      this.showSessionMenu.set(false);
+    }
+    if (this.showCreateMenu() && !this.createMenu()?.nativeElement.contains(target)
+        && !this.createMenuButton()?.nativeElement.contains(target)) {
+      this.showCreateMenu.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  closeMenus(): void {
+    this.showSessionMenu.set(false);
+    this.showCreateMenu.set(false);
+  }
+
   toggleSessionMenu(): void {
     this.showSessionMenu.update((visible) => !visible);
     this.showCreateMenu.set(false);
@@ -218,27 +252,50 @@ export class SeryBubble implements OnInit {
   }
 
   deleteSession(sessionId: number): void {
-    if (!window.confirm(this.translate('UI_TEXT.DELETE_THIS_CONVERSATION'))) return;
+    if (this.deletingSession() || this.creatingSession() || this.sendingMessage()) return;
+    const session = this.sessions().find(item => item.id === sessionId);
+    if (!session) return;
+    this.showSessionMenu.set(false);
+    this.deleteSessionError.set(false);
+    this.pendingDeleteSession.set(session);
+  }
 
-    this.chatService.deleteChatSession(sessionId).subscribe({
+  cancelDeleteSession(): void {
+    if (!this.deletingSession()) this.pendingDeleteSession.set(null);
+  }
+
+  confirmDeleteSession(): void {
+    const session = this.pendingDeleteSession();
+    if (!session || this.deletingSession() || this.sendingMessage() || this.creatingSession()) return;
+    this.deletingSession.set(true);
+    this.deleteSessionError.set(false);
+    this.chatService.deleteChatSession(session.id).subscribe({
       next: () => {
-        const remaining = this.sessions().filter((session) => session.id !== sessionId);
+        const remaining = this.sessions().filter(item => item.id !== session.id);
         this.sessions.set(remaining);
-        if (this.currentSessionId() === sessionId) {
-          if (remaining.length > 0) {
-            this.selectSession(remaining[0].id);
-          } else {
-            this.currentSessionId.set(null);
-            this.messages.set([]);
-            this.createNewSession(null);
-          }
+        if (remaining.length === 0) {
+          this.currentSessionId.set(null);
+          this.emptySessionId.set(null);
+          this.historyLoadedSessionId.set(null);
+          this.messages.set([]);
+          this.createNewSession(null);
+        } else if (this.currentSessionId() === session.id) {
+          this.selectSession(remaining[0].id);
         }
+        this.pendingDeleteSession.set(null);
+        this.deletingSession.set(false);
       },
-      error: (err: unknown) => console.error('Error al eliminar sesión de Sery:', err),
+      error: () => {
+        this.deleteSessionError.set(true);
+        this.deletingSession.set(false);
+      },
     });
   }
 
   createNewSession(courseId: number | null = null): void {
+    if (this.creatingSession() || this.loadingSessions() || this.sendingMessage()) return;
+    this.sessionLoadAttempted.set(true);
+    this.creatingSession.set(true);
     this.showSessionMenu.set(false);
     this.showCreateMenu.set(false);
     this.loadingMessages.set(true);
@@ -251,10 +308,12 @@ export class SeryBubble implements OnInit {
         this.emptySessionId.set(newSession.id);
         this.historyLoadedSessionId.set(newSession.id);
         this.loadingMessages.set(false);
+        this.creatingSession.set(false);
       },
       error: (err: unknown) => {
         console.error('Error al crear sesión en bubble:', err);
         this.loadingMessages.set(false);
+        this.creatingSession.set(false);
       },
     });
   }
@@ -266,6 +325,7 @@ export class SeryBubble implements OnInit {
 
     this.chatService.getChatHistory(sessionId).subscribe({
       next: (history) => {
+        if (this.currentSessionId() !== sessionId) return;
         this.messages.set(history);
         this.loadingMessages.set(false);
         this.scrollToBottom();
@@ -284,7 +344,8 @@ export class SeryBubble implements OnInit {
 
   async sendMessage(): Promise<void> {
     const text = this.questionText().trim();
-    if (!text || this.sendingMessage()) return;
+    if (!text || this.sendingMessage() || this.creatingSession() || this.deletingSession() || this.loadingSessions()) return;
+    this.sendingMessage.set(true);
 
     let sessionId = this.currentSessionId();
     // If no session exists yet, create one on the fly before sending
@@ -298,11 +359,12 @@ export class SeryBubble implements OnInit {
         }
       } catch (err) {
         console.error('Error al crear sesión para enviar mensaje:', err);
+        this.sendingMessage.set(false);
         return;
       }
     }
 
-    if (!sessionId) return;
+    if (!sessionId) { this.sendingMessage.set(false); return; }
 
     this.sendingMessage.set(true);
     this.streamingResponse.set(false);

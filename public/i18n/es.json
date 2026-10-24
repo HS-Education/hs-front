@@ -498,6 +498,8 @@
     "MODAL": {
       "DELETE_TITLE": "Eliminar Sesión",
       "DELETE_MSG": "¿Estás seguro de que deseas eliminar esta sesión de chat?",
+      "DELETE_DESCRIPTION": "Se eliminarán todos los mensajes de esta conversación. Esta acción no se puede deshacer.",
+      "DELETING": "Eliminando…",
       "DELETE_ERR": "No se pudo eliminar la sesión."
     },
     "ERROR_RESPONSE": "Lo siento, no pude procesar tu mensaje en este momento. Por favor, intenta de nuevo.",
