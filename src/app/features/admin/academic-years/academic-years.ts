@@ -124,7 +124,7 @@ export class AcademicYears implements OnInit {
       this.toastService.error(this.translocoService.translate('ADMIN.TOAST.GRADING_PERIOD_END_BEFORE_START'));
       return;
     }
-    if (Math.floor(days / 7) < 2) {
+    if (Math.floor(days / 7) < 1) {
       this.toastService.error(this.translocoService.translate('ADMIN.TOAST.GRADING_PERIOD_MIN_WEEKS', { weeks: Math.floor(days / 7) }));
       return;
     }
