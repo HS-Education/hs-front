@@ -7,7 +7,7 @@ import {AcademicYearService} from './services/academic-year.service';
 import {GradingPeriod} from './models/academic-year.model';
 import {ToastService} from '../../../shared/services/toast.service';
 
-describe('two-week grading-period updates', () => {
+describe('one-week grading-period updates', () => {
   let page: AcademicYears;
   let response: Subject<GradingPeriod>;
   let update: ReturnType<typeof vi.fn>;
@@ -37,25 +37,26 @@ describe('two-week grading-period updates', () => {
     page.editEndDate.set('2030-04-15');
   });
 
-  it('submits exactly two weeks and displays the server-confirmed dates', () => {
+  it('submits exactly one week and displays the server-confirmed dates', () => {
+    page.editEndDate.set('2030-04-08');
     page.saveEdit(period);
     expect(update).toHaveBeenCalledExactlyOnceWith(1, 2, {
-      startDate: '2030-04-01', endDate: '2030-04-15',
+      startDate: '2030-04-01', endDate: '2030-04-08',
     });
-    response.next({...period, startDate: '2030-04-01', endDate: '2030-04-15'});
-    expect(page.gradingPeriods()[0].endDate).toBe('2030-04-15');
+    response.next({...period, startDate: '2030-04-01', endDate: '2030-04-08'});
+    expect(page.gradingPeriods()[0].endDate).toBe('2030-04-08');
     expect(page.gradingPeriods()[0].startDate).toBe('2030-04-01');
     expect(page.editingPeriodId()).toBeNull();
     expect(page.editStartDate()).toBe('');
   });
 
-  it('rejects periods shorter than two weeks locally and retains unsaved edits', () => {
-    page.editEndDate.set('2030-04-14');
+  it('rejects periods shorter than one week locally and retains unsaved edits', () => {
+    page.editEndDate.set('2030-04-07');
     page.saveEdit(period);
     expect(toastError).toHaveBeenCalledExactlyOnceWith('ADMIN.TOAST.GRADING_PERIOD_MIN_WEEKS');
     expect(update).not.toHaveBeenCalled();
     expect(page.editingPeriodId()).toBe(2);
-    expect(page.editEndDate()).toBe('2030-04-14');
+    expect(page.editEndDate()).toBe('2030-04-07');
     expect(page.gradingPeriods()[0].endDate).toBeNull();
   });
 
